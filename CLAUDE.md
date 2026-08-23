@@ -46,6 +46,22 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 - 7 sections: `s1` card · `s2` verse · `s3` countdown+scratch heart · `s4` menu · `s5` schedule ·
   `s6` dress code · `s7` closing.
 
+### The intro
+
+`src/components/Intro.jsx` plays a supplied film of an envelope opening into the card
+(`public/assets/intro.{webm,mp4}`, with `intro-poster.webp` as the first frame). It replaced a
+hand-built CSS envelope with a wax seal — do not reinstate that; the video is the reveal now.
+
+- It sits in a gold-ruled frame in the same slot the CSS envelope occupied, under the same
+  Bismillah / names / invite typography, so the intro's composition is unchanged.
+- It starts **muted**, which is the only way browsers allow playback without a tap. A `Sound on`
+  pill unmutes; an `Enter` pill skips straight into the site at any point.
+- If autoplay is refused, or the guest asks for reduced motion, the poster shows with a play
+  button instead. If the file cannot load at all, the intro opens the site by itself rather than
+  stranding the guest on a still frame. Keep all three fallbacks.
+- Ship both `webm` (VP9) and `mp4` (H.264) — Safari/iOS needs the mp4. Both are encoded with a
+  keyframe every 48 frames; re-encode from the original, never from these web copies.
+
 **Known CSS trap:** a class named `.tl` will collide with `.corner.tl` and break corner
 positioning. This bug already happened once (a timeline used `.tl`; renamed to `.sched`).
 
@@ -78,6 +94,9 @@ depend on anything that changes per-tick (`onDone` is held in a ref for this rea
 4. **Native Sindhi proofread** — outstanding, especially the timing notice.
 5. **"The verse that was recited at our nikkah"** on `s2` — the user has not confirmed this is
    factually true. Verify before it goes out.
+6. **The card in the intro film reads "Walima & Rukhsati"** — the reverse of the order fixed
+   above, and the names on it are set in Latin only. It is baked into the supplied video and
+   cannot be fixed in code. Ask the user whether to re-render the film before it goes out.
 
 ## Nice-to-haves discussed but not built
 
@@ -88,4 +107,4 @@ depend on anything that changes per-tick (`onDone` is held in a ref for this rea
 ## Deployment
 
 `npm run build` outputs to `docs/`. GitHub Pages: Settings → Pages → deploy from branch
-`main`, folder `/docs`. Guest links take `?to=Name` and render "Dear Name," on the envelope.
+`main`, folder `/docs`. Guest links take `?to=Name` and render "Dear Name," above the intro film.

@@ -171,7 +171,6 @@ export default function App() {
           </Rv>
           <div className="names">
             <Rv d={0.25} cls="nm-sd">تشڪين ۽ انوشا</Rv>
-            <Rv d={0.4} cls={"mini" + (sd ? " sd-t" : "")}>{t.daysToGo(cd.d)}</Rv>
           </div>
           <div className={"cue" + (sd ? " sd-t" : "")}>{t.scroll}
             <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
