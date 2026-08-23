@@ -7,7 +7,6 @@ export const T = {
     scroll: "Scroll",
     tapRead: "Tap to read",
     tapClose: "Tap to close",
-    daysToGo: d => (d > 0 ? `${d} days to go` : "Today"),
     verseKicker: "In the words of the Qur'an",
     translit: "Wa min āyātihi an khalaqa lakum min anfusikum azwājan li-taskunū ilayhā, wa jaʿala baynakum mawaddatan wa raḥmah",
     verse: "“And of His signs is that He created for you mates from among yourselves, that you may find tranquility in them — and He placed between you love and mercy.”",
