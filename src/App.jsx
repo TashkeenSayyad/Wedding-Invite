@@ -193,16 +193,16 @@ export default function App() {
         {/* 3 · countdown + scratch heart */}
         <Sec id="s3" tone="deep" label={t.dotLabels.s3} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.saveDate}</Rv>
-          <Rv d={0.08} cls="big">27 December 2026</Rv>
-          <Rv d={0.14} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 5 }}>
-            {sd ? "آچر · نيرون ڪوٽ هال، قاسم آباد، حيدرآباد" : "Sunday · Nerunkot Hall, Qasimabad, Hyderabad"}
-          </Rv>
-          <Rv d={0.22}>
+          <Rv d={0.12} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 10, maxWidth: 310, marginInline: "auto" }}>{t.scratchTease}</Rv>
+          <Rv d={0.2}>
             <ScratchHeart t={t} lang={lang} onDone={() => { shower(20); setScratched(true); }} />
           </Rv>
-          <div className={"cd-wrap" + (scratched ? " show" : "")}>
+          <div className={"cd-wrap" + (scratched ? " show" : "")} aria-hidden={!scratched}>
             <div className="cd-inner">
-              <p className={"kicker cd-kicker" + (sd ? " sd-t" : "")}>{t.dotLabels.s3}</p>
+              <p className="big cd-big">27 December 2026</p>
+              <p className={"body cd-sub" + (sd ? " sd-t" : "")}>
+                {sd ? "آچر · نيرون ڪوٽ هال، قاسم آباد، حيدرآباد" : "Sunday · Nerunkot Hall, Qasimabad, Hyderabad"}
+              </p>
               <div className="cd">
                 {[cd.d, cd.h, cd.m, cd.s].map((v, i) => (
                   <div key={i}><b>{v}</b><small className={sd ? "sd-t" : ""}>{t.labels[i]}</small></div>

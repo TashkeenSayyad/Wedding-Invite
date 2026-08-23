@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 const HEART = "M150 251.25 C18.75 168.75 7.5 90 61.875 48.75 C110.625 13.125 150 54.375 150 86.25 C150 54.375 189.375 13.125 238.125 48.75 C292.5 90 281.25 168.75 150 251.25 Z";
-const REVEAL_AT = 0.8;
+const REVEAL_AT = 0.65; // fraction of the foil itself (not the whole canvas) that must be scratched away
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
 export default function ScratchHeart({ t, lang, onDone }) {
@@ -26,7 +26,7 @@ export default function ScratchHeart({ t, lang, onDone }) {
     const cv = cvRef.current;
     const W = 300, H = 270, dpr = Math.min(devicePixelRatio || 1, 2);
     cv.width = W * dpr; cv.height = H * dpr;
-    const ctx = cv.getContext("2d");
+    const ctx = cv.getContext("2d", { willReadFrequently: true });
     ctx.scale(dpr, dpr);
     const path = new Path2D(HEART);
 
@@ -59,7 +59,16 @@ export default function ScratchHeart({ t, lang, onDone }) {
     ctx.strokeStyle = "rgba(247,227,181,.9)"; ctx.lineWidth = 1.6;
     ctx.stroke(path); ctx.restore();
 
-    let drawing = false, strokes = 0, finished = false;
+    // progress is measured against the foil actually painted, so the ring starts empty
+    const opaqueCount = () => {
+      const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+      let n = 0;
+      for (let i = 3; i < d.length; i += 4 * 9) if (d[i] >= 40) n++;
+      return n;
+    };
+    const foilTotal = opaqueCount();
+
+    let drawing = false, strokes = 0, finished = false, last = null;
     const pos = (e) => {
       const r = cv.getBoundingClientRect();
       return [((e.clientX - r.left) / r.width) * W, ((e.clientY - r.top) / r.height) * H];
@@ -68,41 +77,56 @@ export default function ScratchHeart({ t, lang, onDone }) {
       ctx.save();
       ctx.clip(path);
       ctx.globalCompositeOperation = "destination-out";
-      ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 44; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath();
+      const [lx, ly] = last || [x, y];
+      ctx.moveTo(lx, ly); ctx.lineTo(x, y + 0.01); ctx.stroke();
       ctx.restore();
+      last = [x, y];
     };
-    const progress = () => {
-      const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
-      let clear = 0, tot = 0;
-      for (let i = 3; i < d.length; i += 4 * 9) { tot++; if (d[i] < 40) clear++; }
-      return clear / tot;
+    const check = () => {
+      if (finished || !foilTotal) return;
+      const p = 1 - opaqueCount() / foilTotal;
+      setPct(Math.min(1, p / REVEAL_AT));
+      if (p > REVEAL_AT) {
+        finished = true;
+        buzz([14, 40, 14, 40, 30]);
+        setDone(true);
+        setPct(1);
+        setHearts(Array.from({ length: 14 }, () => ({
+          hx: 90 + Math.random() * 120, hy: 90 + Math.random() * 120,
+          hdx: (Math.random() * 80 - 40) | 0, hr: (Math.random() * 60 - 30) | 0,
+          del: (Math.random() * 0.5).toFixed(2),
+        })));
+        onDoneRef.current && onDoneRef.current();
+      }
     };
-    const down = (e) => { drawing = true; const [x, y] = pos(e); scratch(x, y); buzz(6); };
+    const down = (e) => {
+      e.preventDefault();
+      drawing = true; last = null;
+      try { cv.setPointerCapture(e.pointerId); } catch {}
+      const [x, y] = pos(e); scratch(x, y); buzz(6);
+    };
     const move = (e) => {
       if (!drawing || finished) return;
       const [x, y] = pos(e); scratch(x, y);
-      if (++strokes % 4 === 0) {
-        const p = progress();
-        setPct(Math.min(1, p / REVEAL_AT));
-        if (p > REVEAL_AT) {
-          finished = true;
-          buzz([14, 40, 14, 40, 30]);
-          setDone(true);
-          setPct(1);
-          setHearts(Array.from({ length: 14 }, () => ({
-            hx: 90 + Math.random() * 120, hy: 90 + Math.random() * 120,
-            hdx: (Math.random() * 80 - 40) | 0, hr: (Math.random() * 60 - 30) | 0,
-            del: (Math.random() * 0.5).toFixed(2),
-          })));
-          onDoneRef.current && onDoneRef.current();
-        }
-      }
+      if (++strokes % 4 === 0) check();
     };
-    const up = () => (drawing = false);
+    const up = () => {
+      if (!drawing) return;
+      drawing = false; last = null;
+      check();
+    };
     cv.addEventListener("pointerdown", down);
     cv.addEventListener("pointermove", move);
     addEventListener("pointerup", up);
-    return () => { cv.removeEventListener("pointerdown", down); cv.removeEventListener("pointermove", move); removeEventListener("pointerup", up); };
+    addEventListener("pointercancel", up);
+    return () => {
+      cv.removeEventListener("pointerdown", down);
+      cv.removeEventListener("pointermove", move);
+      removeEventListener("pointerup", up);
+      removeEventListener("pointercancel", up);
+    };
   }, [lang]);
 
   return (
@@ -113,7 +137,7 @@ export default function ScratchHeart({ t, lang, onDone }) {
           <i />
           <small className={lang === "sd" ? "sd-t" : ""}>{done ? t.revealed : t.saveDate}</small>
         </div>
-        <canvas ref={cvRef} style={{ width: 300, height: 270 }} />
+        <canvas ref={cvRef} style={{ width: 300, height: 270 }} role="img" aria-label={t.scratchHint} />
         <svg className="heartring" viewBox="0 0 300 270">
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="300" y2="270" gradientUnits="userSpaceOnUse">

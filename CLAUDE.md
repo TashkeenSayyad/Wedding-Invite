@@ -68,6 +68,18 @@ The scratch heart specifically: it must survive re-renders. The countdown ticks 
 once silently repainted the canvas, wiping the user's scratch. `ScratchHeart`'s effect must not
 depend on anything that changes per-tick (`onDone` is held in a ref for this reason).
 
+More scratch-heart invariants (added in the scratch-card-improvements pass):
+- **`s3` must not show the date before scratching.** The big "27 December 2026" heading used to
+  sit right above the heart and spoiled the reveal; it now lives *inside* `.cd-wrap` (with the
+  venue line) and only appears after `onDone`. Don't re-add a visible date above the heart.
+- Scratch progress is measured against a baseline count of the foil's own opaque pixels taken
+  right after painting (`foilTotal`), so the ring starts at zero. The old whole-canvas ratio made
+  the ring start half-full because everything outside the heart is already transparent.
+  `REVEAL_AT` (0.65) is therefore a fraction of the *foil*, not the canvas.
+- Strokes are drawn as round-capped lines between pointer positions (not discrete circles), so a
+  fast swipe doesn't leave a dotted trail; `setPointerCapture` keeps the stroke alive when the
+  finger drifts off the canvas, and `pointercancel` is treated like pointer-up.
+
 ## Still open — ask the user, don't invent
 
 1. **`RSVP_PHONE` in `src/App.jsx` is empty.** Needs the family WhatsApp number, digits only
