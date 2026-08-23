@@ -1,14 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 const HEART = "M150 251.25 C18.75 168.75 7.5 90 61.875 48.75 C110.625 13.125 150 54.375 150 86.25 C150 54.375 189.375 13.125 238.125 48.75 C292.5 90 281.25 168.75 150 251.25 Z";
+const REVEAL_AT = 0.8;
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
 export default function ScratchHeart({ t, lang, onDone }) {
   const cvRef = useRef(null);
+  const ringRef = useRef(null);
+  const gradId = useId();
   const [done, setDone] = useState(false);
+  const [pct, setPct] = useState(0);
   const [hearts, setHearts] = useState([]);
   const onDoneRef = useRef(onDone);
   useEffect(() => { onDoneRef.current = onDone; });
+
+  useEffect(() => {
+    const ring = ringRef.current;
+    if (!ring) return;
+    const len = ring.getTotalLength();
+    ring.style.strokeDasharray = String(len);
+    ring.style.strokeDashoffset = String(len * (1 - pct));
+  }, [pct]);
 
   useEffect(() => {
     const cv = cvRef.current;
@@ -69,16 +81,21 @@ export default function ScratchHeart({ t, lang, onDone }) {
     const move = (e) => {
       if (!drawing || finished) return;
       const [x, y] = pos(e); scratch(x, y);
-      if (++strokes % 9 === 0 && progress() > 0.62) {
-        finished = true;
-        buzz([14, 40, 14, 40, 30]);
-        setDone(true);
-        setHearts(Array.from({ length: 14 }, () => ({
-          hx: 90 + Math.random() * 120, hy: 90 + Math.random() * 120,
-          hdx: (Math.random() * 80 - 40) | 0, hr: (Math.random() * 60 - 30) | 0,
-          del: (Math.random() * 0.5).toFixed(2),
-        })));
-        onDoneRef.current && onDoneRef.current();
+      if (++strokes % 4 === 0) {
+        const p = progress();
+        setPct(Math.min(1, p / REVEAL_AT));
+        if (p > REVEAL_AT) {
+          finished = true;
+          buzz([14, 40, 14, 40, 30]);
+          setDone(true);
+          setPct(1);
+          setHearts(Array.from({ length: 14 }, () => ({
+            hx: 90 + Math.random() * 120, hy: 90 + Math.random() * 120,
+            hdx: (Math.random() * 80 - 40) | 0, hr: (Math.random() * 60 - 30) | 0,
+            del: (Math.random() * 0.5).toFixed(2),
+          })));
+          onDoneRef.current && onDoneRef.current();
+        }
       }
     };
     const up = () => (drawing = false);
@@ -97,12 +114,25 @@ export default function ScratchHeart({ t, lang, onDone }) {
           <small className={lang === "sd" ? "sd-t" : ""}>{done ? t.revealed : t.saveDate}</small>
         </div>
         <canvas ref={cvRef} style={{ width: 300, height: 270 }} />
-        <svg className="heartring" viewBox="0 0 300 270"><path d={HEART} fill="none" stroke="rgba(247,227,181,.55)" strokeWidth="1.4" /></svg>
+        <svg className="heartring" viewBox="0 0 300 270">
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="300" y2="270" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#f7e3b5" />
+              <stop offset="1" stopColor="#c9a35e" />
+            </linearGradient>
+          </defs>
+          <path d={HEART} fill="none" stroke="rgba(247,227,181,.32)" strokeWidth="1.4" />
+          <path ref={ringRef} d={HEART} fill="none" stroke={`url(#${gradId})`} strokeWidth="2.4" strokeLinecap="round" className="heartring-fill" />
+        </svg>
         {hearts.map((h, i) => (
           <span key={i} className="mini-heart" style={{ "--hx": h.hx + "px", "--hy": h.hy + "px", "--hdx": h.hdx + "px", "--hr": h.hr + "deg", animationDelay: h.del + "s" }} />
         ))}
       </div>
-      {!done && <div className={"sc-hint" + (lang === "sd" ? " sd-t" : "")}>♡ {t.scratchHint}</div>}
+      {!done && (
+        <div className={"sc-hint" + (lang === "sd" ? " sd-t" : "")}>
+          ♡ {pct > 0.45 ? t.scratchAlmost : t.scratchHint}
+        </div>
+      )}
     </div>
   );
 }
