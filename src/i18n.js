@@ -49,7 +49,7 @@ export const T = {
     calendar: "Calendar", map: "Map", save: "Save card",
     dressKicker: "A gentle request", dressTitle: "Dress Code",
     encouraged: "Warmly encouraged",
-    colors: [["#7d1f3d","Plum"],["#12513f","Emerald"],["#1b3a63","Sapphire"],["#c9a35e","Gold"],["#e8dcc4","Ivory"]],
+    colors: [["#12513f","Emerald"],["#1b3a63","Sapphire"],["#c9a35e","Gold"],["#e8dcc4","Ivory"]],
     reserved: "Reserved with love",
     resChips: [["#c0182c","Red — the bride's own colour"],["#111","Black — brighter shades for men, please"]],
     dressNote: "Traditional or formal attire, please. Come dressed for photographs — there will be a great many of them.",
