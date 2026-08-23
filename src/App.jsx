@@ -105,8 +105,7 @@ export default function App() {
   const shareIt = async () => {
     buzz(10);
     const data = { title: "Rukhsati & Walima — Tashkeen & Anusha", text: t.shareText, url: location.href };
-    if (navigator.share) { try { await navigator.share(data); return; } catch {} }
-    open("https://wa.me/?text=" + encodeURIComponent(data.text + "\n" + data.url), "_blank");
+    if (navigator.share) { try { await navigator.share(data); } catch {} }
   };
   const rsvp = () => {
     buzz(10);
