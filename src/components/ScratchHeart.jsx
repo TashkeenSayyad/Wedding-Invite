@@ -1,0 +1,108 @@
+import { useEffect, useRef, useState } from "react";
+
+const HEART = "M150 251.25 C18.75 168.75 7.5 90 61.875 48.75 C110.625 13.125 150 54.375 150 86.25 C150 54.375 189.375 13.125 238.125 48.75 C292.5 90 281.25 168.75 150 251.25 Z";
+const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
+
+export default function ScratchHeart({ t, lang, onDone }) {
+  const cvRef = useRef(null);
+  const [done, setDone] = useState(false);
+  const [hearts, setHearts] = useState([]);
+  const onDoneRef = useRef(onDone);
+  useEffect(() => { onDoneRef.current = onDone; });
+
+  useEffect(() => {
+    const cv = cvRef.current;
+    const W = 300, H = 270, dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const path = new Path2D(HEART);
+
+    // gold foil cover, clipped to the heart
+    ctx.save();
+    ctx.clip(path);
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#8a6a34"); g.addColorStop(0.35, "#e9c87e");
+    g.addColorStop(0.5, "#f7e3b5"); g.addColorStop(0.65, "#d9b264"); g.addColorStop(1, "#8a6a34");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // brushed texture
+    ctx.globalAlpha = 0.16;
+    for (let i = 0; i < 90; i++) {
+      ctx.strokeStyle = Math.random() > 0.5 ? "#fff6dd" : "#7c5c26";
+      ctx.lineWidth = Math.random() * 1.2;
+      const y0 = Math.random() * H;
+      ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(W, y0 + (Math.random() * 22 - 11)); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // etched hint on the foil
+    ctx.fillStyle = "rgba(77,14,28,.85)";
+    ctx.font = "700 15px 'Cormorant SC', serif";
+    ctx.textAlign = "center";
+    ctx.fillText("✦", W / 2, 108);
+    ctx.font = "600 12px 'Cormorant SC', serif";
+    ctx.fillText(lang === "sd" ? "هتي کرچيو" : "SCRATCH HERE", W / 2, 132);
+    ctx.restore();
+    // heart outline on top
+    ctx.save();
+    ctx.strokeStyle = "rgba(247,227,181,.9)"; ctx.lineWidth = 1.6;
+    ctx.stroke(path); ctx.restore();
+
+    let drawing = false, strokes = 0, finished = false;
+    const pos = (e) => {
+      const r = cv.getBoundingClientRect();
+      return [((e.clientX - r.left) / r.width) * W, ((e.clientY - r.top) / r.height) * H];
+    };
+    const scratch = (x, y) => {
+      ctx.save();
+      ctx.clip(path);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    };
+    const progress = () => {
+      const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+      let clear = 0, tot = 0;
+      for (let i = 3; i < d.length; i += 4 * 9) { tot++; if (d[i] < 40) clear++; }
+      return clear / tot;
+    };
+    const down = (e) => { drawing = true; const [x, y] = pos(e); scratch(x, y); buzz(6); };
+    const move = (e) => {
+      if (!drawing || finished) return;
+      const [x, y] = pos(e); scratch(x, y);
+      if (++strokes % 9 === 0 && progress() > 0.62) {
+        finished = true;
+        buzz([14, 40, 14, 40, 30]);
+        setDone(true);
+        setHearts(Array.from({ length: 14 }, () => ({
+          hx: 90 + Math.random() * 120, hy: 90 + Math.random() * 120,
+          hdx: (Math.random() * 80 - 40) | 0, hr: (Math.random() * 60 - 30) | 0,
+          del: (Math.random() * 0.5).toFixed(2),
+        })));
+        onDoneRef.current && onDoneRef.current();
+      }
+    };
+    const up = () => (drawing = false);
+    cv.addEventListener("pointerdown", down);
+    cv.addEventListener("pointermove", move);
+    addEventListener("pointerup", up);
+    return () => { cv.removeEventListener("pointerdown", down); cv.removeEventListener("pointermove", move); removeEventListener("pointerup", up); };
+  }, [lang]);
+
+  return (
+    <div>
+      <div className={"scratch" + (done ? " done" : "")}>
+        <div className="heartbase">
+          <b>27 · 12 · 2026</b>
+          <i />
+          <small className={lang === "sd" ? "sd-t" : ""}>{done ? t.revealed : t.saveDate}</small>
+        </div>
+        <canvas ref={cvRef} style={{ width: 300, height: 270 }} />
+        <svg className="heartring" viewBox="0 0 300 270"><path d={HEART} fill="none" stroke="rgba(247,227,181,.55)" strokeWidth="1.4" /></svg>
+        {hearts.map((h, i) => (
+          <span key={i} className="mini-heart" style={{ "--hx": h.hx + "px", "--hy": h.hy + "px", "--hdx": h.hdx + "px", "--hr": h.hr + "deg", animationDelay: h.del + "s" }} />
+        ))}
+      </div>
+      {!done && <div className={"sc-hint" + (lang === "sd" ? " sd-t" : "")}>♡ {t.scratchHint}</div>}
+    </div>
+  );
+}
