@@ -19,7 +19,8 @@ function useCountdown() {
   };
 }
 
-function Sec({ id, tone, label, corners = [], children, refMap }) {
+// `foot` renders outside .inner so it can sit against the section edge, not the content block
+function Sec({ id, tone, label, corners = [], children, foot, refMap }) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -35,6 +36,7 @@ function Sec({ id, tone, label, corners = [], children, refMap }) {
       {corners.includes("br") && <i className="corner br" />}
       <i className="ajrak" />
       <div className="inner">{children}</div>
+      {foot}
       <i className="vig" /><i className="grain" />
     </section>
   );
@@ -48,7 +50,6 @@ export default function App() {
   const [lang, setLang] = useState("en");
   const [opened, setOpened] = useState(false);
   const [reader, setReader] = useState(false);
-  const [petals, setPetals] = useState([]);
   const [active, setActive] = useState("s1");
   const [prog, setProg] = useState(0);
   const [scratched, setScratched] = useState(false);
@@ -99,16 +100,6 @@ export default function App() {
     return () => { removeEventListener("deviceorientation", onOri); removeEventListener("pointermove", onMove); };
   }, [opened]);
 
-  const shower = (n = 30) => {
-    const ps = Array.from({ length: n }, (_, i) => ({
-      id: Date.now() + i, left: Math.random() * 100, sc: 0.6 + Math.random() * 0.8,
-      px: (Math.random() * 140 - 70) | 0, pr: (Math.random() * 900 - 450) | 0,
-      dur: (4.5 + Math.random() * 4).toFixed(1), del: (Math.random() * 1.6).toFixed(2),
-    }));
-    setPetals((old) => [...old, ...ps]);
-    setTimeout(() => setPetals((old) => old.filter((p) => !ps.includes(p))), 11000);
-  };
-
   const cd = useCountdown();
 
   const shareIt = async () => {
@@ -133,11 +124,7 @@ export default function App() {
 
   return (
     <>
-      <Intro t={t} lang={lang} guest={guest} onOpened={() => { setOpened(true); shower(matchMedia("(max-width:430px)").matches ? 22 : 34); scrollTo(0, 0); }} />
-
-      <div id="petals">{petals.map((p) => (
-        <i key={p.id} className="pet" style={{ left: p.left + "%", transform: `scale(${p.sc})`, "--px": p.px + "px", "--pr": p.pr + "deg", animationDuration: p.dur + "s", animationDelay: p.del + "s" }} />
-      ))}</div>
+      <Intro t={t} lang={lang} guest={guest} onOpened={() => { setOpened(true); scrollTo(0, 0); }} />
 
       <div className="thread"><i style={{ height: prog + "%" }} /></div>
 
@@ -162,19 +149,19 @@ export default function App() {
 
       <main>
         {/* 1 · card */}
-        <Sec id="s1" tone="wine" label={t.dotLabels.s1} refMap={refMap}>
+        <Sec id="s1" tone="wine" label={t.dotLabels.s1} refMap={refMap}
+          foot={<div className={"cue" + (sd ? " sd-t" : "")}>{t.scroll}
+            <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
+          </div>}>
           <Rv cls="cardwrap" style={{ cursor: "zoom-in" }}>
             <div onClick={() => { setReader(true); buzz(8); }} style={{ position: "absolute", inset: 0, zIndex: 6 }} />
-            <div className="aura" />
-            <div className="card3d" ref={card3dRef}><div className="cardimg" /><div className="shine" /></div>
+            <div className="card3d" ref={card3dRef}><div className="cardimg" /></div>
+            <i className="gilt" />
             <span className={"zoomhint" + (sd ? " sd-t" : "")}>{t.tapRead}</span>
           </Rv>
           <div className="names">
             <Rv d={0.25} cls="nm-sd">تشڪين ۽ انوشا</Rv>
             <Rv d={0.4} cls={"mini" + (sd ? " sd-t" : "")}>{t.daysToGo(cd.d)}</Rv>
-          </div>
-          <div className={"cue" + (sd ? " sd-t" : "")}>{t.scroll}
-            <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
           </div>
         </Sec>
 
@@ -195,7 +182,7 @@ export default function App() {
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.saveDate}</Rv>
           <Rv d={0.12} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 10, maxWidth: 310, marginInline: "auto" }}>{t.scratchTease}</Rv>
           <Rv d={0.2}>
-            <ScratchHeart t={t} lang={lang} onDone={() => { shower(20); setScratched(true); }} />
+            <ScratchHeart t={t} lang={lang} onDone={() => setScratched(true)} />
           </Rv>
           <div className={"cd-wrap" + (scratched ? " show" : "")} aria-hidden={!scratched}>
             <div className="cd-inner">
@@ -235,7 +222,7 @@ export default function App() {
           </div>
           <Rv d={0.44} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 16, fontStyle: sd ? "normal" : "italic", fontSize: 12.5 }}>{t.sweet}</Rv>
           <div className="acts">
-            <Rv d={0.5}><button className="btn" onClick={rsvp}>
+            <Rv d={0.5}><button className="btn solid" onClick={rsvp}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.rsvp}</span></button></Rv>
           </div>
@@ -315,7 +302,7 @@ export default function App() {
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>
           <div className="acts">
-            <Rv d={0.5}><button className="btn" onClick={shareIt}>
+            <Rv d={0.5}><button className="btn solid" onClick={shareIt}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 15V3M8 7l4-4 4 4" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.shareLong}</span></button></Rv>
           </div>

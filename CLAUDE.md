@@ -49,6 +49,33 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 **Known CSS trap:** a class named `.tl` will collide with `.corner.tl` and break corner
 positioning. This bug already happened once (a timeline used `.tl`; renamed to `.sched`).
 
+### Restraint pass (gold-contrast cleanup)
+
+The user asked for stronger gold contrast and for the showy effects to go — they read as
+unprofessional. **Do not reintroduce any of these:**
+
+- the gold bloom / burst / flying sparks and the full-screen flash when the envelope opens
+- the falling rose-petal shower (on open and on scratch-complete)
+- the pulsing "ping" ring on the wax seal, and the seal's spin-in entrance
+- the breathing crimson halo on the intro, the floating gold motes, the breathing `.aura`
+  behind the card, and the looping `.shine` glare sweep across it
+- the perpetual float/bob on the card
+- emoji: the ❤ burst on scratch-complete, the ♡ before the scratch hint, the ✦ on the foil
+  (the foil hint is now text between two etched hairlines)
+- blinking text and gold `box-shadow` glows on the thread, dots, timeline markers and heart ring
+
+The envelope still opens (flap, letter rise, cross-fade), the reveal-on-scroll and the
+device-tilt parallax stay — motion should come from real interaction, not decoration.
+
+Gold contrast is a system, not ad-hoc tints:
+- `--gold-line` (.62α) for structural hairlines, `--gold-hair` (.26α) for secondary inner rules,
+  `--gold-l` for small caps/kickers, `--gold-fill` (the leaf ramp) for display type and the
+  one filled call to action per section (`.btn.solid` — RSVP, share).
+- `--gold-fill` is applied via one grouped `background-clip:text` rule near the top of
+  `styles.css`; add new display type to that selector list rather than repeating the gradient.
+- A gold seam (`.sec::after`) separates sections; `.gilt` is the offset gold rule around the card.
+- The revealed scratch heart keeps a gilt outline (`.heartring-base`); only the progress ring fades.
+
 ## Testing convention
 
 Every change was verified in a real browser before shipping. Please keep this up:

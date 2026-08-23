@@ -10,7 +10,6 @@ export default function ScratchHeart({ t, lang, onDone }) {
   const gradId = useId();
   const [done, setDone] = useState(false);
   const [pct, setPct] = useState(0);
-  const [hearts, setHearts] = useState([]);
   const onDoneRef = useRef(onDone);
   useEffect(() => { onDoneRef.current = onDone; });
 
@@ -46,13 +45,18 @@ export default function ScratchHeart({ t, lang, onDone }) {
       ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(W, y0 + (Math.random() * 22 - 11)); ctx.stroke();
     }
     ctx.globalAlpha = 1;
-    // etched hint on the foil
+    // etched hint on the foil, set between two hairlines
     ctx.fillStyle = "rgba(77,14,28,.85)";
-    ctx.font = "700 15px 'Cormorant SC', serif";
-    ctx.textAlign = "center";
-    ctx.fillText("✦", W / 2, 108);
     ctx.font = "600 12px 'Cormorant SC', serif";
-    ctx.fillText(lang === "sd" ? "هتي کرچيو" : "SCRATCH HERE", W / 2, 132);
+    ctx.textAlign = "center";
+    const hint = lang === "sd" ? "هتي کرچيو" : "SCRATCH HERE";
+    ctx.fillText(hint, W / 2, 132);
+    const half = ctx.measureText(hint).width / 2;
+    ctx.strokeStyle = "rgba(77,14,28,.5)"; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - half - 26, 127.5); ctx.lineTo(W / 2 - half - 8, 127.5);
+    ctx.moveTo(W / 2 + half + 8, 127.5); ctx.lineTo(W / 2 + half + 26, 127.5);
+    ctx.stroke();
     ctx.restore();
     // heart outline on top
     ctx.save();
@@ -93,11 +97,6 @@ export default function ScratchHeart({ t, lang, onDone }) {
         buzz([14, 40, 14, 40, 30]);
         setDone(true);
         setPct(1);
-        setHearts(Array.from({ length: 14 }, () => ({
-          hx: 90 + Math.random() * 120, hy: 90 + Math.random() * 120,
-          hdx: (Math.random() * 80 - 40) | 0, hr: (Math.random() * 60 - 30) | 0,
-          del: (Math.random() * 0.5).toFixed(2),
-        })));
         onDoneRef.current && onDoneRef.current();
       }
     };
@@ -145,16 +144,13 @@ export default function ScratchHeart({ t, lang, onDone }) {
               <stop offset="1" stopColor="#c9a35e" />
             </linearGradient>
           </defs>
-          <path d={HEART} fill="none" stroke="rgba(247,227,181,.32)" strokeWidth="1.4" />
+          <path className="heartring-base" d={HEART} fill="none" strokeWidth="1.4" />
           <path ref={ringRef} d={HEART} fill="none" stroke={`url(#${gradId})`} strokeWidth="2.4" strokeLinecap="round" className="heartring-fill" />
         </svg>
-        {hearts.map((h, i) => (
-          <span key={i} className="mini-heart" style={{ "--hx": h.hx + "px", "--hy": h.hy + "px", "--hdx": h.hdx + "px", "--hr": h.hr + "deg", animationDelay: h.del + "s" }} />
-        ))}
       </div>
       {!done && (
         <div className={"sc-hint" + (lang === "sd" ? " sd-t" : "")}>
-          ♡ {pct > 0.45 ? t.scratchAlmost : t.scratchHint}
+          {pct > 0.45 ? t.scratchAlmost : t.scratchHint}
         </div>
       )}
     </div>
