@@ -215,6 +215,15 @@ body.lock{overflow:hidden;height:100svh}
   line-height:1;font-variant-numeric:tabular-nums}
 .cd small{display:block;margin-top:6px;font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-p);opacity:.6}
 .cd small.sd-t{font-size:10px;letter-spacing:0}
+.cd-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .8s var(--e)}
+.cd-wrap .cd-inner{overflow:hidden;min-height:0}
+.cd-wrap.show{grid-template-rows:1fr;margin-top:8px}
+.cd-kicker{opacity:0;transform:translateY(10px) scale(.97);filter:blur(4px);
+  transition:opacity .7s var(--e) .2s,transform .7s var(--e) .2s,filter .7s var(--e) .2s}
+.cd-wrap.show .cd-kicker{opacity:.75;transform:none;filter:none}
+.cd-wrap .cd{opacity:0;transform:translateY(14px) scale(.97);filter:blur(6px);margin-top:10px;
+  transition:opacity .7s var(--e) .3s,transform .7s var(--e) .3s,filter .7s var(--e) .3s}
+.cd-wrap.show .cd{opacity:1;transform:none;filter:none}
 
 /* ═ scratch heart ═ */
 .scratch{position:relative;width:300px;height:270px;margin:26px auto 0;touch-action:none}
@@ -226,11 +235,13 @@ body.lock{overflow:hidden;height:100svh}
 .heartbase small{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-p);opacity:.8}
 .heartbase small.sd-t{font-size:12px;letter-spacing:0}
 .heartbase i{width:60px;height:1px;background:var(--gold-t);margin:5px auto}
-.heartring{position:absolute;inset:0;pointer-events:none;z-index:3}
+.heartring{position:absolute;inset:0;pointer-events:none;z-index:3;transition:opacity .7s var(--e)}
+.heartring-fill{transition:stroke-dashoffset .2s linear;filter:drop-shadow(0 0 3px rgba(247,227,181,.5))}
+.scratch.done .heartring{opacity:0}
 .scratch canvas{position:absolute;inset:0;z-index:2;cursor:crosshair;transition:opacity .9s var(--e)}
 .scratch.done canvas{opacity:0;pointer-events:none}
 .sc-hint{margin-top:12px;font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-p);
-  opacity:.75;animation:blink 2.6s ease-in-out infinite}
+  opacity:.75;animation:blink 2.6s ease-in-out infinite;transition:opacity .3s}
 .sc-hint.sd-t{font-size:12px;letter-spacing:0}
 .mini-heart{position:absolute;left:var(--hx);top:var(--hy);width:12px;height:12px;pointer-events:none;z-index:5;
   animation:heartup 1.6s ease-out forwards}

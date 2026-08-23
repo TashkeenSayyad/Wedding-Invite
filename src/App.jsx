@@ -51,6 +51,7 @@ export default function App() {
   const [petals, setPetals] = useState([]);
   const [active, setActive] = useState("s1");
   const [prog, setProg] = useState(0);
+  const [scratched, setScratched] = useState(false);
   const t = T[lang];
   const sd = lang === "sd";
   const refMap = useRef({});
@@ -196,12 +197,19 @@ export default function App() {
           <Rv d={0.14} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 5 }}>
             {sd ? "آچر · نيرون ڪوٽ هال، قاسم آباد، حيدرآباد" : "Sunday · Nerunkot Hall, Qasimabad, Hyderabad"}
           </Rv>
-          <Rv d={0.22} cls="cd">
-            {[cd.d, cd.h, cd.m, cd.s].map((v, i) => (
-              <div key={i}><b>{v}</b><small className={sd ? "sd-t" : ""}>{t.labels[i]}</small></div>
-            ))}
+          <Rv d={0.22}>
+            <ScratchHeart t={t} lang={lang} onDone={() => { shower(20); setScratched(true); }} />
           </Rv>
-          <Rv d={0.34}><ScratchHeart t={t} lang={lang} onDone={() => shower(20)} /></Rv>
+          <div className={"cd-wrap" + (scratched ? " show" : "")}>
+            <div className="cd-inner">
+              <p className={"kicker cd-kicker" + (sd ? " sd-t" : "")}>{t.dotLabels.s3}</p>
+              <div className="cd">
+                {[cd.d, cd.h, cd.m, cd.s].map((v, i) => (
+                  <div key={i}><b>{v}</b><small className={sd ? "sd-t" : ""}>{t.labels[i]}</small></div>
+                ))}
+              </div>
+            </div>
+          </div>
         </Sec>
 
         {/* 4 · menu */}
