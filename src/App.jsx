@@ -67,7 +67,7 @@ export default function App() {
 
   useEffect(() => {
     if (!opened) return;
-    const ids = ["s1","s2","s3","s4","s5","s6","s7"];
+    const ids = ["s1","s2","s3","s4","s5","s6"];
     const io = new IntersectionObserver(
       (es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)),
       { threshold: 0.55 }
@@ -102,11 +102,6 @@ export default function App() {
 
   const cd = useCountdown();
 
-  const shareIt = async () => {
-    buzz(10);
-    const data = { title: "Rukhsati & Walima — Tashkeen & Anusha", text: t.shareText, url: location.href };
-    if (navigator.share) { try { await navigator.share(data); } catch {} }
-  };
   const rsvp = () => {
     buzz(10);
     open("https://wa.me/" + RSVP_PHONE + "?text=" + encodeURIComponent(t.rsvpMsg(guest)), "_blank");
@@ -119,7 +114,7 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  const dotIds = ["s1","s2","s3","s4","s5","s6","s7"];
+  const dotIds = ["s1","s2","s3","s4","s5","s6"];
 
   return (
     <>
@@ -135,10 +130,6 @@ export default function App() {
 
       <div className={"topbar" + (opened ? " show" : "")}>
         <button className="pill" onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
-        <button className="pill" onClick={shareIt}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 15V3M8 7l4-4 4 4" /></svg>
-          <span className={sd ? "sd-t" : ""}>{t.share}</span>
-        </button>
       </div>
 
       <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}>
@@ -197,37 +188,8 @@ export default function App() {
           </div>
         </Sec>
 
-        {/* 4 · menu */}
-        <Sec id="s4" tone="wine" label={t.dotLabels.s4} corners={["tl","br"]} refMap={refMap}>
-          <Rv cls="sdt" style={{ fontSize: "clamp(30px,8.6vw,42px)" }}>دسترخوان</Rv>
-          {!sd && <Rv d={0.08} cls="sub-caps">The Menu</Rv>}
-          <Rv d={0.1} cls="band" />
-          <Rv d={0.14} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: -4 }}>{t.menuIntro}</Rv>
-          <Rv d={0.18} cls="course">
-            <h4 className={sd ? "sd-t" : ""}>{t.toBegin}</h4>
-            <p className={sd ? "sd-t" : ""}>{t.starters}</p>
-          </Rv>
-          <Rv d={0.22} cls={"course-h" + (sd ? " sd-t" : "")}>{t.chooseMain}</Rv>
-          <div className="menu">
-            {t.dishes.map(([name, desc], i) => (
-              <Rv key={i} d={0.26 + i * 0.06} cls="dish">
-                <i className="ajrak" />
-                <span className="no">{["I","II","III"][i]}</span>
-                <h3>{name}</h3>
-                <p className={sd ? "sd-t" : ""}>{desc}</p>
-              </Rv>
-            ))}
-          </div>
-          <Rv d={0.44} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 16, fontStyle: sd ? "normal" : "italic", fontSize: 12.5 }}>{t.sweet}</Rv>
-          <div className="acts">
-            <Rv d={0.5}><button className="btn solid" onClick={rsvp}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
-              <span className={sd ? "sd-t" : ""}>{t.rsvp}</span></button></Rv>
-          </div>
-        </Sec>
-
-        {/* 5 · schedule */}
-        <Sec id="s5" tone="deep" label={t.dotLabels.s5} corners={["tr","bl"]} refMap={refMap}>
+        {/* 4 · schedule */}
+        <Sec id="s4" tone="wine" label={t.dotLabels.s4} corners={["tr","bl"]} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.schedKicker}</Rv>
           <Rv d={0.05} cls={"script h-lg" + (sd ? " sd-t" : "")}>{sd ? t.schedTitle : "Schedule"}</Rv>
           <Rv d={0.1} cls="band" />
@@ -253,6 +215,9 @@ export default function App() {
             <p className={sd ? "sd-t" : ""}><b>{t.travelB}</b>{t.travel}</p>
           </Rv>
           <div className="acts">
+            <button className="btn solid" onClick={rsvp}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
+              <span className={sd ? "sd-t" : ""}>{t.rsvp}</span></button>
             <button className="btn" onClick={ics}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.calendar}</span></button>
@@ -265,8 +230,8 @@ export default function App() {
           </div>
         </Sec>
 
-        {/* 6 · dress code */}
-        <Sec id="s6" tone="wine" label={t.dotLabels.s6} corners={["tr","bl"]} refMap={refMap}>
+        {/* 5 · dress code */}
+        <Sec id="s5" tone="wine" label={t.dotLabels.s5} corners={["tr","bl"]} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.dressKicker}</Rv>
           <Rv d={0.05} cls={"h-caps" + (sd ? " sd-t" : "")}>{t.dressTitle}</Rv>
           <Rv d={0.1} cls="band" />
@@ -291,19 +256,14 @@ export default function App() {
           <Rv d={0.32} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontStyle: sd ? "normal" : "italic" }}>{t.dressNote}</Rv>
         </Sec>
 
-        {/* 7 · closing */}
-        <Sec id="s7" tone="deep" label={t.dotLabels.s7} corners={["tl","tr","bl","br"]} refMap={refMap}>
+        {/* 6 · closing */}
+        <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr","bl","br"]} refMap={refMap}>
           <Rv cls="star" />
           {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: 17, marginTop: 14 }}>{t.closeSd}</Rv>}
           <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "clamp(26px,7vw,34px)" : "clamp(28px,7.6vw,36px)" }}>{t.closeTitle}</Rv>
           <Rv d={0.26} cls="band" />
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>
-          <div className="acts">
-            <Rv d={0.5}><button className="btn solid" onClick={shareIt}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 15V3M8 7l4-4 4 4" /></svg>
-              <span className={sd ? "sd-t" : ""}>{t.shareLong}</span></button></Rv>
-          </div>
         </Sec>
       </main>
     </>

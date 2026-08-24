@@ -14,10 +14,15 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 - **Bride:** Anusha, daughter of Barkat Ali & Mumtaz
 - **Date:** Sunday, 27 December 2026
 - **Venue:** Nerunkot Hall, Qasimabad, Hyderabad, Sindh, Pakistan
-- **Schedule:** 7:00 PM guests arrive · 8:00 PM bride & groom · 9:00 PM dinner · 10:30 PM Rukhsati · 12:00 AM evening concludes
+- **Schedule:** 7:00 PM guests arrive · 8:00 PM entrance of the bride & groom · 9:00 PM dinner ·
+  10:30 PM rasms · 12:00 AM Rukhsati (Rukhsati is the final event of the night — the rasms happen
+  before it, not after)
 - Parking is directly at Nerunkot Hall
 - The nikkah has **already happened** — do not add nikkah details
 - There is **no mehndi event** on this invitation — it was deliberately removed
+- There is **no printed menu** on this invitation — the menu section was removed; do not re-add it
+- There is **no share button** on this invitation — it was removed from both the topbar and the
+  closing section; RSVP is now the sole call-to-action button
 
 ## Hard rules
 
@@ -43,8 +48,11 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   so it matches exactly. Corners sit flush at section edges and bloom in on scroll.
 - The ajrak background is a custom SVG *kakar jaal* — eight-petal rosettes on a lattice.
   An earlier generic star-grid version was rejected as inauthentic.
-- 7 sections: `s1` card · `s2` verse · `s3` countdown+scratch heart · `s4` menu · `s5` schedule ·
-  `s6` dress code · `s7` closing.
+- 6 sections: `s1` card · `s2` verse · `s3` countdown+scratch heart · `s4` schedule ·
+  `s5` dress code · `s6` closing. (There used to be a `s4` menu section between the countdown
+  and schedule — it was removed along with the share button; RSVP moved into `s4` schedule's
+  `.acts` row as the solid CTA, and `s4` switched from `deep` to `wine` tone to keep the
+  wine/deep alternation from running three `deep` sections in a row.)
 
 **Known CSS trap:** a class named `.tl` will collide with `.corner.tl` and break corner
 positioning. This bug already happened once (a timeline used `.tl`; renamed to `.sched`).
@@ -70,7 +78,7 @@ device-tilt parallax stay — motion should come from real interaction, not deco
 Gold contrast is a system, not ad-hoc tints:
 - `--gold-line` (.62α) for structural hairlines, `--gold-hair` (.26α) for secondary inner rules,
   `--gold-l` for small caps/kickers, `--gold-fill` (the leaf ramp) for display type and the
-  one filled call to action per section (`.btn.solid` — RSVP, share).
+  one filled call to action per section (`.btn.solid` — RSVP is the only one now).
 - `--gold-fill` is applied via one grouped `background-clip:text` rule near the top of
   `styles.css`; add new display type to that selector list rather than repeating the gradient.
 - A gold seam (`.sec::after`) separates sections; `.gilt` is the offset gold rule around the card.
@@ -112,11 +120,11 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 1. **`RSVP_PHONE` in `src/App.jsx` is empty.** Needs the family WhatsApp number, digits only
    (e.g. `"923001234567"`). Until then RSVP opens WhatsApp's contact picker.
 2. **Couple photograph** — `s3` has a placeholder frame ("Photograph to follow").
-3. **Menu is invented.** Chicken corn soup starter, Sindhi Biryani / Mutton Pulao / Vegetable
-   Handi mains — all placeholders awaiting the real menu.
-4. **Native Sindhi proofread** — outstanding, especially the timing notice.
-5. **"The verse that was recited at our nikkah"** on `s2` — the user has not confirmed this is
+3. **Native Sindhi proofread** — outstanding, especially the timing notice.
+4. **"The verse that was recited at our nikkah"** on `s2` — the user has not confirmed this is
    factually true. Verify before it goes out.
+5. **What the "rasms" at 10:30 PM are** — the schedule just says "Rasms" / "رسمون" for now;
+   ask the user if they want the specific rituals named.
 
 ## Nice-to-haves discussed but not built
 
