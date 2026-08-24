@@ -68,7 +68,6 @@ export const T = {
     scroll: "هيٺ ڏسجو",
     tapRead: "پڙهڻ لاءِ ڇهجو",
     tapClose: "بند ڪرڻ لاءِ ڇهجو",
-    daysToGo: d => (d > 0 ? `${d} ڏينهن باقي` : "اڄ"),
     verseKicker: "قرآن شريف جو پيغام",
     translit: "Wa min āyātihi an khalaqa lakum min anfusikum azwājan li-taskunū ilayhā, wa jaʿala baynakum mawaddatan wa raḥmah",
     verse: "۽ سندس نشانين مان هڪ هيءَ به آهي ته هن اوهان لاءِ اوهان مان ئي ساٿي پيدا ڪيا، ته جيئن اوهين هڪ ٻئي وٽ سُک ۽ سڪون ماڻيو، ۽ اوهان جي وچ ۾ محبت ۽ رحمت رکيائين.",
