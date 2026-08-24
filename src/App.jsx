@@ -160,7 +160,6 @@ export default function App() {
           </Rv>
           <div className="names">
             <Rv d={0.25} cls="nm-sd">تشڪين ۽ انوشا</Rv>
-            <Rv d={0.4} cls={"mini" + (sd ? " sd-t" : "")}>{t.daysToGo(cd.d)}</Rv>
           </div>
         </Sec>
 
