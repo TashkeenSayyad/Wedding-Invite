@@ -159,7 +159,7 @@ export default function App() {
             <span className={"zoomhint" + (sd ? " sd-t" : "")}>{t.tapRead}</span>
           </Rv>
           <div className="names">
-            <Rv d={0.25} cls="nm-sd">تشڪين ۽ انوشا</Rv>
+            <Rv d={0.25} cls="nm-sd">تاشقين ۽ انوشا</Rv>
           </div>
         </Sec>
 
