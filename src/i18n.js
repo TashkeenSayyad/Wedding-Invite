@@ -11,7 +11,7 @@ export const T = {
     translit: "Wa min āyātihi an khalaqa lakum min anfusikum azwājan li-taskunū ilayhā, wa jaʿala baynakum mawaddatan wa raḥmah",
     verse: "“And of His signs is that He created for you mates from among yourselves, that you may find tranquility in them — and He placed between you love and mercy.”",
     verseRef: "Surah Ar-Rum · 30 : 21",
-    verseNote: "The verse that was recited at our nikkah.",
+    verseNote: "",
     saveDate: "Save the date",
     scratchTease: "We have tucked the date beneath the gold — scratch the heart to set it free.",
     scratchHint: "Scratch the heart",
