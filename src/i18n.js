@@ -28,6 +28,17 @@ export const T = {
     past: "Thank you for being beside us",
     pastNote: "You made the evening what it was. We carry your duas with us into everything that follows.",
     rsvp: "RSVP on WhatsApp",
+    rsvpTitle: "Will you be joining us?",
+    rsvpYes: "Joyfully attending",
+    rsvpNo: "Unable to attend",
+    rsvpCount: "Including you, how many will come?",
+    rsvpWho: "Who is coming?",
+    rsvpWhoHint: "One name per line — it helps us seat everyone together.",
+    rsvpSend: "Send on WhatsApp",
+    rsvpBack: "Back",
+    rsvpClose: "Close",
+    rsvpSent: "Thank you — your reply is on its way.",
+    rsvpOne: "person", rsvpMany: "people",
     schedKicker: "Sunday, 27 December 2026",
     schedTitle: "Schedule",
     sched: [
@@ -56,7 +67,16 @@ export const T = {
     closeNote: "Your presence is the blessing we are asking for. We cannot wait to begin this chapter with you beside us.",
     closeGuest: n => `Written for you, ${n}.`,
     dotLabels: { s1:"Invitation", s2:"Verse", s3:"Countdown", s4:"Schedule", s5:"Dress", s6:"Farewell" },
-    rsvpMsg: g => `Assalamu alaikum! ${g || "We"} will be attending the Rukhsati & Walima of Tashkeen & Anusha on 27 December 2026.`,
+    // One shape for every reply, so the family can scan a WhatsApp thread and count heads.
+    rsvpMsgYes: (g, count, names) =>
+      `Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.\n` +
+      `${g ? "Invitation: " + g + "\n" : ""}` +
+      `Attending: yes\nHow many: ${count}\n` +
+      `${names.length ? "Names: " + names.join(", ") : "Names: not given"}`,
+    rsvpMsgNo: (g) =>
+      `Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.\n` +
+      `${g ? "Invitation: " + g + "\n" : ""}` +
+      `Attending: no\nOur prayers and love are with you both.`,
   },
   sd: {
     bismillah: "بسم الله الرحمٰن الرحيم",
@@ -87,6 +107,17 @@ export const T = {
     past: "اوهان جي ساٿ لاءِ ٿورا",
     pastNote: "اوهان جي اچڻ سان ئي اها شام سهڻي ٿي. اوهان جون دعائون اسان سان گڏ آهن.",
     rsvp: "واٽس ايپ تي ٻڌائجو",
+    rsvpTitle: "ڇا اوهين اسان سان گڏ هوندا؟",
+    rsvpYes: "خوشيءَ سان اينداسين",
+    rsvpNo: "هن ڀيري اچي نه سگهنداسين",
+    rsvpCount: "پاڻ سميت ڪيترا ڄڻا ايندا؟",
+    rsvpWho: "ڪير ڪير ايندو؟",
+    rsvpWhoHint: "هر سِٽ ۾ هڪ نالو — ان سان سڀني کي گڏ ويهاري سگهنداسين.",
+    rsvpSend: "واٽس ايپ تي موڪلجو",
+    rsvpBack: "واپس",
+    rsvpClose: "بند ڪجو",
+    rsvpSent: "مهرباني — اوهان جو جواب اماڻجي رهيو آهي.",
+    rsvpOne: "ڄڻو", rsvpMany: "ڄڻا",
     schedKicker: "آچر، 27 ڊسمبر 2026",
     schedTitle: "ڏينهن جي ترتيب",
     sched: [
@@ -115,7 +146,15 @@ export const T = {
     closeNote: "اوهان جو اچڻ ئي اسان لاءِ سڀ کان وڏي دعا آهي. دل سان انتظار اٿئون ته هيءَ نئين شروعات اوهان سان گڏ ڪريون.",
     closeGuest: n => `خاص اوهان لاءِ، ${n}.`,
     dotLabels: { s1:"دعوت", s2:"آيت", s3:"ڳڻپ", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
-    rsvpMsg: g => `السلام عليڪم! ${g || "اسان"} تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي ۾ 27 ڊسمبر 2026 تي شرڪت ڪندا.`,
+    rsvpMsgYes: (g, count, names) =>
+      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ جواب، 27 ڊسمبر 2026.\n` +
+      `${g ? "دعوت: " + g + "\n" : ""}` +
+      `اچڻ: ها\nڪيترا ڄڻا: ${count}\n` +
+      `${names.length ? "نالا: " + names.join("، ") : "نالا: نه ڏنا ويا"}`,
+    rsvpMsgNo: (g) =>
+      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ جواب، 27 ڊسمبر 2026.\n` +
+      `${g ? "دعوت: " + g + "\n" : ""}` +
+      `اچڻ: هن ڀيري نه\nاسان جون دعائون اوهان ٻنهي سان گڏ آهن.`,
   },
 };
 export const ARABIC_VERSE =

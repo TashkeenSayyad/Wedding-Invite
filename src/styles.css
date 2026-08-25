@@ -26,11 +26,11 @@ body.lock{overflow:hidden;height:100svh}
 .sd-t{font-family:var(--fsd);letter-spacing:0;text-transform:none;line-height:1.9}
 /* leafed gold — a real metal ramp on the display type instead of one flat tint.
    `color` stays set on each rule, so anything without background-clip still reads gold. */
-.script,.h-caps,.big,.nm-sd,.heartbase b{
+.script,.h-caps,.big,.nm-sd,.heartbase b,.rsvp-q{
   background:var(--gold-fill);-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent}
 @supports not ((-webkit-background-clip:text) or (background-clip:text)){
-  .script,.h-caps,.big,.nm-sd,.heartbase b{-webkit-text-fill-color:currentColor;background:none}}
+  .script,.h-caps,.big,.nm-sd,.heartbase b,.rsvp-q{-webkit-text-fill-color:currentColor;background:none}}
 
 .corner{position:absolute;width:min(42vw,168px);aspect-ratio:1;
   background:url(./assets/orn-corner.webp) no-repeat center/contain;opacity:0;
@@ -307,6 +307,62 @@ body.lock{overflow:hidden;height:100svh}
 @media(hover:hover){.btn.solid:hover{background:linear-gradient(180deg,#fffaea,#f6dda6 40%,#d6b070 74%,#b8925a);
   border-color:#fff;color:var(--wine3)}}
 
+/* ═ rsvp sheet ═
+   A WhatsApp link cannot carry a headcount, so the reply is composed here first. Sits above the
+   language pill and below the card reader. */
+.rsvp-veil{position:fixed;inset:0;z-index:350;display:grid;align-items:end;justify-items:center;
+  background:rgba(14,2,7,.9);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  animation:rsvpIn .3s var(--e)}
+@keyframes rsvpIn{from{opacity:0}}
+.rsvp-sheet{position:relative;width:100%;max-width:440px;overflow:hidden;
+  padding:26px 22px calc(20px + env(safe-area-inset-bottom));
+  background:radial-gradient(120% 90% at 50% 0%,var(--wine2),var(--wine3) 58%,var(--wine4));
+  border:1px solid var(--gold-line);border-bottom:0;border-radius:14px 14px 0 0;
+  box-shadow:0 -20px 60px rgba(0,0,0,.7);animation:rsvpUp .42s var(--e)}
+@keyframes rsvpUp{from{transform:translateY(26px)}}
+.rsvp-sheet .ajrak{opacity:.06}
+.rsvp-in{position:relative;z-index:2;text-align:center}
+.rsvp-q{font-family:var(--fc);font-size:clamp(20px,5.6vw,25px);letter-spacing:.06em;
+  color:var(--gold-p);margin-top:8px}
+.rsvp-q.sd-t{font-family:var(--fsd);font-size:clamp(16px,4.4vw,19px);letter-spacing:0;line-height:2}
+.rsvp-sheet .band{margin:14px auto 20px}
+.rsvp-pick{display:grid;gap:10px;justify-items:center}
+.rsvp-pick .btn{width:100%;max-width:290px;justify-content:center}
+.rsvp-lab{display:block;margin:18px 0 9px;font-size:9px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gold-l);opacity:.95}
+.rsvp-lab.sd-t{font-size:12.5px;letter-spacing:0}
+.rsvp-step{display:flex;align-items:center;justify-content:center;gap:14px}
+.rsvp-step button{width:40px;height:40px;flex:none;border:1px solid var(--gold-line);
+  background:rgba(247,227,181,.06);color:var(--gold-p);font-family:var(--fc);font-size:21px;
+  line-height:1;cursor:pointer;transition:background .3s var(--e),border-color .3s var(--e)}
+.rsvp-step button:disabled{opacity:.32;cursor:default}
+@media(hover:hover){.rsvp-step button:not(:disabled):hover{background:rgba(247,227,181,.16);border-color:var(--gold-p)}}
+.rsvp-step output{display:grid;gap:3px;min-width:86px}
+.rsvp-step b{font-family:var(--fc);font-size:30px;font-weight:700;color:var(--gold-p);line-height:1;
+  font-variant-numeric:tabular-nums}
+.rsvp-step small{font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-l);opacity:.85}
+.rsvp-step small.sd-t{font-size:11px;letter-spacing:0}
+.rsvp-names{width:100%;resize:vertical;padding:11px 13px;border:1px solid var(--gold-line);
+  background:rgba(247,227,181,.05);color:var(--chalk);font-family:var(--fs);font-size:14px;
+  line-height:1.9;text-align:center}
+.rsvp-names.sd-t{font-family:var(--fsd);direction:rtl;line-height:2.2;font-size:13px}
+.rsvp-names:focus{outline:none;border-color:var(--gold-p)}
+.rsvp-hint{margin-top:8px;font-size:11px;color:var(--chalk-x);font-weight:300;line-height:1.6}
+.rsvp-hint.sd-t{font-size:12px;line-height:2}
+.rsvp-acts{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:20px}
+.rsvp-x{display:block;margin:16px auto 0;border:0;background:none;padding:6px 10px;cursor:pointer;
+  font-family:var(--fs);font-size:9px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--gold-p);opacity:.7}
+.rsvp-x.sd-t{font-size:12px;letter-spacing:0}
+/* the textarea already answers focus with its border, so it is left out here — an outline on top
+   of that reads as a doubled rule */
+.rsvp-step button:focus-visible,.rsvp-x:focus-visible{outline:2px solid var(--gold-p);outline-offset:3px}
+@media(min-width:620px){
+  .rsvp-veil{align-items:center}
+  .rsvp-sheet{border-bottom:1px solid var(--gold-line);border-radius:14px;
+    padding-bottom:22px;box-shadow:0 30px 80px rgba(0,0,0,.75)}
+}
+
 #reader{position:fixed;inset:0;z-index:400;display:none;place-items:center;padding:14px;
   background:rgba(14,2,7,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);cursor:zoom-out}
 #reader.on{display:grid;animation:rdIn .35s var(--e)}
@@ -340,7 +396,7 @@ body.lock{overflow:hidden;height:100svh}
   html{scroll-snap-type:none}
   body{background:#fff;color:#2b1016;overflow:visible}
   body.lock{overflow:visible;height:auto}
-  #intro,#reader,.thread,.dots,.topbar,.cue,.zoomhint,.acts,.sc-hint,.grain,.vig,.ajrak,.corner,.star,.heartring{display:none!important}
+  #intro,#reader,.rsvp-veil,.thread,.dots,.topbar,.cue,.zoomhint,.acts,.sc-hint,.grain,.vig,.ajrak,.corner,.star,.heartring{display:none!important}
   .sec{min-height:0;page-break-inside:avoid;break-inside:avoid;padding:0 0 14mm;background:none!important;
     display:block;text-align:center}
   .sec::after{display:none}

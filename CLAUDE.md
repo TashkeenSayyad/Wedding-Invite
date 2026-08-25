@@ -141,6 +141,31 @@ there would be a nuisance.
   **wine modules on a pale gold ground**, not gold on wine — inverted polarity is not something
   every phone camera will read.
 
+## The RSVP is composed, not free-text
+
+The RSVP button opens `src/components/Rsvp.jsx` rather than jumping straight to WhatsApp. A
+`wa.me` link cannot carry a headcount and free-text replies arrive in twenty different shapes,
+so the sheet asks the two questions that matter and hands WhatsApp a message with the same shape
+every time:
+
+```
+Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.
+Invitation: Ahmed Memon        ← only when the link carried ?to=
+Attending: yes
+How many: 3
+Names: Ahmed Memon, Fatima, Zoya
+```
+
+Declines get the same header and `Attending: no`, with no headcount asked for. **Keep the four
+labels stable** — the whole point is that the family can scan a thread and count.
+
+Still no backend: nothing leaves the phone until the guest presses send, so it works offline
+like the rest of the page. The count and the names are allowed to disagree (four coming, two
+named, is a real answer about children) — do not "fix" that by forcing one to match the other.
+
+The sheet must never grow taller than the viewport; it has nowhere to scroll. If a string gets
+longer, check it again at 360px in Sindhi, which is the tightest case.
+
 ## The countdown has three phases
 
 `useCountdown` returns `phase`, and s3 renders one of three things:
@@ -210,9 +235,7 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
    Restore both, or neither.
 5. **What the "rasms" at 10:30 PM are** — the schedule just says "Rasms" / "رسمون" for now;
    ask the user if they want the specific rituals named.
-6. **RSVP replies are unstructured.** The WhatsApp link cannot give a headcount. A form behind
-   the same button would, but nobody has picked one.
-7. **Cosmetic:** on `s6` the Nastaliq descenders of `دعائن سان` touch the ascenders of
+6. **Cosmetic:** on `s6` the Nastaliq descenders of `دعائن سان` touch the ascenders of
    "With love and prayers" below it — the two line boxes are exactly adjacent. Pre-existing;
    a small `margin-bottom` on `.sdt` fixes it, but it is the user's typography to change.
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { T, ARABIC_VERSE } from "./i18n.js";
 import Intro from "./components/Intro.jsx";
 import ScratchHeart from "./components/ScratchHeart.jsx";
+import Rsvp from "./components/Rsvp.jsx";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 const RSVP_PHONE = ""; // family WhatsApp number, digits only e.g. "923001234567"
@@ -116,6 +117,7 @@ export default function App() {
   const [active, setActive] = useState("s1");
   const [prog, setProg] = useState(0);
   const [scratched, setScratched] = useState(false);
+  const [rsvpOpen, setRsvpOpen] = useState(false);
   const t = T[lang];
   const sd = lang === "sd";
   const refMap = useRef({});
@@ -171,10 +173,7 @@ export default function App() {
 
   const cd = useCountdown();
 
-  const rsvp = () => {
-    buzz(10);
-    open("https://wa.me/" + RSVP_PHONE + "?text=" + encodeURIComponent(t.rsvpMsg(guest)), "_blank");
-  };
+  const rsvp = () => { buzz(10); setRsvpOpen(true); };
   const ics = () => {
     buzz(10);
     // Times go out in UTC (Pakistan is a flat UTC+5): 7:00 PM PKT is 14:00Z, midnight is 19:00Z.
@@ -227,6 +226,10 @@ export default function App() {
         <button className="pill" onPointerEnter={loadSindhiFonts}
           onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
       </div>
+
+      {rsvpOpen && (
+        <Rsvp t={t} lang={lang} guest={guest} phone={RSVP_PHONE} onClose={() => setRsvpOpen(false)} />
+      )}
 
       <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}>
         <span className={"x" + (sd ? " sd-t" : "")}>{t.tapClose}</span>
