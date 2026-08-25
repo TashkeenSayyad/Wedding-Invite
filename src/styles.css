@@ -20,11 +20,11 @@ body.lock{overflow:hidden;height:100svh}
 .sd-t{font-family:var(--fsd);letter-spacing:0;text-transform:none;line-height:1.9}
 /* leafed gold — a real metal ramp on the display type instead of one flat tint.
    `color` stays set on each rule, so anything without background-clip still reads gold. */
-.script,.h-caps,.big,.nm-sd,.heartbase b,.dish .no{
+.script,.h-caps,.big,.nm-sd,.heartbase b{
   background:var(--gold-fill);-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent}
 @supports not ((-webkit-background-clip:text) or (background-clip:text)){
-  .script,.h-caps,.big,.nm-sd,.heartbase b,.dish .no{-webkit-text-fill-color:currentColor;background:none}}
+  .script,.h-caps,.big,.nm-sd,.heartbase b{-webkit-text-fill-color:currentColor;background:none}}
 
 .corner{position:absolute;width:min(42vw,168px);aspect-ratio:1;
   background:url(./assets/orn-corner.webp) no-repeat center/contain;opacity:0;
@@ -234,30 +234,6 @@ body.lock{overflow:hidden;height:100svh}
 .frame em{font-family:var(--fi);font-size:32px;color:var(--gold-p);font-style:normal;opacity:.75}
 .frame small{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-p);opacity:.6}
 .frame small.sd-t{font-size:11px;letter-spacing:0}
-
-/* menu */
-.course{margin:14px auto 0;max-width:360px;padding:13px 16px;border:1px dashed var(--gold-line);background:rgba(247,227,181,.04)}
-.course h4,.course-h{font-family:var(--fc);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-p);font-weight:600}
-.course h4.sd-t,.course-h.sd-t{font-size:15px;letter-spacing:0}
-.course p{margin-top:7px;font-size:12.5px;color:var(--chalk-d);font-style:italic;line-height:1.7}
-.course p.sd-t{font-style:normal;line-height:2}
-.course-h{margin-top:22px}
-.menu{display:grid;gap:11px;margin-top:12px;text-align:left}
-.dish{position:relative;padding:15px 16px 15px 52px;border:1px solid var(--gold-line);overflow:hidden;
-  background:linear-gradient(160deg,rgba(247,227,181,.07),transparent 72%)}
-.dish .ajrak{opacity:.05}
-.dish>*{position:relative;z-index:2}
-.dish .no{position:absolute;left:15px;top:50%;transform:translateY(-50%);z-index:2;
-  font-family:var(--fc);font-size:18px;font-weight:700;color:var(--gold-p);}
-.dish::before{content:'';position:absolute;left:43px;top:14px;bottom:14px;width:1px;
-  background:linear-gradient(180deg,transparent,var(--gold-line),transparent)}
-/* gold edge on the outside of each course */
-.dish::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;z-index:2;
-  background:linear-gradient(180deg,transparent,var(--gold-p) 22%,var(--gold-d) 78%,transparent)}
-.dish h3{font-family:var(--fc);font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk);font-weight:600}
-.dish p{margin-top:4px;font-size:12.5px;color:var(--chalk-x);font-style:italic;line-height:1.55}
-.dish p.sd-t{font-style:normal;line-height:1.9}
-.sub-caps{font-family:var(--fc);letter-spacing:.32em;font-size:13.5px;text-transform:uppercase;color:var(--chalk-d);font-weight:600}
 
 /* schedule */
 .sched{list-style:none;margin:18px auto 0;max-width:330px;text-align:left;position:relative;padding-left:22px}
