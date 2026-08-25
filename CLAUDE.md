@@ -248,15 +248,30 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 - **`s3` must not show the date before scratching.** The big "27 December 2026" heading used to
   sit right above the heart and spoiled the reveal; it now lives *inside* `.cd-wrap` (with the
   venue line) and only appears after `onDone`. Don't re-add a visible date above the heart.
-- **Nor may the card on `s1`.** The artwork prints "SUNDAY · 27 DECEMBER 2026" in full, so the
-  date was given away on the opening screen and the scratch revealed nothing. `.datemask` keeps
-  a leaf of gold over that one line — on the `s1` card and in the full-screen `#reader` — until
-  `scratched` is true, then it fades and scales away. Its percentages are of the card itself
-  (the line sits at 76.6–77.9% of the height, 26.8–73.1% of the width, identical in
-  `card-web.webp` and `card-print.png`), so it holds at every width; re-measure them if the
-  artwork is ever re-typeset. It is hidden under `@media print` — paper should carry the date.
-  The download button on `s4` still hands over the unveiled PNG, which is deliberate: it sits
-  after `s3`, and the file is the real invitation.
+- **Nor may the card on `s1`, nor the letter that rises out of the envelope.** The artwork prints
+  "SUNDAY · 27 DECEMBER 2026" in full, so the date was given away on the opening screen and the
+  scratch revealed nothing. `DateMask` keeps a leaf of gold over that one line — on the `s1` card,
+  in the full-screen `#reader`, and on `.letter` in the intro, which scales up 1.85× as it leaves
+  the envelope and is perfectly readable while it does — until `scratched` is true, then it fades
+  and scales away. (The intro is unmounted long before anyone can scratch, so its mask never
+  lifts; that is correct.) Its percentages are of the card itself, so it holds at every width:
+  the date line sits at 76.6–77.9% of the height and 26.8–73.1% of the width, identical in
+  `card-web.webp` and `card-print.png`, and the band is set wider and taller than that — 15–85%
+  across, 74.5% down, 4.9% tall — to carry its writing. That fills the clear ground between the
+  divider ornament (ends 73.9%) and the venue line (starts 79.8%) with almost nothing to spare,
+  so re-measure all of it if the artwork is ever re-typeset. It is hidden under `@media print` —
+  paper should carry the date. The download button on `s4` still hands over the unveiled PNG,
+  which is deliberate: it sits after `s3`, and the file is the real invitation.
+- **The band says why it is there** (`maskHint`, "Scratch the heart to find out the date"),
+  struck into the leaf in wine. Sizing is proportional, not fixed: each host sets `--cw` to the
+  width of the card the band is sitting on — `.cardwrap`, `.rd-card` and `.letter` all differ,
+  and `.letter` is the smallest — and `.dm-t` is a fraction of that, so the writing holds its
+  proportion everywhere and through the letter's scale-up. Both sizes are already at their
+  ceiling: English is limited by the band's width (the line fills it at .0265`--cw`) and Sindhi
+  by its height, because Nastaliq's ink runs 2.14em tall for this phrase and the band is only
+  ~2.5em. Lengthen either string and it will not fit. Nastaliq also hangs most of that ink above
+  the baseline, so `.dm-t.sd-t` is nudged up 19% to centre the ink rather than the line box —
+  without it the tails of `کرچجو` are clipped by the band's bottom edge.
 - Scratch progress is measured against a baseline count of the foil's own opaque pixels taken
   right after painting (`foilTotal`), so the ring starts at zero. The old whole-canvas ratio made
   the ring start half-full because everything outside the heart is already transparent.
@@ -281,7 +296,8 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 2. **Couple photograph** — `s3` has a placeholder frame ("Photograph to follow").
 3. **Native Sindhi proofread** — outstanding, especially the timing notice. Also unchecked:
    the honorific `جن` used in the greeting (`{name} جن،`), the closing `خاص اوهان لاءِ،`,
-   and the three new countdown strings (`today`/`todayNote`/`past`/`pastNote`).
+   and the three new countdown strings (`today`/`todayNote`/`past`/`pastNote`), and
+   `maskHint` on the gold band (`تاريخ ڄاڻڻ لاءِ دل کي کرچجو`).
 4. **"The verse that was recited at our nikkah"** on `s2` — `verseNote` is now empty in *both*
    languages. It had been cleared in English but was still asserting the claim in Sindhi.
    Restore both, or neither.

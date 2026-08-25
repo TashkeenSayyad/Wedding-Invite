@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import DateMask from "./DateMask.jsx";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
@@ -46,7 +47,9 @@ export default function Intro({ t, lang, guest, onOpened }) {
         <div className={"pre-sub" + (lang === "sd" ? " sd-t" : "")}>{t.invite}</div>
         <div ref={envRef} className={"env" + (open ? " open" : "")} onClick={doOpen}>
           <div className="face"><i className="ajrak" /></div>
-          <div className="letter" />
+          {/* the letter rises far enough out of the envelope to read, so the date on it
+              needs the same leaf of gold the card on s1 wears */}
+          <div className="letter"><DateMask t={t} lang={lang} /></div>
           <div className="pocket"><i className="ajrak" /></div>
           <div className="flap"><i className="ajrak" /></div>
           <div className="rule" />
