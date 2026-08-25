@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { T, ARABIC_VERSE } from "./i18n.js";
 import Intro from "./components/Intro.jsx";
 import ScratchHeart from "./components/ScratchHeart.jsx";
+import DateMask from "./components/DateMask.jsx";
 import Rsvp from "./components/Rsvp.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
 
@@ -245,7 +246,7 @@ export default function App() {
         {reader && (
           <div className="rd-card">
             <img src="./assets/card-print.png" alt="Rukhsati & Walima invitation card" />
-            <i className={"datemask" + (scratched ? " off" : "")} aria-hidden="true" />
+            <DateMask t={t} lang={lang} off={scratched} />
           </div>
         )}
       </div>
@@ -263,7 +264,7 @@ export default function App() {
           <div className="rv cardwrap" onClick={() => { setReader(true); buzz(8); }}>
             <div className="card3d" ref={card3dRef}>
               <div className="cardimg" />
-              <i className={"datemask" + (scratched ? " off" : "")} aria-hidden="true" />
+              <DateMask t={t} lang={lang} off={scratched} />
             </div>
             <i className="gilt" />
             <span className={"zoomhint" + (sd ? " sd-t" : "")}>{t.tapRead}</span>
