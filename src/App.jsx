@@ -5,19 +5,73 @@ import ScratchHeart from "./components/ScratchHeart.jsx";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 const RSVP_PHONE = ""; // family WhatsApp number, digits only e.g. "923001234567"
-const TARGET = new Date("2026-12-27T00:00:00+05:00").getTime();
+const SITE = "https://tashkeensayyad.github.io/Wedding-Invite/";
 
+// Three moments, all Pakistan Standard Time (UTC+5, no daylight saving).
+const ARRIVE = new Date("2026-12-27T19:00:00+05:00").getTime(); // guests are seated
+const DAY = new Date("2026-12-27T00:00:00+05:00").getTime();    // the wedding day itself
+const AFTER = new Date("2026-12-28T06:00:00+05:00").getTime();  // the morning after
+
+// Counts down to 7:00 PM rather than to midnight — running to the top of the day left the
+// digits reading 00:00:00:00 from midnight onwards, on the one day everyone opens this.
 function useCountdown() {
-  const [t, setT] = useState(() => Math.max(0, TARGET - Date.now()));
-  useEffect(() => { const id = setInterval(() => setT(Math.max(0, TARGET - Date.now())), 1000); return () => clearInterval(id); }, []);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (Date.now() >= DAY) return;                 // nothing left to tick down to
+    const id = setInterval(() => {
+      const n = Date.now();
+      setNow(n);
+      if (n >= DAY) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+  const t = Math.max(0, ARRIVE - now);
   const p = (n) => String(n).padStart(2, "0");
   return {
+    phase: now >= AFTER ? "past" : now >= DAY ? "today" : "before",
     d: Math.floor(t / 864e5),
     h: p(Math.floor(t / 36e5) % 24),
     m: p(Math.floor(t / 6e4) % 60),
     s: p(Math.floor(t / 1e3) % 60),
   };
 }
+
+// The Nastaliq face is 160 KB a weight. Only the handful of Sindhi flourishes that show in
+// English mode ship up front (as 'Nastaliq Core'); the full cut is fetched the moment a
+// reader actually chooses سنڌي.
+let sindhiFonts;
+const loadSindhiFonts = () => {
+  if (sindhiFonts) return sindhiFonts;
+  sindhiFonts = (async () => {
+    if (!document.fonts || !window.FontFace) return;
+    const files = await Promise.all([
+      import("./assets/fonts/nastaliq-400.woff2?url"),
+      import("./assets/fonts/nastaliq-600.woff2?url"),
+    ]);
+    await Promise.all(files.map(async (m, i) => {
+      const face = new FontFace("Noto Nastaliq Urdu", `url(${m.default}) format("woff2")`,
+        { weight: i ? "600" : "400", display: "swap" });
+      document.fonts.add(await face.load());
+    }));
+  })().catch(() => {});
+  return sindhiFonts;
+};
+
+// RFC 5545 wants CRLF, escaped text and lines folded at 75 octets.
+const icsLine = (line) => {
+  const enc = new TextEncoder();
+  if (enc.encode(line).length <= 74) return line;
+  const parts = [];
+  let cur = "", len = 0;
+  for (const ch of line) {                          // by code point, so a character never splits
+    const n = enc.encode(ch).length;
+    if (len + n > (parts.length ? 73 : 74)) { parts.push(cur); cur = ""; len = 0; }
+    cur += ch; len += n;
+  }
+  parts.push(cur);
+  return parts.join("\r\n ");
+};
+const icsText = (v) => String(v).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 
 // `foot` renders outside .inner so it can sit against the section edge, not the content block
 function Sec({ id, tone, label, corners = [], children, foot, refMap }) {
@@ -46,8 +100,17 @@ const Rv = ({ d, cls = "", style, children }) => (
   <div className={"rv " + cls} style={{ "--d": d ? d + "s" : undefined, ...style }}>{children}</div>
 );
 
+const readLang = () => {
+  try {
+    const saved = localStorage.getItem("ta-lang");
+    if (saved === "en" || saved === "sd") return saved;
+  } catch {}
+  // only sd — Urdu is close enough to read but it is not the language this was written in
+  return /^sd\b/i.test(navigator.language || "") ? "sd" : "en";
+};
+
 export default function App() {
-  const [lang, setLang] = useState("en");
+  const [lang, setLang] = useState(readLang);
   const [opened, setOpened] = useState(false);
   const [reader, setReader] = useState(false);
   const [active, setActive] = useState("s1");
@@ -64,6 +127,12 @@ export default function App() {
   }, []);
 
   useEffect(() => { document.body.classList.toggle("lock", !opened); }, [opened]);
+
+  useEffect(() => {
+    try { localStorage.setItem("ta-lang", lang); } catch {}
+    document.documentElement.lang = lang;          // so screen readers announce it correctly
+    if (sd) loadSindhiFonts();
+  }, [lang, sd]);
 
   useEffect(() => {
     if (!opened) return;
@@ -108,9 +177,35 @@ export default function App() {
   };
   const ics = () => {
     buzz(10);
-    const cal = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Tashkeen and Anusha//EN\nCALSCALE:GREGORIAN\nBEGIN:VEVENT\nUID:walima@tashkeen-anusha\nDTSTAMP:20260101T000000Z\nDTSTART;TZID=Asia/Karachi:20261227T190000\nDTEND;TZID=Asia/Karachi:20261228T000000\nSUMMARY:Rukhsati & Walima — Tashkeen & Anusha\nLOCATION:Nerunkot Hall, Qasimabad, Hyderabad\nDESCRIPTION:Please be seated by 7:00 PM. The programme begins promptly and follows the schedule exactly; the evening concludes at 12:00 AM.\nEND:VEVENT\nEND:VCALENDAR`;
-    const url = URL.createObjectURL(new Blob([cal], { type: "text/calendar" }));
-    const a = document.createElement("a"); a.href = url; a.download = "tashkeen-anusha.ics"; a.click();
+    // Times go out in UTC (Pakistan is a flat UTC+5): 7:00 PM PKT is 14:00Z, midnight is 19:00Z.
+    const cal = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Tashkeen and Anusha//Rukhsati and Walima//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      "UID:rukhsati-walima-2026@tashkeen-anusha",
+      "DTSTAMP:20260101T000000Z",
+      "DTSTART:20261227T140000Z",
+      "DTEND:20261227T190000Z",
+      "SEQUENCE:0",
+      "STATUS:CONFIRMED",
+      "SUMMARY:" + icsText(t.calSummary),
+      "LOCATION:" + icsText("Nerunkot Hall, Qasimabad, Hyderabad, Sindh"),
+      "DESCRIPTION:" + icsText(t.calDesc),
+      "URL:" + SITE,
+      "BEGIN:VALARM",                               // the day before, given the road on the 27th
+      "TRIGGER:-P1D",
+      "ACTION:DISPLAY",
+      "DESCRIPTION:" + icsText(t.calSummary),
+      "END:VALARM",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].map(icsLine).join("\r\n") + "\r\n";
+    const url = URL.createObjectURL(new Blob([cal], { type: "text/calendar;charset=utf-8" }));
+    const a = document.createElement("a"); a.href = url; a.download = "tashkeen-anusha.ics";
+    document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
@@ -128,8 +223,9 @@ export default function App() {
         ))}
       </nav>
 
-      <div className={"topbar" + (opened ? " show" : "")}>
-        <button className="pill" onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
+      <div className="topbar show">
+        <button className="pill" onPointerEnter={loadSindhiFonts}
+          onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
       </div>
 
       <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}>
@@ -175,15 +271,19 @@ export default function App() {
           </Rv>
           <div className={"cd-wrap" + (scratched ? " show" : "")} aria-hidden={!scratched}>
             <div className="cd-inner">
-              <p className="big cd-big">27 December 2026</p>
-              <p className={"body cd-sub" + (sd ? " sd-t" : "")}>
-                {sd ? "آچر · نيرون ڪوٽ هال، قاسم آباد، حيدرآباد" : "Sunday · Nerunkot Hall, Qasimabad, Hyderabad"}
+              <p className={"big cd-big" + (sd ? " sd-t" : "")}>
+                {cd.phase === "before" ? t.dateBig : cd.phase === "today" ? t.today : t.past}
               </p>
-              <div className="cd">
-                {[cd.d, cd.h, cd.m, cd.s].map((v, i) => (
-                  <div key={i}><b>{v}</b><small className={sd ? "sd-t" : ""}>{t.labels[i]}</small></div>
-                ))}
-              </div>
+              <p className={"body cd-sub" + (sd ? " sd-t" : "")}>
+                {cd.phase === "before" ? t.venueLine : cd.phase === "today" ? t.todayNote : t.pastNote}
+              </p>
+              {cd.phase === "before" && (
+                <div className="cd">
+                  {[cd.d, cd.h, cd.m, cd.s].map((v, i) => (
+                    <div key={i}><b>{v}</b><small className={sd ? "sd-t" : ""}>{t.labels[i]}</small></div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </Sec>
@@ -264,6 +364,7 @@ export default function App() {
           <Rv d={0.26} cls="band" />
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>
+          {guest && <Rv d={0.5} cls={"sig" + (sd ? " sd-t" : "")}>{t.closeGuest(guest)}</Rv>}
         </Sec>
       </main>
     </>

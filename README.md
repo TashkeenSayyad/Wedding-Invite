@@ -16,7 +16,18 @@ The site is already built into the **`docs/`** folder.
 
 ### Personalised guest links
 Append `?to=Name` for each guest:
-`https://<you>.github.io/shaadi/?to=Ahmed` → the envelope greets "Dear Ahmed,"
+`https://<you>.github.io/shaadi/?to=Ahmed` → the envelope greets "Dear Ahmed," and the closing
+section signs off to them by name.
+
+To do a whole guest list at once, put one name per line in `guests.txt` and run:
+
+```bash
+npm run links                 # → out/guest-links.csv, out/guest-links.txt, out/qr-invitation.svg
+npm run links -- --qr-each    # also one QR code per guest, for place cards
+```
+
+`out/guest-links.txt` has the WhatsApp message ready to paste for each guest, and
+`out/qr-invitation.svg` is the gold QR of the live URL for the printed cards.
 
 ### RSVP number
 Open `src/App.jsx`, set `RSVP_PHONE` (digits only, e.g. `"923001234567"`), then rebuild.
@@ -26,12 +37,28 @@ Open `src/App.jsx`, set `RSVP_PHONE` (digits only, e.g. `"923001234567"`), then 
 ```bash
 npm install
 npm run dev      # local dev server
-npm run build    # rebuilds into docs/
+npm run build    # rebuilds into docs/, and regenerates the offline service worker
 ```
 
+Two build steps are separate because they need python (`pip install pillow fonttools brotli`)
+and their output is committed, so an ordinary rebuild does not need them:
+
+```bash
+npm run fonts    # rebuilds the self-hosted font subsets — RUN THIS after changing Sindhi text
+npm run og       # rebuilds the WhatsApp link-preview image and the home-screen icons
+```
+
+### Offline
+
+Once a guest has opened the invitation it works with no signal, and can be added to a phone's
+home screen. The service worker is generated from the built output by `npm run build`; there is
+nothing to configure.
+
 ## Structure
-- `src/App.jsx` — all sections, countdown, RSVP/share/calendar
+- `src/App.jsx` — all sections, countdown, RSVP/calendar/map
 - `src/components/Intro.jsx` — envelope + wax seal opening
 - `src/components/ScratchHeart.jsx` — scratch-the-gold-foil heart date reveal
 - `src/i18n.js` — every English and Sindhi string
-- `public/assets/` — card artwork and ornament cut from it
+- `src/fonts.css`, `src/assets/fonts/` — generated; see `npm run fonts`
+- `public/assets/` — card artwork, the ornament cut from it, share image and icons
+- `scripts/` — font subsetting, share image, service worker, guest links

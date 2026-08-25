@@ -40,7 +40,7 @@ export default function Intro({ t, lang, guest, onOpened }) {
       <i className="ajrak" />
       <div className="halo" />
       <div className="scene">
-        {guest && <div className="greet">Dear {guest},</div>}
+        {guest && <div className={"greet" + (lang === "sd" ? " sd-t" : "")}>{t.greet(guest)}</div>}
         <div className="pre-sd">{t.bismillah}</div>
         <div className="pre">Tashkeen &amp; Anusha</div>
         <div className={"pre-sub" + (lang === "sd" ? " sd-t" : "")}>{t.invite}</div>
