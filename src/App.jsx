@@ -242,7 +242,12 @@ export default function App() {
 
       <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}>
         <span className={"x" + (sd ? " sd-t" : "")}>{t.tapClose}</span>
-        {reader && <img src="./assets/card-print.png" alt="Rukhsati & Walima invitation card" />}
+        {reader && (
+          <div className="rd-card">
+            <img src="./assets/card-print.png" alt="Rukhsati & Walima invitation card" />
+            <i className={"datemask" + (scratched ? " off" : "")} aria-hidden="true" />
+          </div>
+        )}
       </div>
 
       <main>
@@ -251,12 +256,18 @@ export default function App() {
           foot={<div className={"cue" + (sd ? " sd-t" : "")}>{t.scroll}
             <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
           </div>}>
-          <Rv cls="cardwrap" style={{ cursor: "zoom-in" }}>
-            <div onClick={() => { setReader(true); buzz(8); }} style={{ position: "absolute", inset: 0, zIndex: 6 }} />
-            <div className="card3d" ref={card3dRef}><div className="cardimg" /></div>
+          {/* the tap target is the card itself, not an overlay laid over it: .cardwrap is a
+              preserve-3d context, so a sibling's z-index loses to the tilted .card3d, which
+              reaches further toward the viewer than any flat sibling can. That is why "tap to
+              read" did nothing in Chromium. */}
+          <div className="rv cardwrap" onClick={() => { setReader(true); buzz(8); }}>
+            <div className="card3d" ref={card3dRef}>
+              <div className="cardimg" />
+              <i className={"datemask" + (scratched ? " off" : "")} aria-hidden="true" />
+            </div>
             <i className="gilt" />
             <span className={"zoomhint" + (sd ? " sd-t" : "")}>{t.tapRead}</span>
-          </Rv>
+          </div>
           <div className="names">
             <Rv d={0.25} cls="nm-sd">تاشقين ۽ انوشا</Rv>
           </div>

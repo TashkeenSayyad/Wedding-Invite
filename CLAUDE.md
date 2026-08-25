@@ -68,6 +68,13 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 **Known CSS trap:** a class named `.tl` will collide with `.corner.tl` and break corner
 positioning. This bug already happened once (a timeline used `.tl`; renamed to `.sched`).
 
+**Second trap, same shape:** `.cardwrap` is a `transform-style:preserve-3d` context, so z-index
+does not decide what is on top there — the tilted `.card3d` reaches further toward the viewer
+than any flat sibling, whatever its z-index. A tap target laid over the card as an absolutely
+positioned sibling therefore sat *behind* the artwork and "Tap to read" did nothing in Chromium.
+The handler now lives on `.cardwrap` itself and clicks bubble up to it. Don't put an overlay
+back inside that element expecting z-index to save it.
+
 ### Restraint pass (gold-contrast cleanup)
 
 The user asked for stronger gold contrast and for the showy effects to go — they read as
@@ -241,10 +248,25 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 - **`s3` must not show the date before scratching.** The big "27 December 2026" heading used to
   sit right above the heart and spoiled the reveal; it now lives *inside* `.cd-wrap` (with the
   venue line) and only appears after `onDone`. Don't re-add a visible date above the heart.
+- **Nor may the card on `s1`.** The artwork prints "SUNDAY · 27 DECEMBER 2026" in full, so the
+  date was given away on the opening screen and the scratch revealed nothing. `.datemask` keeps
+  a leaf of gold over that one line — on the `s1` card and in the full-screen `#reader` — until
+  `scratched` is true, then it fades and scales away. Its percentages are of the card itself
+  (the line sits at 76.6–77.9% of the height, 26.8–73.1% of the width, identical in
+  `card-web.webp` and `card-print.png`), so it holds at every width; re-measure them if the
+  artwork is ever re-typeset. It is hidden under `@media print` — paper should carry the date.
+  The download button on `s4` still hands over the unveiled PNG, which is deliberate: it sits
+  after `s3`, and the file is the real invitation.
 - Scratch progress is measured against a baseline count of the foil's own opaque pixels taken
   right after painting (`foilTotal`), so the ring starts at zero. The old whole-canvas ratio made
   the ring start half-full because everything outside the heart is already transparent.
-  `REVEAL_AT` (0.65) is therefore a fraction of the *foil*, not the canvas.
+  `REVEAL_AT` (0.95) is therefore a fraction of the *foil*, not the canvas.
+- **`foilTotal` must be counted before the heart outline is stroked, and the outline's own
+  contribution held as `floor`.** The outline straddles the clip edge, so its outer half can
+  never be scratched off — counted as foil it puts a ceiling of ~0.985 on progress, which at
+  `REVEAL_AT` 0.95 leaves almost no headroom. With the correction a full scratch reaches a true
+  1.0 and the bar fires at 0.95 (measured: 0.952, after ~34 short strokes; it does not fire at
+  0.94). Raising `REVEAL_AT` without this correction will make the heart feel broken.
 - Strokes are drawn as round-capped lines between pointer positions (not discrete circles), so a
   fast swipe doesn't leave a dotted trail; `setPointerCapture` keeps the stroke alive when the
   finger drifts off the canvas, and `pointercancel` is treated like pointer-up.
