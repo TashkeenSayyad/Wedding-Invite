@@ -326,6 +326,9 @@ body.lock{overflow:hidden;height:100svh}
   color:var(--gold-p);margin-top:8px}
 .rsvp-q.sd-t{font-family:var(--fsd);font-size:clamp(16px,4.4vw,19px);letter-spacing:0;line-height:2}
 .rsvp-sheet .band{margin:14px auto 20px}
+.rsvp-tick{width:46px;height:46px;margin:4px auto 14px;display:grid;place-items:center;
+  border:1px solid var(--gold-line);border-radius:50%;color:var(--gold-p)}
+.rsvp-tick svg{width:22px;height:22px}
 .rsvp-pick{display:grid;gap:10px;justify-items:center}
 .rsvp-pick .btn{width:100%;max-width:290px;justify-content:center}
 .rsvp-lab{display:block;margin:18px 0 9px;font-size:9px;letter-spacing:.28em;text-transform:uppercase;

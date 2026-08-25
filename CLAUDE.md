@@ -159,9 +159,37 @@ Names: Ahmed Memon, Fatima, Zoya
 Declines get the same header and `Attending: no`, with no headcount asked for. **Keep the four
 labels stable** — the whole point is that the family can scan a thread and count.
 
-Still no backend: nothing leaves the phone until the guest presses send, so it works offline
-like the rest of the page. The count and the names are allowed to disagree (four coming, two
-named, is a real answer about children) — do not "fix" that by forcing one to match the other.
+The count and the names are allowed to disagree (four coming, two named, is a real answer about
+children) — do not "fix" that by forcing one to match the other.
+
+### Where a reply goes
+
+Two places, on purpose. `RSVP_ENDPOINT` in `src/App.jsx` is a Google Apps Script web app that
+appends a row to the family's Sheet — `scripts/rsvp-sheet.gs` is the script and carries its own
+setup instructions. WhatsApp still opens as well, because it lands on a phone immediately and it
+is what works when the Sheet cannot be reached.
+
+`src/rsvp-store.js` is what makes that safe:
+
+- the reply is written to `localStorage` **before** anything that can fail is attempted
+- `flushRsvps` claims the whole queue synchronously before its first `await`, so two flushes
+  cannot send the same reply twice
+- retries reuse the id the phone generated, and the Apps Script matches on it and overwrites in
+  place — a reply that saved but whose response the browser could not read is updated, never
+  duplicated
+- the queue drains on the next visit and on the `online` event, and gives up after 25 tries
+
+**The POST must stay a CORS "simple" request** — `Content-Type: text/plain;charset=utf-8`, no
+custom headers. Apps Script has no `OPTIONS` handler, so anything that provokes a preflight
+(`application/json` included) never arrives. `keepalive: true` matters too: WhatsApp opens in the
+same click and would otherwise cancel the request.
+
+`window.open` for WhatsApp has to be called straight from the click handler, before any `await`,
+or Safari blocks it as an unrequested popup.
+
+The endpoint is public and write-only — it is in the page source, so anyone could post a junk
+row. The script caps field lengths and validates the shape; do not put anything sensitive in
+that Sheet.
 
 The sheet must never grow taller than the viewport; it has nowhere to scroll. If a string gets
 longer, check it again at 360px in Sindhi, which is the tightest case.
@@ -223,9 +251,11 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 
 ## Still open — ask the user, don't invent
 
-1. **`RSVP_PHONE` in `src/App.jsx` is still empty.** Needs the family WhatsApp number, digits
-   only (e.g. `"923001234567"`). Until then RSVP opens WhatsApp's contact picker, which makes
-   the one call to action on the page not really work. This is the highest-value thing left.
+1. **`RSVP_PHONE` and `RSVP_ENDPOINT` in `src/App.jsx` are both still empty.** `RSVP_PHONE`
+   needs the family WhatsApp number, digits only (e.g. `"923001234567"`); until then RSVP opens
+   WhatsApp's contact picker. `RSVP_ENDPOINT` needs the deployed Apps Script URL from
+   `scripts/rsvp-sheet.gs`; until then replies queue on each guest's phone and only WhatsApp
+   carries them. These two are the highest-value things left.
 2. **Couple photograph** — `s3` has a placeholder frame ("Photograph to follow").
 3. **Native Sindhi proofread** — outstanding, especially the timing notice. Also unchecked:
    the honorific `جن` used in the greeting (`{name} جن،`), the closing `خاص اوهان لاءِ،`,

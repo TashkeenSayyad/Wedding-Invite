@@ -3,9 +3,14 @@ import { T, ARABIC_VERSE } from "./i18n.js";
 import Intro from "./components/Intro.jsx";
 import ScratchHeart from "./components/ScratchHeart.jsx";
 import Rsvp from "./components/Rsvp.jsx";
+import { watchRsvpQueue } from "./rsvp-store.js";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 const RSVP_PHONE = ""; // family WhatsApp number, digits only e.g. "923001234567"
+// Google Apps Script web app URL, ending in /exec — see scripts/rsvp-sheet.gs for the five-minute
+// setup. Replies queue on the phone and go out when this is filled in; until then WhatsApp carries
+// them on its own.
+const RSVP_ENDPOINT = "";
 const SITE = "https://tashkeensayyad.github.io/Wedding-Invite/";
 
 // Three moments, all Pakistan Standard Time (UTC+5, no daylight saving).
@@ -130,6 +135,9 @@ export default function App() {
 
   useEffect(() => { document.body.classList.toggle("lock", !opened); }, [opened]);
 
+  // anything a previous visit could not deliver goes out now, or when the phone reconnects
+  useEffect(() => watchRsvpQueue(RSVP_ENDPOINT), []);
+
   useEffect(() => {
     try { localStorage.setItem("ta-lang", lang); } catch {}
     document.documentElement.lang = lang;          // so screen readers announce it correctly
@@ -228,7 +236,8 @@ export default function App() {
       </div>
 
       {rsvpOpen && (
-        <Rsvp t={t} lang={lang} guest={guest} phone={RSVP_PHONE} onClose={() => setRsvpOpen(false)} />
+        <Rsvp t={t} lang={lang} guest={guest} phone={RSVP_PHONE} endpoint={RSVP_ENDPOINT}
+          onClose={() => setRsvpOpen(false)} />
       )}
 
       <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}>

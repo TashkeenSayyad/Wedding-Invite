@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { flushRsvps, newRsvpId, queueRsvp } from "../rsvp-store.js";
 
 // A WhatsApp link cannot give the family a headcount, and free-text replies arrive in twenty
 // different shapes. This sheet asks the two questions that matter — how many, and who — then
-// hands WhatsApp a message with the same shape every time, so a thread can actually be counted.
+// sends the answer two ways: as a row in the family's Google Sheet, and as a WhatsApp message
+// with the same shape every time.
 //
-// No backend, nothing leaves the phone until the guest presses send: the sheet only composes text.
+// Both, deliberately. The Sheet is what you count from; WhatsApp is what arrives on a phone the
+// moment a guest replies, and it is what still works when the Sheet cannot be reached.
 
 const MAX = 20;
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
-export default function Rsvp({ t, lang, guest, phone, onClose }) {
+export default function Rsvp({ t, lang, guest, phone, endpoint, onClose }) {
   const sd = lang === "sd";
   const [going, setGoing] = useState(null);          // null until they choose
+  const [sent, setSent] = useState(false);
   const [count, setCount] = useState(guest ? 1 : 2);
   const [who, setWho] = useState(guest ? guest + "\n" : "");
   const panel = useRef(null);
@@ -41,9 +45,20 @@ export default function Rsvp({ t, lang, guest, phone, onClose }) {
 
   const send = () => {
     buzz(10);
+    // Stored before anything that can fail is attempted, so a dropped connection cannot lose it.
+    queueRsvp({
+      id: newRsvpId(),
+      invitation: guest || "",
+      attending: going ? "yes" : "no",
+      count: going ? count : 0,
+      names: going ? names.join(", ") : "",
+      lang,
+    });
+    // Opened straight from the click, before the await below — a popup that comes later is blocked.
     const text = going ? t.rsvpMsgYes(guest, count, names) : t.rsvpMsgNo(guest);
     open("https://wa.me/" + phone + "?text=" + encodeURIComponent(text), "_blank");
-    onClose();
+    flushRsvps(endpoint);                            // retried on the next visit if it does not land
+    setSent(true);
   };
 
   const step = (by) => {
@@ -56,10 +71,19 @@ export default function Rsvp({ t, lang, guest, phone, onClose }) {
       <div className="rsvp-sheet" ref={panel} role="dialog" aria-modal="true" aria-label={t.rsvpTitle}>
         <i className="ajrak" />
         <div className="rsvp-in">
-          <p className={"rsvp-q" + (sd ? " sd-t" : "")}>{t.rsvpTitle}</p>
+          <p className={"rsvp-q" + (sd ? " sd-t" : "")}>{sent ? t.rsvpThanks : t.rsvpTitle}</p>
           <div className="band" />
 
-          {going === null && (
+          {sent && (
+            <>
+              <div className="rsvp-tick" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M20 6 9 17l-5-5" /></svg>
+              </div>
+              <p className={"body" + (sd ? " sd-t" : "")}>{t.rsvpSent}</p>
+            </>
+          )}
+
+          {!sent && going === null && (
             <div className="rsvp-pick">
               <button ref={first} className="btn solid" onClick={() => { buzz(8); setGoing(true); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
@@ -71,7 +95,7 @@ export default function Rsvp({ t, lang, guest, phone, onClose }) {
             </div>
           )}
 
-          {going === true && (
+          {!sent && going === true && (
             <>
               <label className={"rsvp-lab" + (sd ? " sd-t" : "")} htmlFor="rsvp-count">{t.rsvpCount}</label>
               <div className="rsvp-step">
@@ -90,7 +114,7 @@ export default function Rsvp({ t, lang, guest, phone, onClose }) {
             </>
           )}
 
-          {going !== null && (
+          {!sent && going !== null && (
             <div className="rsvp-acts">
               <button className="btn solid" ref={going === false ? first : null} onClick={send}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m3 20 18-8L3 4l3 8-3 8Z" /></svg>

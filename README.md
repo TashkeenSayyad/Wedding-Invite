@@ -29,8 +29,16 @@ npm run links -- --qr-each    # also one QR code per guest, for place cards
 `out/guest-links.txt` has the WhatsApp message ready to paste for each guest, and
 `out/qr-invitation.svg` is the gold QR of the live URL for the printed cards.
 
-### RSVP number
-Open `src/App.jsx`, set `RSVP_PHONE` (digits only, e.g. `"923001234567"`), then rebuild.
+### RSVP
+Two settings at the top of `src/App.jsx`, both currently empty:
+
+- `RSVP_PHONE` — the family WhatsApp number, digits only, e.g. `"923001234567"`.
+- `RSVP_ENDPOINT` — a Google Apps Script web app URL ending in `/exec`, which writes each reply
+  as a row in a Google Sheet. The script and its five-minute setup are in
+  `scripts/rsvp-sheet.gs`.
+
+Every reply goes to both. Replies are saved on the guest's phone first and retried until the
+Sheet confirms them, so a dropped connection does not lose one. Rebuild after changing either.
 
 ## Develop / rebuild
 
