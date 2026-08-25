@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 const HEART = "M150 251.25 C18.75 168.75 7.5 90 61.875 48.75 C110.625 13.125 150 54.375 150 86.25 C150 54.375 189.375 13.125 238.125 48.75 C292.5 90 281.25 168.75 150 251.25 Z";
-const REVEAL_AT = 0.65; // fraction of the foil itself (not the whole canvas) that must be scratched away
+const REVEAL_AT = 0.95; // fraction of the foil itself (not the whole canvas) that must be scratched away
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
 export default function ScratchHeart({ t, lang, onDone }) {
@@ -62,10 +62,6 @@ export default function ScratchHeart({ t, lang, onDone }) {
     ctx.moveTo(W / 2 + half + 8, 127.5); ctx.lineTo(W / 2 + half + 26, 127.5);
     ctx.stroke();
     ctx.restore();
-    // heart outline on top
-    ctx.save();
-    ctx.strokeStyle = "rgba(247,227,181,.9)"; ctx.lineWidth = 1.6;
-    ctx.stroke(path); ctx.restore();
 
     // progress is measured against the foil actually painted, so the ring starts empty
     const opaqueCount = () => {
@@ -74,7 +70,16 @@ export default function ScratchHeart({ t, lang, onDone }) {
       for (let i = 3; i < d.length; i += 4 * 9) if (d[i] >= 40) n++;
       return n;
     };
+    // taken before the outline goes on. The outline straddles the clip edge, so its outer half
+    // can never be scratched away; counting it as foil would cap progress short of 1 and put
+    // the 95% mark out of reach.
     const foilTotal = opaqueCount();
+
+    // heart outline on top
+    ctx.save();
+    ctx.strokeStyle = "rgba(247,227,181,.9)"; ctx.lineWidth = 1.6;
+    ctx.stroke(path); ctx.restore();
+    const floor = Math.max(0, opaqueCount() - foilTotal);
 
     let drawing = false, strokes = 0, finished = false, last = null;
     const pos = (e) => {
@@ -103,7 +108,7 @@ export default function ScratchHeart({ t, lang, onDone }) {
     revealRef.current = finish;
     const check = () => {
       if (finished || !foilTotal) return;
-      const p = 1 - opaqueCount() / foilTotal;
+      const p = 1 - Math.max(0, opaqueCount() - floor) / foilTotal;
       setPct(Math.min(1, p / REVEAL_AT));
       if (p > REVEAL_AT) finish();
     };
@@ -167,7 +172,7 @@ export default function ScratchHeart({ t, lang, onDone }) {
       </div>
       {!done && (
         <div className={"sc-hint" + (lang === "sd" ? " sd-t" : "")}>
-          {focused ? t.revealDate : pct > 0.45 ? t.scratchAlmost : t.scratchHint}
+          {focused ? t.revealDate : pct > 0.7 ? t.scratchAlmost : t.scratchHint}
         </div>
       )}
     </div>
