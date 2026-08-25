@@ -33,7 +33,18 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    and don't make it sound like a warning.
 2. **Everything must translate.** Every user-visible string lives in `src/i18n.js` with both
    `en` and `sd` keys. If you add UI text, add both. Sindhi elements need `className="sd-t"`
-   for the Nastaliq font and line-height.
+   for the Nastaliq font and line-height. The two key sets must stay identical — this has
+   already drifted twice (a Plum dress-code chip lived on in Sindhi after being dropped from
+   English; the nikkah note was cleared in English but kept shipping in Sindhi). Check with:
+
+   ```bash
+   node --input-type=module -e "import('./src/i18n.js').then(m=>console.log(
+     JSON.stringify(Object.keys(m.T.en).sort())===JSON.stringify(Object.keys(m.T.sd).sort())))"
+   ```
+
+   A line that mixes a Latin guest name into Sindhi needs an RTL base direction or the
+   honorific renders before the name instead of after it — see `.greet.sd-t,.sig.sd-t` in
+   `styles.css`. Pure-Arabic runs do not need it.
 3. **Sindhi register:** warm and polite, using the **-جو** imperative form (اچجو، رکجو، ڇهجو)
    rather than bare commands. The user rejected an earlier stiff, literal translation.
    **The Sindhi has NOT been checked by a native speaker.** Flag this if asked.
@@ -84,6 +95,118 @@ Gold contrast is a system, not ad-hoc tints:
 - A gold seam (`.sec::after`) separates sections; `.gilt` is the offset gold rule around the card.
 - The revealed scratch heart keeps a gilt outline (`.heartring-base`); only the progress ring fades.
 
+## Fonts — self-hosted and split
+
+Nothing is fetched from fonts.googleapis.com any more (two connections before first paint, and
+it made offline impossible). `npm run fonts` builds `src/assets/fonts/` and generates
+`src/fonts.css`, both committed:
+
+- Latin faces are copied out of `@fontsource`, declared with the real `unicode-range` so
+  latin-ext is only fetched when a guest's name actually needs it
+- Noto Naskh Arabic is subset to the Qur'anic verse and the bismillah — 51 KB → 13 KB
+- Noto Nastaliq Urdu is split in two. **`Nastaliq Core`** is a ~46 KB cut holding only the
+  Sindhi flourishes that appear while the site is in English (bismillah, the couple's names,
+  the closing line) and is used by `.pre-sd`, `.nm-sd`, `.sdt` via `--fsd-c`. The full Sindhi
+  cut is *not* in the CSS at all — `App.jsx` loads it through the FontFace API the moment a
+  reader picks سنڌي. That is why the two have different family names: sharing one name would
+  render Sindhi body copy half in Nastaliq and half in the fallback while it loaded.
+
+English first paint is ~247 KB of fonts, down from ~393 KB. Sindhi adds ~159 KB on the switch.
+
+**Gotcha: `npm run fonts` reads the Sindhi strings straight out of `src/i18n.js` and the
+components. Add or change any Sindhi text and you must re-run it, or the new characters are
+not in the subset and render in a fallback face.** It needs `python3` with `fonttools` and
+`brotli`; a plain `npm run build` does not.
+
+## Offline and installable
+
+`npm run build` runs `vite build` then `scripts/gen-sw.mjs`, which writes `docs/sw.js` with the
+built file list baked in and a cache name hashed from it (so a new build evicts the old cache).
+Everything is precached except `card-print.png` (2.1 MB) and `og-card.jpg`, which are cached at
+runtime instead. Navigations serve the cached shell first and refresh behind the reader, so a
+`?to=` link opens instantly with no signal. `public/manifest.webmanifest` plus the generated
+icons make it installable to a home screen.
+
+Registration is guarded by `import.meta.env.PROD` — there is no `sw.js` in dev and a stale cache
+there would be a nuisance.
+
+## Generated artwork
+
+- `npm run og` → `public/assets/og-card.jpg` (1200×630, ~90 KB) and the three PWA icons.
+  `og:image` used to point at the 2.1 MB portrait `card-print.png`, which WhatsApp will not
+  render — and WhatsApp is how this invitation actually travels. Needs pillow + fonttools.
+- `npm run links` → personalised `?to=` links as CSV and as paste-ready WhatsApp messages, plus
+  the gold QR for the printed cards, into `out/` (not committed). Reads `guests.txt`, or names
+  as arguments, or `--list <file>`; `--qr-each` adds a QR per guest. The QR is deliberately
+  **wine modules on a pale gold ground**, not gold on wine — inverted polarity is not something
+  every phone camera will read.
+
+## The RSVP is composed, not free-text
+
+The RSVP button opens `src/components/Rsvp.jsx` rather than jumping straight to WhatsApp. A
+`wa.me` link cannot carry a headcount and free-text replies arrive in twenty different shapes,
+so the sheet asks the two questions that matter and hands WhatsApp a message with the same shape
+every time:
+
+```
+Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.
+Invitation: Ahmed Memon        ← only when the link carried ?to=
+Attending: yes
+How many: 3
+Names: Ahmed Memon, Fatima, Zoya
+```
+
+Declines get the same header and `Attending: no`, with no headcount asked for. **Keep the four
+labels stable** — the whole point is that the family can scan a thread and count.
+
+The count and the names are allowed to disagree (four coming, two named, is a real answer about
+children) — do not "fix" that by forcing one to match the other.
+
+### Where a reply goes
+
+Two places, on purpose. `RSVP_ENDPOINT` in `src/App.jsx` is a Google Apps Script web app that
+appends a row to the family's Sheet — `scripts/rsvp-sheet.gs` is the script and carries its own
+setup instructions. WhatsApp still opens as well, because it lands on a phone immediately and it
+is what works when the Sheet cannot be reached.
+
+`src/rsvp-store.js` is what makes that safe:
+
+- the reply is written to `localStorage` **before** anything that can fail is attempted
+- `flushRsvps` claims the whole queue synchronously before its first `await`, so two flushes
+  cannot send the same reply twice
+- retries reuse the id the phone generated, and the Apps Script matches on it and overwrites in
+  place — a reply that saved but whose response the browser could not read is updated, never
+  duplicated
+- the queue drains on the next visit and on the `online` event, and gives up after 25 tries
+
+**The POST must stay a CORS "simple" request** — `Content-Type: text/plain;charset=utf-8`, no
+custom headers. Apps Script has no `OPTIONS` handler, so anything that provokes a preflight
+(`application/json` included) never arrives. `keepalive: true` matters too: WhatsApp opens in the
+same click and would otherwise cancel the request.
+
+`window.open` for WhatsApp has to be called straight from the click handler, before any `await`,
+or Safari blocks it as an unrequested popup.
+
+The endpoint is public and write-only — it is in the page source, so anyone could post a junk
+row. The script caps field lengths and validates the shape; do not put anything sensitive in
+that Sheet.
+
+The sheet must never grow taller than the viewport; it has nowhere to scroll. If a string gets
+longer, check it again at 360px in Sindhi, which is the tightest case.
+
+## The countdown has three phases
+
+`useCountdown` returns `phase`, and s3 renders one of three things:
+
+- `before` — the digits, counting down to **7:00 PM on the 27th**, not to midnight. Running to
+  the top of the day left the digits at `00:00:00:00` from midnight onwards, on the one day
+  every guest opens this.
+- `today` — from midnight on the 27th, "Today is the day" and the evening's start time.
+- `past` — from 6:00 AM on the 28th, a thank-you. The invitation ages gracefully instead of
+  sitting at zero forever.
+
+The ticking interval stops itself once the day arrives.
+
 ## Testing convention
 
 Every change was verified in a real browser before shipping. Please keep this up:
@@ -98,6 +221,17 @@ Then check with Playwright (or manually) at **360, 393, 430 and 820px**, in **bo
 - corners flush to section edges
 - no duplicated visible Sindhi strings
 - no console errors
+- the language pill is reachable **on the intro**, before the envelope is opened
+- in English only `Nastaliq Core` loads; picking سنڌي pulls in `Noto Nastaliq Urdu` 400 and 600
+
+Note that **s4 is legitimately taller than the viewport** at every width — it carries the
+schedule, the timing notice, the parking and travel notes and four buttons. `.sec` grows to fit
+and `scroll-snap-type` is `proximity`, so nothing is clipped; it is a section you scroll
+through. Do not "fix" this by cutting content.
+
+Worth checking too, since none of it is visible on screen: the `.ics` parses (no `TZID` without
+a `VTIMEZONE`, lines folded under 75 octets, CRLF endings), the site still opens with the
+network off once it has been seen, and `@media print` gives ink on white with the chrome gone.
 
 The scratch heart specifically: it must survive re-renders. The countdown ticks every second and
 once silently repainted the canvas, wiping the user's scratch. `ScratchHeart`'s effect must not
@@ -117,14 +251,23 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 
 ## Still open — ask the user, don't invent
 
-1. **`RSVP_PHONE` in `src/App.jsx` is empty.** Needs the family WhatsApp number, digits only
-   (e.g. `"923001234567"`). Until then RSVP opens WhatsApp's contact picker.
+1. **`RSVP_PHONE` and `RSVP_ENDPOINT` in `src/App.jsx` are both still empty.** `RSVP_PHONE`
+   needs the family WhatsApp number, digits only (e.g. `"923001234567"`); until then RSVP opens
+   WhatsApp's contact picker. `RSVP_ENDPOINT` needs the deployed Apps Script URL from
+   `scripts/rsvp-sheet.gs`; until then replies queue on each guest's phone and only WhatsApp
+   carries them. These two are the highest-value things left.
 2. **Couple photograph** — `s3` has a placeholder frame ("Photograph to follow").
-3. **Native Sindhi proofread** — outstanding, especially the timing notice.
-4. **"The verse that was recited at our nikkah"** on `s2` — the user has not confirmed this is
-   factually true. Verify before it goes out.
+3. **Native Sindhi proofread** — outstanding, especially the timing notice. Also unchecked:
+   the honorific `جن` used in the greeting (`{name} جن،`), the closing `خاص اوهان لاءِ،`,
+   and the three new countdown strings (`today`/`todayNote`/`past`/`pastNote`).
+4. **"The verse that was recited at our nikkah"** on `s2` — `verseNote` is now empty in *both*
+   languages. It had been cleared in English but was still asserting the claim in Sindhi.
+   Restore both, or neither.
 5. **What the "rasms" at 10:30 PM are** — the schedule just says "Rasms" / "رسمون" for now;
    ask the user if they want the specific rituals named.
+6. **Cosmetic:** on `s6` the Nastaliq descenders of `دعائن سان` touch the ascenders of
+   "With love and prayers" below it — the two line boxes are exactly adjacent. Pre-existing;
+   a small `margin-bottom` on `.sdt` fixes it, but it is the user's typography to change.
 
 ## Nice-to-haves discussed but not built
 

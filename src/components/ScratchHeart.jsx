@@ -9,8 +9,12 @@ export default function ScratchHeart({ t, lang, onDone }) {
   const ringRef = useRef(null);
   const gradId = useId();
   const [done, setDone] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [pct, setPct] = useState(0);
   const onDoneRef = useRef(onDone);
+  // the scratch is a pointer gesture, so the effect below also hands back a way to finish it
+  // without one — the date must never be unreachable to a keyboard or a screen reader
+  const revealRef = useRef(null);
   useEffect(() => { onDoneRef.current = onDone; });
 
   useEffect(() => {
@@ -88,17 +92,20 @@ export default function ScratchHeart({ t, lang, onDone }) {
       ctx.restore();
       last = [x, y];
     };
+    const finish = (haptic = true) => {
+      if (finished) return;
+      finished = true;
+      if (haptic) buzz([14, 40, 14, 40, 30]);
+      setDone(true);
+      setPct(1);
+      onDoneRef.current && onDoneRef.current();
+    };
+    revealRef.current = finish;
     const check = () => {
       if (finished || !foilTotal) return;
       const p = 1 - opaqueCount() / foilTotal;
       setPct(Math.min(1, p / REVEAL_AT));
-      if (p > REVEAL_AT) {
-        finished = true;
-        buzz([14, 40, 14, 40, 30]);
-        setDone(true);
-        setPct(1);
-        onDoneRef.current && onDoneRef.current();
-      }
+      if (p > REVEAL_AT) finish();
     };
     const down = (e) => {
       e.preventDefault();
@@ -120,6 +127,9 @@ export default function ScratchHeart({ t, lang, onDone }) {
     cv.addEventListener("pointermove", move);
     addEventListener("pointerup", up);
     addEventListener("pointercancel", up);
+    // someone who has asked for reduced motion has asked not to be made to play with it
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) finish(false);
+
     return () => {
       cv.removeEventListener("pointerdown", down);
       cv.removeEventListener("pointermove", move);
@@ -136,7 +146,14 @@ export default function ScratchHeart({ t, lang, onDone }) {
           <i />
           <small className={lang === "sd" ? "sd-t" : ""}>{done ? t.revealed : t.saveDate}</small>
         </div>
-        <canvas ref={cvRef} style={{ width: 300, height: 270 }} role="img" aria-label={t.scratchHint} />
+        <canvas ref={cvRef} style={{ width: 300, height: 270 }}
+          tabIndex={done ? -1 : 0} role="button" aria-label={t.revealDate}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            revealRef.current && revealRef.current();
+          }} />
         <svg className="heartring" viewBox="0 0 300 270">
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="300" y2="270" gradientUnits="userSpaceOnUse">
@@ -150,7 +167,7 @@ export default function ScratchHeart({ t, lang, onDone }) {
       </div>
       {!done && (
         <div className={"sc-hint" + (lang === "sd" ? " sd-t" : "")}>
-          {pct > 0.45 ? t.scratchAlmost : t.scratchHint}
+          {focused ? t.revealDate : pct > 0.45 ? t.scratchAlmost : t.scratchHint}
         </div>
       )}
     </div>
