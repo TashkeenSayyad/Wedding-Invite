@@ -104,9 +104,13 @@ draw.rectangle([44, 44, W - 45, H - 45], outline=(150, 120, 70), width=1)
 sc = lambda s: face("cormorant-sc", "cormorant-sc-latin-600-normal.woff2", s)
 it = lambda s: face("italianno", "italianno-latin-400-normal.woff2", s)
 cg = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-normal.woff2", s)
+cgi = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-italic.woff2", s)
 
 centred(draw, 118, "THE RUKHSATI & WALIMA OF", sc(30), GOLD, tracking=7)
 centred(draw, 168, "Tashkeen & Anusha", it(150), GOLD_PALE)
+# the two families, under the names they belong to. Italic rather than a third line of small caps:
+# the kicker above and the hint below are both tracked caps, and a third would flatten the card.
+centred(draw, 326, "Syed and Nizamani", cgi(36), GOLD_L, tracking=2)
 
 draw.line([(W / 2 - 190, 392), (W / 2 + 190, 392)], fill=(150, 120, 70), width=1)
 for cxx in (W / 2 - 205, W / 2 + 205):
