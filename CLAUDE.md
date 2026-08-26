@@ -160,7 +160,7 @@ there would be a nuisance.
 - `npm run og` → `public/assets/og-card.jpg` (1200×630, ~94 KB) and the three PWA icons.
   `og:image` used to point at the 2.1 MB portrait `card-print.png`, which WhatsApp will not
   render — and WhatsApp is how this invitation actually travels. Needs pillow + fonttools.
-  **The preview card carries the gold band, not the date** — see *Nothing previews the date* below.
+  **The preview card carries the venue and a hint, not the date** — see *Nothing previews the date*.
 - `npm run links` → personalised `?to=` links as CSV and as paste-ready WhatsApp messages, plus
   the gold QR for the printed cards, into `out/` (not committed). Reads `guests.txt`, or names
   as arguments, or `--list <file>`; `--qr-each` adds a QR per guest. The QR is deliberately
@@ -177,10 +177,12 @@ and in the line of text under it, so the heart revealed something every guest al
 
 Where the date must **not** appear:
 
-- `public/assets/og-card.jpg`. Where the date line used to be set, `scripts/build-og.py` now draws
-  the same band `.datemask` does — the same 100deg leaf ramp, the same wine ink, the same words as
-  `maskHint`. The writing measures itself down until it fits the band, so the hint can be
-  re-worded without running over the ends.
+- `public/assets/og-card.jpg`. The venue now takes the place under the rule where
+  "SUNDAY · 27 DECEMBER 2026" was set, and `maskHint` follows it as a quiet `--gold-l` kicker.
+  **Do not put `.datemask`'s gold band on this card.** It was tried and it is far too loud here:
+  the band exists to cover ink already printed on the artwork, and there is nothing to cover on a
+  card we draw ourselves — the date is simply not set. The one rule under the names is all the
+  ornament this half wants; hairlines around the hint as well only crowded it.
 - `og:description`, `og:image:alt` and `<meta name="description">` in `index.html`, and
   `description` in `public/manifest.webmanifest`.
 - The paste-ready WhatsApp message in `scripts/guest-links.mjs` (both languages) and its twin
