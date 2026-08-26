@@ -107,10 +107,20 @@ cg = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-normal.w
 cgi = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-italic.woff2", s)
 
 centred(draw, 118, "THE RUKHSATI & WALIMA OF", sc(30), GOLD, tracking=7)
-centred(draw, 168, "Tashkeen & Anusha", it(150), GOLD_PALE)
-# the two families, under the names they belong to. Italic rather than a third line of small caps:
-# the kicker above and the hint below are both tracked caps, and a third would flatten the card.
-centred(draw, 326, "Syed and Nizamani", cgi(36), GOLD_L, tracking=2)
+
+# The couple, and a surname under each — Syed under Tashkeen, Nizamani under Anusha. Each one is
+# centred on the name it belongs to rather than on the card, so they are read as two full names
+# and not as one line of their own. Italic rather than a third rank of tracked small caps: the
+# kicker above and the hint below are both caps already, and a third would flatten the card.
+NAMES, JOIN = ("Tashkeen", "Anusha"), " & "
+name_f, sur_f = it(150), cgi(32)
+run = NAMES[0] + JOIN + NAMES[1]
+left = (W - draw.textlength(run, font=name_f)) / 2
+centred(draw, 168, run, name_f, GOLD_PALE)
+for word, surname in zip(NAMES, ("Syed", "Nizamani")):
+    at = left + draw.textlength(run[:run.index(word)], font=name_f)
+    mid = at + draw.textlength(word, font=name_f) / 2
+    tracked(draw, mid - tracked_width(draw, surname, sur_f, 2) / 2, 326, surname, sur_f, GOLD_L, 2)
 
 draw.line([(W / 2 - 190, 392), (W / 2 + 190, 392)], fill=(150, 120, 70), width=1)
 for cxx in (W / 2 - 205, W / 2 + 205):
