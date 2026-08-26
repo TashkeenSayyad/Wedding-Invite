@@ -22,6 +22,9 @@ WINE_OUT = (26, 6, 14)
 GOLD = (233, 200, 126)
 GOLD_PALE = (247, 227, 181)
 CHALK = (247, 239, 225)
+GOLD_L = (196, 158, 92)        # --gold-l, the small caps and kickers
+# the words the band on the card carries — i18n.js `maskHint`, upper-cased as the kickers are
+MASK_HINT = "SCRATCH THE HEART TO FIND OUT THE DATE"
 
 
 def face(pkg, name, size):
@@ -48,14 +51,20 @@ def backdrop():
     return small.resize((W, H), Image.LANCZOS)
 
 
+def tracked(d, x, y, text, font, fill, tracking):
+    """Letter-spacing, which PIL has no notion of — laid out a glyph at a time."""
+    for c in text:
+        d.text((x, y), c, font=font, fill=fill)
+        x += d.textlength(c, font=font) + tracking
+
+
+def tracked_width(d, text, font, tracking):
+    return sum(d.textlength(c, font=font) for c in text) + tracking * (len(text) - 1)
+
+
 def centred(d, y, text, font, fill, tracking=0):
     if tracking:
-        widths = [d.textlength(c, font=font) for c in text]
-        total = sum(widths) + tracking * (len(text) - 1)
-        x = (W - total) / 2
-        for c, w in zip(text, widths):
-            d.text((x, y), c, font=font, fill=fill)
-            x += w + tracking
+        tracked(d, (W - tracked_width(d, text, font, tracking)) / 2, y, text, font, fill, tracking)
         return
     d.text((W / 2, y), text, font=font, fill=fill, anchor="ma")
 
@@ -95,16 +104,36 @@ draw.rectangle([44, 44, W - 45, H - 45], outline=(150, 120, 70), width=1)
 sc = lambda s: face("cormorant-sc", "cormorant-sc-latin-600-normal.woff2", s)
 it = lambda s: face("italianno", "italianno-latin-400-normal.woff2", s)
 cg = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-normal.woff2", s)
+cgi = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-italic.woff2", s)
 
 centred(draw, 118, "THE RUKHSATI & WALIMA OF", sc(30), GOLD, tracking=7)
-centred(draw, 168, "Tashkeen & Anusha", it(150), GOLD_PALE)
+
+# The couple, and a surname under each — Syed under Tashkeen, Nizamani under Anusha. Each one is
+# centred on the name it belongs to rather than on the card, so they are read as two full names
+# and not as one line of their own. Italic rather than a third rank of tracked small caps: the
+# kicker above and the hint below are both caps already, and a third would flatten the card.
+NAMES, JOIN = ("Tashkeen", "Anusha"), " & "
+name_f, sur_f = it(150), cgi(32)
+run = NAMES[0] + JOIN + NAMES[1]
+left = (W - draw.textlength(run, font=name_f)) / 2
+centred(draw, 168, run, name_f, GOLD_PALE)
+for word, surname in zip(NAMES, ("Syed", "Nizamani")):
+    at = left + draw.textlength(run[:run.index(word)], font=name_f)
+    mid = at + draw.textlength(word, font=name_f) / 2
+    tracked(draw, mid - tracked_width(draw, surname, sur_f, 2) / 2, 326, surname, sur_f, GOLD_L, 2)
 
 draw.line([(W / 2 - 190, 392), (W / 2 + 190, 392)], fill=(150, 120, 70), width=1)
 for cxx in (W / 2 - 205, W / 2 + 205):
     draw.ellipse([cxx - 3, 389, cxx + 3, 395], fill=GOLD)
 
-centred(draw, 424, "SUNDAY  ·  27 DECEMBER 2026", sc(40), CHALK, tracking=4)
-centred(draw, 498, "NERUNKOT HALL · QASIMABAD · HYDERABAD", cg(28), (214, 190, 170), tracking=3)
+# "SUNDAY · 27 DECEMBER 2026" used to be the line under the rule. WhatsApp is how this invitation
+# travels, so the preview was handing every guest the date before they had opened anything, and the
+# scratch heart on s2 was revealing something they already knew. The venue takes that place — it is
+# the fact a guest needs — and the hint sits below it as a quiet kicker, in --gold-l small caps,
+# where it explains the absence without becoming the loudest thing on the card. The one rule above
+# is enough ornament for this half; a second pair of hairlines around the hint only crowded it.
+centred(draw, 428, "NERUNKOT HALL · QASIMABAD · HYDERABAD", cg(32), (222, 199, 180), tracking=3)
+centred(draw, 502, MASK_HINT, sc(21), GOLD_L, tracking=5)
 
 img.save(OUT, "JPEG", quality=86, optimize=True, progressive=True)
 size = os.path.getsize(OUT)

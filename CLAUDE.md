@@ -10,8 +10,15 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 ## The event — verified facts, do not change without asking
 
 - **Event name:** "Rukhsati & Walima" (in that order — this was changed late, don't revert)
-- **Groom:** Tashkeen, son of Jallal Hyder & Rubina
-- **Bride:** Anusha, daughter of Barkat Ali & Mumtaz
+- **Groom:** Tashkeen Syed, son of Jallal Hyder & Rubina
+- **Bride:** Anusha Nizamani, daughter of Barkat Ali & Mumtaz
+- The surnames belong to one person each — Syed is Tashkeen's, Nizamani is Anusha's. They are
+  never set as a pair ("Syed and Nizamani" under both names was wrong and was corrected).
+- **The card artwork carries first names only.** Setting the names on it as TASHKEEN SYED and
+  ANUSHA NIZAMANI was built and rejected — the artwork was put back. The surnames live on the
+  link-preview card (`og-card.jpg`), one under each name, and nowhere else. If they are ever
+  wanted on the artwork after all, the working script is in git at 5e2a7cd, along with the
+  measurements it took.
 - **Date:** Sunday, 27 December 2026
 - **Venue:** Nerunkot Hall, Qasimabad, Hyderabad, Sindh, Pakistan
 - **Schedule:** 7:00 PM guests arrive · 8:00 PM entrance of the bride & groom · 9:00 PM dinner ·
@@ -53,9 +60,15 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 3. **Sindhi register:** warm and polite, using the **-جو** imperative form (اچجو، رکجو، ڇهجو)
    rather than bare commands. The user rejected an earlier stiff, literal translation.
    **The Sindhi has NOT been checked by a native speaker.** Flag this if asked.
-4. **Card artwork is fixed.** `public/assets/card-print.png` is the master. It was hand-typeset
-   with PIL (erased Canva's baked text, re-set with Italianno + Cormorant SC). Do not regenerate
-   it with AI and do not edit the Canva file — that design is out of date.
+4. **Card artwork is edited with PIL, never regenerated.** `public/assets/card-print.png` is the
+   master; it was hand-typeset with PIL (erased Canva's baked text, re-set with Italianno +
+   Cormorant SC). Do not regenerate it with AI and do not edit the Canva file — that design is
+   out of date. A line of type on it is changed by lifting it off the wine and re-setting it in
+   place — the ground under the text is a smooth vertical gradient, so a column redrawn from the
+   clean rows just outside the erase is invisible. **`src/assets/card-web.webp` is not a resize
+   of the master** — it is a separate, flatter rendering with a brighter wine and a paler cream,
+   so any edit has to be made to both cuts on their own terms, each measured against its own
+   ground. 5e2a7cd is a worked example of all of this.
 
 ## Layout / design system
 
@@ -157,14 +170,52 @@ there would be a nuisance.
 
 ## Generated artwork
 
-- `npm run og` → `public/assets/og-card.jpg` (1200×630, ~90 KB) and the three PWA icons.
+- `npm run og` → `public/assets/og-card.jpg` (1200×630, ~94 KB) and the three PWA icons.
   `og:image` used to point at the 2.1 MB portrait `card-print.png`, which WhatsApp will not
   render — and WhatsApp is how this invitation actually travels. Needs pillow + fonttools.
+  **The preview card carries the venue and a hint, not the date** — see *Nothing previews the date*.
 - `npm run links` → personalised `?to=` links as CSV and as paste-ready WhatsApp messages, plus
   the gold QR for the printed cards, into `out/` (not committed). Reads `guests.txt`, or names
   as arguments, or `--list <file>`; `--qr-each` adds a QR per guest. The QR is deliberately
   **wine modules on a pale gold ground**, not gold on wine — inverted polarity is not something
   every phone camera will read.
+
+## Nothing previews the date
+
+The date is what the scratch heart reveals, so nothing a guest meets *before* opening the
+invitation may state it. `DateMask` covers the line printed on the artwork (see the scratch-heart
+invariants under *Testing convention*); this is the rest of that rule, and the outside half of it
+was open for a while — WhatsApp was printing "Sunday, 27 December 2026" both in the preview card
+and in the line of text under it, so the heart revealed something every guest already knew.
+
+Where the date must **not** appear:
+
+- `public/assets/og-card.jpg`. The venue now takes the place under the rule where
+  "SUNDAY · 27 DECEMBER 2026" was set, and `maskHint` follows it as a quiet `--gold-l` kicker.
+  **Do not put `.datemask`'s gold band on this card.** It was tried and it is far too loud here:
+  the band exists to cover ink already printed on the artwork, and there is nothing to cover on a
+  card we draw ourselves — the date is simply not set. The one rule under the names is all the
+  ornament this half wants; hairlines around the hint as well only crowded it.
+- `og:description`, `og:image:alt` and `<meta name="description">` in `index.html`, and
+  `description` in `public/manifest.webmanifest`.
+- The paste-ready WhatsApp message in `scripts/guest-links.mjs` (both languages) and its twin
+  `INVITE_TEXT` in `scripts/rsvp-sheet.gs`. That message sits directly above the preview in the
+  thread, so fixing the preview and leaving the message fixes nothing. **Keep the two in step** —
+  the Sheet's copy is only a default and the family can rewrite it in `Guest list!J3`.
+
+Where it deliberately still does: the `<noscript>` invitation and the error boundary in
+`main.jsx` (a guest whose script never runs cannot scratch anything, and a fallback that withholds
+the date is worse than a plain one); the Event JSON-LD's `startDate`, which is search-only — an
+Event without one is not an Event, and no link preview reads JSON-LD, so delete the whole block if
+the date should be nowhere at all; the Summary header in the family's own Sheet; and the printed
+card, which is paper.
+
+The venue stays everywhere. Only the date is the surprise.
+
+**Caches:** WhatsApp holds a scraped preview per URL for days, so `og:image` ends `?v=2` — bump it
+whenever the card is redrawn. Each personalised `?to=` link is its own URL and is scraped fresh;
+it is the bare site URL, in threads where it has already been shared, that can keep showing the
+old card for a while.
 
 ## The RSVP is composed, not free-text
 
