@@ -80,7 +80,7 @@ export const T = {
     closeTitle: "With love and prayers",
     closeNote: "Your presence is the blessing we are asking for. We cannot wait to begin this chapter with you beside us.",
     closeGuest: n => `Written for you, ${n}.`,
-    dotLabels: { s1:"Invitation", s2:"Verse", s3:"Countdown", s4:"Schedule", s5:"Dress", s6:"Farewell" },
+    dotLabels: { s1:"Invitation", s2:"Countdown", s3:"Verse", s4:"Schedule", s5:"Dress", s6:"Farewell" },
     // One shape for every reply, so the family can scan a WhatsApp thread and count heads.
     // The four labels — Invitation, Attending, How many, Names — are the whole point: they
     // let the family scan a WhatsApp thread and count. Note is appended after them and only when
@@ -180,7 +180,7 @@ export const T = {
     closeTitle: "دعائن سان",
     closeNote: "اوهان جو اچڻ ئي اسان لاءِ سڀ کان وڏي دعا آهي. دل سان انتظار اٿئون ته هيءَ نئين شروعات اوهان سان گڏ ڪريون.",
     closeGuest: n => `خاص اوهان لاءِ، ${n}.`,
-    dotLabels: { s1:"دعوت", s2:"آيت", s3:"ڳڻپ", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
+    dotLabels: { s1:"دعوت", s2:"ڳڻپ", s3:"آيت", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
     rsvpMsgYes: (g, count, names, note, update) =>
       `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +

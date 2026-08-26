@@ -64,11 +64,15 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   so it matches exactly. Corners sit flush at section edges and bloom in on scroll.
 - The ajrak background is a custom SVG *kakar jaal* — eight-petal rosettes on a lattice.
   An earlier generic star-grid version was rejected as inauthentic.
-- 6 sections: `s1` card · `s2` verse · `s3` countdown+scratch heart · `s4` schedule ·
+- 6 sections: `s1` card · `s2` countdown+scratch heart · `s3` verse · `s4` schedule ·
   `s5` dress code · `s6` closing. (There used to be a `s4` menu section between the countdown
   and schedule — it was removed along with the share button; RSVP moved into `s4` schedule's
   `.acts` row as the solid CTA, and `s4` switched from `deep` to `wine` tone to keep the
   wine/deep alternation from running three `deep` sections in a row.)
+  The scratch heart used to sit *after* the verse and was moved in front of it — the ids are
+  positional, so they moved with the content rather than the numbering going out of order.
+  Both sections are `deep`, so the tone rhythm is untouched; the four corner ornaments stayed
+  with the verse, which is the framed section, not with the countdown.)
 
 **Known CSS trap:** a class named `.tl` will collide with `.corner.tl` and break corner
 positioning. This bug already happened once (a timeline used `.tl`; renamed to `.sched`).
@@ -274,7 +278,7 @@ is what makes that check trustworthy.
 
 ## The countdown has three phases
 
-`useCountdown` returns `phase`, and s3 renders one of three things:
+`useCountdown` returns `phase`, and s2 renders one of three things:
 
 - `before` — the digits, counting down to **7:00 PM on the 27th**, not to midnight. Running to
   the top of the day left the digits at `00:00:00:00` from midnight onwards, on the one day
@@ -354,7 +358,7 @@ once silently repainted the canvas, wiping the user's scratch. `ScratchHeart`'s 
 depend on anything that changes per-tick (`onDone` is held in a ref for this reason).
 
 More scratch-heart invariants (added in the scratch-card-improvements pass):
-- **`s3` must not show the date before scratching.** The big "27 December 2026" heading used to
+- **`s2` must not show the date before scratching.** The big "27 December 2026" heading used to
   sit right above the heart and spoiled the reveal; it now lives *inside* `.cd-wrap` (with the
   venue line) and only appears after `onDone`. Don't re-add a visible date above the heart.
 - **Nor may the card on `s1`, nor the letter that rises out of the envelope.** The artwork prints
@@ -370,7 +374,7 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
   divider ornament (ends 73.9%) and the venue line (starts 79.8%) with almost nothing to spare,
   so re-measure all of it if the artwork is ever re-typeset. It is hidden under `@media print` —
   paper should carry the date. The download button on `s4` still hands over the unveiled PNG,
-  which is deliberate: it sits after `s3`, and the file is the real invitation.
+  which is deliberate: it sits after `s2`, and the file is the real invitation.
 - **The band says why it is there** (`maskHint`, "Scratch the heart to find out the date"),
   struck into the leaf in wine. Sizing is proportional, not fixed: each host sets `--cw` to the
   width of the card the band is sitting on — `.cardwrap`, `.rd-card` and `.letter` all differ,
@@ -407,7 +411,7 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 2. **Couple photograph** — there is no frame for one any more. The old `.frame` CSS and its
    "Photograph to follow" string were never rendered by any component, so both were removed
    rather than left as dead code. When there is a photograph, build the frame around the real
-   image and check `s3` for overflow at 360px — that section already carries the countdown and
+   image and check `s2` for overflow at 360px — that section already carries the countdown and
    the scratch heart.
 3. **Native Sindhi proofread** — outstanding, especially the timing notice. Also unchecked:
    the honorific `جن` used in the greeting (`{name} جن،`), the closing `خاص اوهان لاءِ،`,
@@ -417,7 +421,7 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
    `rsvpContact`, `rsvpAgain`, `rsvpAgainYes`, `rsvpAgainNo`, `rsvpUpdate`, `rsvpKeep`,
    `rsvpQueued`, `rsvpBy`), the calendar chooser (`calPick`, `calGoogle`, `calIcs`), and the
    Sindhi WhatsApp invitation in `scripts/guest-links.mjs`.
-4. **"The verse that was recited at our nikkah"** on `s2` — `verseNote` is now empty in *both*
+4. **"The verse that was recited at our nikkah"** on `s3` — `verseNote` is now empty in *both*
    languages. It had been cleared in English but was still asserting the claim in Sindhi.
    Restore both, or neither.
 5. **What the "rasms" at 10:30 PM are** — the schedule just says "Rasms" / "رسمون" for now;

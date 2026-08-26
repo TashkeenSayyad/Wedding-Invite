@@ -287,20 +287,8 @@ export default function App() {
           </div>
         </Sec>
 
-        {/* 2 · verse */}
-        <Sec id="s2" tone="deep" label={t.dotLabels.s2} corners={["tl","tr","bl","br"]} refMap={refMap}>
-          <Rv cls="star" />
-          <Rv d={0.06} cls={"kicker" + (sd ? " sd-t" : "")} style={{ marginTop: 14 }}>{t.verseKicker}</Rv>
-          <Rv d={0.14} cls="arab">{ARABIC_VERSE}</Rv>
-          <Rv d={0.22} cls="translit">{t.translit}</Rv>
-          <Rv d={0.26} cls="band" />
-          <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
-          <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
-          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 12.5 }}>{t.verseNote}</Rv>
-        </Sec>
-
-        {/* 3 · countdown + scratch heart */}
-        <Sec id="s3" tone="deep" label={t.dotLabels.s3} refMap={refMap}>
+        {/* 2 · countdown + scratch heart */}
+        <Sec id="s2" tone="deep" label={t.dotLabels.s2} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.saveDate}</Rv>
           <Rv d={0.12} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 10, maxWidth: 310, marginInline: "auto" }}>{t.scratchTease}</Rv>
           <Rv d={0.2}>
@@ -325,6 +313,18 @@ export default function App() {
               )}
             </div>
           </div>
+        </Sec>
+
+        {/* 3 · verse */}
+        <Sec id="s3" tone="deep" label={t.dotLabels.s3} corners={["tl","tr","bl","br"]} refMap={refMap}>
+          <Rv cls="star" />
+          <Rv d={0.06} cls={"kicker" + (sd ? " sd-t" : "")} style={{ marginTop: 14 }}>{t.verseKicker}</Rv>
+          <Rv d={0.14} cls="arab">{ARABIC_VERSE}</Rv>
+          <Rv d={0.22} cls="translit">{t.translit}</Rv>
+          <Rv d={0.26} cls="band" />
+          <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
+          <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
+          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 12.5 }}>{t.verseNote}</Rv>
         </Sec>
 
         {/* 4 · schedule */}
