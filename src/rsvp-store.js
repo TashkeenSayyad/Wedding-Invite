@@ -10,6 +10,7 @@
 // actually saved but whose response we could not read is updated, not duplicated.
 
 const KEY = "ta-rsvp-queue";
+const LAST = "ta-rsvp-last";
 const MAX_QUEUE = 20;
 const MAX_TRIES = 25;
 
@@ -35,6 +36,17 @@ export const queueRsvp = (payload) => {
   const q = read();
   q.push({ ...payload, tries: 0 });
   write(q);
+  try { localStorage.setItem(LAST, JSON.stringify({ ...payload, at: Date.now() })); } catch {}
+};
+
+// What this phone last told us, so a guest who comes back is shown their own answer instead of
+// an empty form — and so changing it reuses the same id, which the Apps Script overwrites in
+// place. A guest who replies, then remembers a cousin, updates one row rather than making two.
+export const lastRsvp = () => {
+  try {
+    const v = JSON.parse(localStorage.getItem(LAST));
+    return v && typeof v === "object" && v.id ? v : null;
+  } catch { return null; }
 };
 
 async function post(endpoint, item) {

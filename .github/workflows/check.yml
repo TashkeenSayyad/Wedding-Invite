@@ -1,0 +1,30 @@
+# The invitation is served straight out of the committed docs/ folder, so a source change that
+# was never rebuilt ships nothing at all — the site keeps serving the previous build and looks
+# fine while doing it. This catches that, along with anything npm run check would have caught.
+name: Check
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - name: docs/ must match src/
+        run: |
+          if ! git diff --quiet -- docs; then
+            echo "::error::docs/ is out of date. Run 'npm run build' and commit the result."
+            git --no-pager diff --stat -- docs
+            exit 1
+          fi
+          echo "docs/ is in step with src/."

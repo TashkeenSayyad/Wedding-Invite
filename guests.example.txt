@@ -1,0 +1,14 @@
+# One guest per line. Copy this file to guests.txt and put your own list in it.
+#
+# A line can also name that guest's language, so each person opens the invitation
+# in the one they read. Without it, the invitation picks by the guest's own phone.
+#
+#   Name
+#   Name, sd
+#   Name, en
+#
+# Lines starting with # are ignored.
+
+Ahmed Memon
+Fatima Soomro, en
+ڪنول, sd

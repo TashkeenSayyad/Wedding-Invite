@@ -30,8 +30,12 @@ export default function Intro({ t, lang, guest, onOpened }) {
   const doOpen = () => {
     if (open) return;
     setOpen(true); buzz([12, 60, 20]);
-    setTimeout(() => onOpened(), 1800);
-    setTimeout(() => setGone(true), 3200);
+    // With reduced motion the flap, the letter and the cross-fade are all switched off in CSS, so
+    // these waits would leave the reader looking at a still envelope for three seconds wondering
+    // whether the tap registered. Cut them to the shortest gap that still reads as a response.
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(() => onOpened(), still ? 120 : 1800);
+    setTimeout(() => setGone(true), still ? 260 : 3200);
   };
 
   if (gone) return null;
@@ -53,7 +57,7 @@ export default function Intro({ t, lang, guest, onOpened }) {
           <div className="pocket"><i className="ajrak" /></div>
           <div className="flap"><i className="ajrak" /></div>
           <div className="rule" />
-          <button className="seal" aria-label="Open the invitation" onClick={doOpen}>
+          <button className="seal" aria-label={t.tapSeal} onClick={doOpen}>
             <svg viewBox="0 0 100 100">
               <defs>
                 <radialGradient id="wax" cx="36%" cy="28%">
