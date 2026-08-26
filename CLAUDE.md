@@ -14,6 +14,11 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 - **Bride:** Anusha Nizamani, daughter of Barkat Ali & Mumtaz
 - The surnames belong to one person each — Syed is Tashkeen's, Nizamani is Anusha's. They are
   never set as a pair ("Syed and Nizamani" under both names was wrong and was corrected).
+- **The card artwork carries first names only.** Setting the names on it as TASHKEEN SYED and
+  ANUSHA NIZAMANI was built and rejected — the artwork was put back. The surnames live on the
+  link-preview card (`og-card.jpg`), one under each name, and nowhere else. If they are ever
+  wanted on the artwork after all, the working script is in git at 5e2a7cd, along with the
+  measurements it took.
 - **Date:** Sunday, 27 December 2026
 - **Venue:** Nerunkot Hall, Qasimabad, Hyderabad, Sindh, Pakistan
 - **Schedule:** 7:00 PM guests arrive · 8:00 PM entrance of the bride & groom · 9:00 PM dinner ·
@@ -58,11 +63,12 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 4. **Card artwork is edited with PIL, never regenerated.** `public/assets/card-print.png` is the
    master; it was hand-typeset with PIL (erased Canva's baked text, re-set with Italianno +
    Cormorant SC). Do not regenerate it with AI and do not edit the Canva file — that design is
-   out of date. Changes to the type on it go through `npm run card` (`scripts/card-names.py`),
-   which lifts a line off the wine and re-sets it in place; the script carries the measurements
-   and the things not to disturb. **`src/assets/card-web.webp` is not a resize of the master** —
-   it is a separate, flatter rendering with a brighter wine and a paler cream, so every edit has
-   to be made to both cuts on their own terms. That script does both.
+   out of date. A line of type on it is changed by lifting it off the wine and re-setting it in
+   place — the ground under the text is a smooth vertical gradient, so a column redrawn from the
+   clean rows just outside the erase is invisible. **`src/assets/card-web.webp` is not a resize
+   of the master** — it is a separate, flatter rendering with a brighter wine and a paler cream,
+   so any edit has to be made to both cuts on their own terms, each measured against its own
+   ground. 5e2a7cd is a worked example of all of this.
 
 ## Layout / design system
 
@@ -168,12 +174,6 @@ there would be a nuisance.
   `og:image` used to point at the 2.1 MB portrait `card-print.png`, which WhatsApp will not
   render — and WhatsApp is how this invitation actually travels. Needs pillow + fonttools.
   **The preview card carries the venue and a hint, not the date** — see *Nothing previews the date*.
-- `npm run card` → re-sets the two name lines on both cuts of the artwork, in place. It is what
-  put the surnames on them, and it is safe to run twice: each erase box takes in the text the
-  script itself sets, so a second run lifts the first run's names and re-sets them identically.
-  It also clears a soft gold streak that used to sit beside the first name — the edge of an
-  older erase, with no counterpart on the other side of the card, which only became conspicuous
-  once the name grew long enough to reach it. Needs pillow + fonttools.
 - `npm run links` → personalised `?to=` links as CSV and as paste-ready WhatsApp messages, plus
   the gold QR for the printed cards, into `out/` (not committed). Reads `guests.txt`, or names
   as arguments, or `--list <file>`; `--qr-each` adds a QR per guest. The QR is deliberately
