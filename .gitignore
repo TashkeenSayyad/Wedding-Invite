@@ -1,2 +1,6 @@
 node_modules/
 out/
+
+# local settings — the deployed endpoint and the family number
+.env
+.env.local

@@ -4,7 +4,15 @@
 //   npm run links                      # reads guests.txt
 //   npm run links -- --list family.txt
 //   npm run links -- "Ahmed Memon" "Fatima"
+//   npm run links -- --lang sd         # every link opens in Sindhi
 //   npm run links -- --qr-each         # also a QR per guest, for place cards
+//
+// guests.txt is one name per line. A line can also name that guest's language, which is how a
+// bilingual family sends one list and each guest opens the invitation in their own:
+//
+//   Ahmed Memon
+//   ڪنول, sd
+//   Fatima, en
 //
 // Writes everything to out/ (which is not committed): guest-links.csv, guest-links.txt with the
 // WhatsApp message ready to paste, and qr-invitation.svg / .png.
@@ -12,11 +20,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import QRCode from "qrcode";
+import { SITE } from "../src/config.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const out = resolve(root, "out");
 
-const SITE = "https://tashkeensayyad.github.io/Wedding-Invite/";
 // Wine modules on a pale gold ground. Gold-on-wine looks better but inverts the polarity every
 // QR scanner expects, and a printed card gets read by whatever camera app a guest happens to have.
 const WINE = "#4d0e1c";
@@ -29,41 +37,77 @@ const value = (name) => {
   return i === -1 ? null : argv[i + 1];
 };
 
-const named = argv.filter((a, i) => !a.startsWith("--") && argv[i - 1] !== "--list");
+const TAKES_VALUE = new Set(["--list", "--lang"]);
+const named = argv.filter((a, i) => !a.startsWith("--") && !TAKES_VALUE.has(argv[i - 1]));
 const listFile = value("--list") || "guests.txt";
+const allLang = value("--lang") || "";
+if (allLang && allLang !== "en" && allLang !== "sd") {
+  console.error(`--lang takes "en" or "sd", not "${allLang}".`);
+  process.exit(1);
+}
 
-let names = named;
-if (!names.length) {
+// "Name" or "Name, sd" — the language is optional and only ever the last comma-separated field
+const parse = (line) => {
+  const m = line.match(/^(.*?)\s*,\s*(en|sd)$/);
+  return m ? { name: m[1].trim(), lang: m[2] } : { name: line, lang: "" };
+};
+
+let rows = named.map((n) => ({ name: n, lang: "" }));
+if (!rows.length) {
   const path = resolve(root, listFile);
   if (!existsSync(path)) {
     console.error(`No names given and ${listFile} does not exist.\n` +
-      `Either pass names — npm run links -- "Ahmed Memon" "Fatima" — or put one name per line in ${listFile}.`);
+      `Either pass names — npm run links -- "Ahmed Memon" "Fatima" — or put one name per line in ${listFile}.\n` +
+      `There is a sample to copy in guests.example.txt.`);
     process.exit(1);
   }
-  names = readFileSync(path, "utf8").split("\n")
+  rows = readFileSync(path, "utf8").split("\n")
     .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith("#"));
+    .filter((l) => l && !l.startsWith("#"))
+    .map(parse);
 }
-if (!names.length) { console.error(`${listFile} has no names in it.`); process.exit(1); }
+if (!rows.length) { console.error(`${listFile} has no names in it.`); process.exit(1); }
+
+// A guest invited twice gets two links and, sooner or later, two RSVP rows to reconcile.
+const seen = new Map();
+const dupes = [];
+rows = rows.filter((r) => {
+  const key = r.name.toLowerCase();
+  if (seen.has(key)) { dupes.push(r.name); return false; }
+  seen.set(key, true);
+  return true;
+});
 
 mkdirSync(out, { recursive: true });
 
 // `?to=` is read straight into the greeting, and App.jsx caps it at 40 characters
-const linkFor = (name) => SITE + "?to=" + encodeURIComponent(name.slice(0, 40));
+const linkFor = ({ name, lang }) => {
+  const l = lang || allLang;
+  return SITE + "?to=" + encodeURIComponent(name.slice(0, 40)) + (l ? "&lang=" + l : "");
+};
 const csvCell = (v) => (/[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v);
 const message = (name, url) =>
   `Assalamu alaikum ${name}! You are warmly invited to the Rukhsati & Walima of Tashkeen & Anusha, ` +
   `Sunday 27 December 2026 at Nerunkot Hall, Qasimabad, Hyderabad. ` +
   `Your invitation is here: ${url}`;
+// Kept in the same shape as the English so the family can scan either list the same way.
+const messageSd = (name, url) =>
+  `السلام عليڪم ${name}! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي ۾ اوهان کي محبت سان دعوت آهي — ` +
+  `آچر، 27 ڊسمبر 2026، نيرون ڪوٽ هال، قاسم آباد، حيدرآباد. ` +
+  `اوهان جي دعوت هتي آهي: ${url}`;
 
-const rows = names.map((name) => ({ name, url: linkFor(name) }));
+const list = rows.map((r) => {
+  const url = linkFor(r);
+  const lang = r.lang || allLang || "en";
+  return { name: r.name, lang, url, text: lang === "sd" ? messageSd(r.name, url) : message(r.name, url) };
+});
 
 writeFileSync(resolve(out, "guest-links.csv"),
-  "name,link,whatsapp message\n" +
-  rows.map((r) => [r.name, r.url, message(r.name, r.url)].map(csvCell).join(",")).join("\n") + "\n");
+  "name,language,link,whatsapp message\n" +
+  list.map((r) => [r.name, r.lang, r.url, r.text].map(csvCell).join(",")).join("\n") + "\n");
 
 writeFileSync(resolve(out, "guest-links.txt"),
-  rows.map((r) => `${r.name}\n${r.url}\n\n${message(r.name, r.url)}\n${"─".repeat(72)}`).join("\n") + "\n");
+  list.map((r) => `${r.name}\n${r.url}\n\n${r.text}\n${"─".repeat(72)}`).join("\n") + "\n");
 
 const qrOpts = { errorCorrectionLevel: "M", margin: 2, color: { dark: WINE, light: GOLD } };
 await QRCode.toFile(resolve(out, "qr-invitation.png"), SITE, { ...qrOpts, type: "png", width: 1200 });
@@ -71,13 +115,22 @@ writeFileSync(resolve(out, "qr-invitation.svg"), await QRCode.toString(SITE, { .
 
 if (flag("--qr-each")) {
   mkdirSync(resolve(out, "qr"), { recursive: true });
-  for (const r of rows) {
-    const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "guest";
+  // Two guests can slug to the same filename — "Ahmed Memon" and "Ahmed-Memon" both become
+  // ahmed-memon — and the second would silently overwrite the first's place card.
+  const taken = new Map();
+  for (const r of list) {
+    let slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "guest";
+    const n = (taken.get(slug) || 0) + 1;
+    taken.set(slug, n);
+    if (n > 1) slug += "-" + n;
     await QRCode.toFile(resolve(out, "qr", `${slug}.png`), r.url, { ...qrOpts, type: "png", width: 900 });
   }
 }
 
-console.log(`${rows.length} guest${rows.length === 1 ? "" : "s"} → out/guest-links.csv, out/guest-links.txt`);
+const sindhi = list.filter((r) => r.lang === "sd").length;
+console.log(`${list.length} guest${list.length === 1 ? "" : "s"}` +
+  (sindhi ? ` (${sindhi} in Sindhi)` : "") + ` → out/guest-links.csv, out/guest-links.txt`);
+if (dupes.length) console.log(`skipped ${dupes.length} repeated name${dupes.length === 1 ? "" : "s"}: ${dupes.join(", ")}`);
 console.log(`gold QR of ${SITE} → out/qr-invitation.svg, out/qr-invitation.png`);
 if (flag("--qr-each")) console.log(`per-guest QR codes → out/qr/`);
-console.log(`\nfirst link: ${rows[0].url}`);
+console.log(`\nfirst link: ${list[0].url}`);

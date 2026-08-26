@@ -63,7 +63,10 @@ for (const { pkg, family, faces, subsets, skip } of EAGER) {
 
 // Pulled from the source of truth rather than a hand-kept list, so a newly added Sindhi string
 // can never quietly fall outside the subset and render in a fallback face.
-const sources = ["src/i18n.js", "src/App.jsx", ...readdirSync(resolve(root, "src/components")).map((f) => `src/components/${f}`)];
+// config.js is in here because RSVP_BY carries a Sindhi date the moment the family sets one, and
+// a deadline rendered in a fallback face would be the first thing a guest reads.
+const sources = ["src/i18n.js", "src/App.jsx", "src/config.js",
+  ...readdirSync(resolve(root, "src/components")).map((f) => `src/components/${f}`)];
 const corpus = sources.map((f) => readFileSync(resolve(root, f), "utf8")).join("");
 const arabicOf = (s) => (s.match(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/gu) || []).join("");
 

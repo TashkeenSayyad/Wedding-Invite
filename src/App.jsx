@@ -4,20 +4,12 @@ import Intro from "./components/Intro.jsx";
 import ScratchHeart from "./components/ScratchHeart.jsx";
 import DateMask from "./components/DateMask.jsx";
 import Rsvp from "./components/Rsvp.jsx";
+import Sheet from "./components/Sheet.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
+import { buildIcs } from "./ics.js";
+import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
-const RSVP_PHONE = ""; // family WhatsApp number, digits only e.g. "923001234567"
-// Google Apps Script web app URL, ending in /exec — see scripts/rsvp-sheet.gs for the five-minute
-// setup. Replies queue on the phone and go out when this is filled in; until then WhatsApp carries
-// them on its own.
-const RSVP_ENDPOINT = "";
-const SITE = "https://tashkeensayyad.github.io/Wedding-Invite/";
-
-// Three moments, all Pakistan Standard Time (UTC+5, no daylight saving).
-const ARRIVE = new Date("2026-12-27T19:00:00+05:00").getTime(); // guests are seated
-const DAY = new Date("2026-12-27T00:00:00+05:00").getTime();    // the wedding day itself
-const AFTER = new Date("2026-12-28T06:00:00+05:00").getTime();  // the morning after
 
 // Counts down to 7:00 PM rather than to midnight — running to the top of the day left the
 // digits reading 00:00:00:00 from midnight onwards, on the one day everyone opens this.
@@ -64,22 +56,6 @@ const loadSindhiFonts = () => {
   return sindhiFonts;
 };
 
-// RFC 5545 wants CRLF, escaped text and lines folded at 75 octets.
-const icsLine = (line) => {
-  const enc = new TextEncoder();
-  if (enc.encode(line).length <= 74) return line;
-  const parts = [];
-  let cur = "", len = 0;
-  for (const ch of line) {                          // by code point, so a character never splits
-    const n = enc.encode(ch).length;
-    if (len + n > (parts.length ? 73 : 74)) { parts.push(cur); cur = ""; len = 0; }
-    cur += ch; len += n;
-  }
-  parts.push(cur);
-  return parts.join("\r\n ");
-};
-const icsText = (v) => String(v).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
-
 // `foot` renders outside .inner so it can sit against the section edge, not the content block
 function Sec({ id, tone, label, corners = [], children, foot, refMap }) {
   const ref = useRef(null);
@@ -96,7 +72,10 @@ function Sec({ id, tone, label, corners = [], children, foot, refMap }) {
       {corners.includes("bl") && <i className="corner bl" />}
       {corners.includes("br") && <i className="corner br" />}
       <i className="ajrak" />
-      <div className="inner">{children}</div>
+      {/* Every section is built out of ornament, kickers and script faces, none of which is a
+          heading. Without this a screen reader is handed six unnamed regions and no way to move
+          between them; the label is the same one the dot navigation already uses. */}
+      <div className="inner"><h2 className="vh">{label}</h2>{children}</div>
       {foot}
       <i className="vig" /><i className="grain" />
     </section>
@@ -107,7 +86,38 @@ const Rv = ({ d, cls = "", style, children }) => (
   <div className={"rv " + cls} style={{ "--d": d ? d + "s" : undefined, ...style }}>{children}</div>
 );
 
+// One button used to hand every guest a downloaded .ics. That is the right file for Apple
+// Calendar and Outlook and close to useless on Android, where a downloaded file lands in a folder
+// and no calendar app offers to open it — so the guests most likely to be driving up from Karachi
+// were the ones who could not add the evening to their phone. Both routes carry the same two
+// instants out of config.js, so they cannot drift apart.
+function CalPick({ t, lang, onIcs, onClose }) {
+  const sd = lang === "sd";
+  return (
+    <Sheet label={t.calPick} onClose={onClose}>
+      <p className={"rsvp-q" + (sd ? " sd-t" : "")}>{t.calPick}</p>
+      <div className="band" />
+      <div className="rsvp-pick">
+        <a className="btn solid" target="_blank" rel="noopener"
+          href={GCAL_URL(t.calSummary, t.calDesc)} onClick={onClose}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+          <span className={sd ? "sd-t" : ""}>{t.calGoogle}</span>
+        </a>
+        <button className="btn" onClick={() => { onIcs(); onClose(); }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 3v12M8 11l4 4 4-4M4 19h16" /></svg>
+          <span className={sd ? "sd-t" : ""}>{t.calIcs}</span>
+        </button>
+      </div>
+      <button className={"rsvp-x" + (sd ? " sd-t" : "")} onClick={onClose}>{t.rsvpClose}</button>
+    </Sheet>
+  );
+}
+
 const readLang = () => {
+  // ?lang=sd wins over a stored choice — the family sent that link on purpose, to a guest who
+  // reads Sindhi, and it should not be overruled by whatever the last reader on that phone picked.
+  const asked = new URLSearchParams(location.search).get("lang");
+  if (asked === "en" || asked === "sd") return asked;
   try {
     const saved = localStorage.getItem("ta-lang");
     if (saved === "en" || saved === "sd") return saved;
@@ -124,10 +134,12 @@ export default function App() {
   const [prog, setProg] = useState(0);
   const [scratched, setScratched] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
+  const [calOpen, setCalOpen] = useState(false);
   const t = T[lang];
   const sd = lang === "sd";
   const refMap = useRef({});
   const card3dRef = useRef(null);
+  const readerX = useRef(null);
 
   const guest = useMemo(() => {
     const g = new URLSearchParams(location.search).get("to");
@@ -135,6 +147,22 @@ export default function App() {
   }, []);
 
   useEffect(() => { document.body.classList.toggle("lock", !opened); }, [opened]);
+
+  // The card reader is a full-screen overlay, so it needs the same keyboard courtesy as the
+  // sheets: Escape closes it, and the page underneath does not scroll while it is up.
+  useEffect(() => {
+    if (!reader) return;
+    const returnTo = document.activeElement;
+    document.body.classList.add("lock");
+    readerX.current?.focus();          // otherwise Tab walks the page behind the overlay
+    const onKey = (e) => e.key === "Escape" && setReader(false);
+    addEventListener("keydown", onKey);
+    return () => {
+      removeEventListener("keydown", onKey);
+      document.body.classList.remove("lock");
+      if (returnTo instanceof HTMLElement) returnTo.focus();
+    };
+  }, [reader]);
 
   // anything a previous visit could not deliver goes out now, or when the phone reconnects
   useEffect(() => watchRsvpQueue(RSVP_ENDPOINT), []);
@@ -185,33 +213,7 @@ export default function App() {
   const rsvp = () => { buzz(10); setRsvpOpen(true); };
   const ics = () => {
     buzz(10);
-    // Times go out in UTC (Pakistan is a flat UTC+5): 7:00 PM PKT is 14:00Z, midnight is 19:00Z.
-    const cal = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//Tashkeen and Anusha//Rukhsati and Walima//EN",
-      "CALSCALE:GREGORIAN",
-      "METHOD:PUBLISH",
-      "BEGIN:VEVENT",
-      "UID:rukhsati-walima-2026@tashkeen-anusha",
-      "DTSTAMP:20260101T000000Z",
-      "DTSTART:20261227T140000Z",
-      "DTEND:20261227T190000Z",
-      "SEQUENCE:0",
-      "STATUS:CONFIRMED",
-      "SUMMARY:" + icsText(t.calSummary),
-      "LOCATION:" + icsText("Nerunkot Hall, Qasimabad, Hyderabad, Sindh"),
-      "DESCRIPTION:" + icsText(t.calDesc),
-      "URL:" + SITE,
-      "BEGIN:VALARM",                               // the day before, given the road on the 27th
-      "TRIGGER:-P1D",
-      "ACTION:DISPLAY",
-      "DESCRIPTION:" + icsText(t.calSummary),
-      "END:VALARM",
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].map(icsLine).join("\r\n") + "\r\n";
-    const url = URL.createObjectURL(new Blob([cal], { type: "text/calendar;charset=utf-8" }));
+    const url = URL.createObjectURL(new Blob([buildIcs(t)], { type: "text/calendar;charset=utf-8" }));
     const a = document.createElement("a"); a.href = url; a.download = "tashkeen-anusha.ics";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -232,7 +234,8 @@ export default function App() {
       </nav>
 
       <div className="topbar show">
-        <button className="pill" onPointerEnter={loadSindhiFonts}
+        <button className="pill" onPointerEnter={loadSindhiFonts} aria-label={t.langSwitch}
+          lang={sd ? "en" : "sd"}
           onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
       </div>
 
@@ -241,11 +244,15 @@ export default function App() {
           onClose={() => setRsvpOpen(false)} />
       )}
 
-      <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}>
-        <span className={"x" + (sd ? " sd-t" : "")}>{t.tapClose}</span>
+      {calOpen && <CalPick t={t} lang={lang} onIcs={ics} onClose={() => setCalOpen(false)} />}
+
+      <div id="reader" className={reader ? "on" : ""} onClick={() => setReader(false)}
+        role={reader ? "dialog" : undefined} aria-modal={reader ? "true" : undefined}
+        aria-label={t.tapRead}>
+        <button ref={readerX} className={"x" + (sd ? " sd-t" : "")} onClick={() => setReader(false)}>{t.tapClose}</button>
         {reader && (
           <div className="rd-card">
-            <img src="./assets/card-print.png" alt="Rukhsati & Walima invitation card" />
+            <img src="./assets/card-print.png" alt={t.calSummary} />
             <DateMask t={t} lang={lang} off={scratched} />
           </div>
         )}
@@ -261,7 +268,13 @@ export default function App() {
               preserve-3d context, so a sibling's z-index loses to the tilted .card3d, which
               reaches further toward the viewer than any flat sibling can. That is why "tap to
               read" did nothing in Chromium. */}
-          <div className="rv cardwrap" onClick={() => { setReader(true); buzz(8); }}>
+          <div className="rv cardwrap" role="button" tabIndex={0} aria-label={t.tapRead}
+            onClick={() => { setReader(true); buzz(8); }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" && e.key !== " ") return;
+              e.preventDefault();
+              setReader(true); buzz(8);
+            }}>
             <div className="card3d" ref={card3dRef}>
               <div className="cardimg" />
               <DateMask t={t} lang={lang} off={scratched} />
@@ -274,20 +287,8 @@ export default function App() {
           </div>
         </Sec>
 
-        {/* 2 · verse */}
-        <Sec id="s2" tone="deep" label={t.dotLabels.s2} corners={["tl","tr","bl","br"]} refMap={refMap}>
-          <Rv cls="star" />
-          <Rv d={0.06} cls={"kicker" + (sd ? " sd-t" : "")} style={{ marginTop: 14 }}>{t.verseKicker}</Rv>
-          <Rv d={0.14} cls="arab">{ARABIC_VERSE}</Rv>
-          <Rv d={0.22} cls="translit">{t.translit}</Rv>
-          <Rv d={0.26} cls="band" />
-          <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
-          <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
-          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 12.5 }}>{t.verseNote}</Rv>
-        </Sec>
-
-        {/* 3 · countdown + scratch heart */}
-        <Sec id="s3" tone="deep" label={t.dotLabels.s3} refMap={refMap}>
+        {/* 2 · countdown + scratch heart */}
+        <Sec id="s2" tone="deep" label={t.dotLabels.s2} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.saveDate}</Rv>
           <Rv d={0.12} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 10, maxWidth: 310, marginInline: "auto" }}>{t.scratchTease}</Rv>
           <Rv d={0.2}>
@@ -302,7 +303,9 @@ export default function App() {
                 {cd.phase === "before" ? t.venueLine : cd.phase === "today" ? t.todayNote : t.pastNote}
               </p>
               {cd.phase === "before" && (
-                <div className="cd">
+                // a timer, not a live region: announcing four numbers once a second would make
+                // the section unusable with a screen reader running
+                <div className="cd" role="timer">
                   {[cd.d, cd.h, cd.m, cd.s].map((v, i) => (
                     <div key={i}><b>{v}</b><small className={sd ? "sd-t" : ""}>{t.labels[i]}</small></div>
                   ))}
@@ -310,6 +313,18 @@ export default function App() {
               )}
             </div>
           </div>
+        </Sec>
+
+        {/* 3 · verse */}
+        <Sec id="s3" tone="deep" label={t.dotLabels.s3} corners={["tl","tr","bl","br"]} refMap={refMap}>
+          <Rv cls="star" />
+          <Rv d={0.06} cls={"kicker" + (sd ? " sd-t" : "")} style={{ marginTop: 14 }}>{t.verseKicker}</Rv>
+          <Rv d={0.14} cls="arab">{ARABIC_VERSE}</Rv>
+          <Rv d={0.22} cls="translit">{t.translit}</Rv>
+          <Rv d={0.26} cls="band" />
+          <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
+          <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
+          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 12.5 }}>{t.verseNote}</Rv>
         </Sec>
 
         {/* 4 · schedule */}
@@ -342,10 +357,10 @@ export default function App() {
             <button className="btn solid" onClick={rsvp}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.rsvp}</span></button>
-            <button className="btn" onClick={ics}>
+            <button className="btn" onClick={() => { buzz(8); setCalOpen(true); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.calendar}</span></button>
-            <a className="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Nerunkot%20Hall%20Qasimabad%20Hyderabad">
+            <a className="btn" target="_blank" rel="noopener" href={MAPS_URL}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.map}</span></a>
             <a className="btn" href="./assets/card-print.png" download="rukhsati-walima-tashkeen-anusha.png" onClick={() => buzz(10)}>

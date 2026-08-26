@@ -1,13 +1,13 @@
 export const T = {
   en: {
     bismillah: "بسم الله الرحمٰن الرحيم",
-    names: "Tashkeen & Anusha",
     invite: "Request the honour of your presence",
     greet: n => `Dear ${n},`,
     tapSeal: "Tap the seal",
     scroll: "Scroll",
     tapRead: "Tap to read",
     tapClose: "Tap to close",
+    langSwitch: "Read in Sindhi",
     verseKicker: "In the words of the Qur'an",
     translit: "Wa min āyātihi an khalaqa lakum min anfusikum azwājan li-taskunū ilayhā, wa jaʿala baynakum mawaddatan wa raḥmah",
     verse: "“And of His signs is that He created for you mates from among yourselves, that you may find tranquility in them — and He placed between you love and mercy.”",
@@ -20,7 +20,6 @@ export const T = {
     scratchAlmost: "Almost there…",
     revealed: "See you there!",
     revealDate: "Reveal the date",
-    photoSoon: "Photograph to follow",
     labels: ["Days", "Hours", "Mins", "Secs"],
     dateBig: "27 December 2026",
     venueLine: "Sunday · Nerunkot Hall, Qasimabad, Hyderabad",
@@ -41,6 +40,16 @@ export const T = {
     rsvpThanks: "Thank you",
     rsvpSent: "Your reply is on its way to us.",
     rsvpOne: "person", rsvpMany: "people",
+    rsvpNote: "A note for us (optional)",
+    rsvpNotePh: "Anything you would like us to know",
+    rsvpContact: "A number we can reach you on (optional)",
+    rsvpAgain: "You have already replied",
+    rsvpAgainYes: (n) => `You told us ${n} would be coming.`,
+    rsvpAgainNo: "You told us you would not be able to come.",
+    rsvpUpdate: "Change my reply",
+    rsvpKeep: "Leave it as it is",
+    rsvpQueued: "Saved on your phone. It reaches us the moment you are back online.",
+    rsvpBy: (d) => `Kindly let us know by ${d}.`,
     schedKicker: "Sunday, 27 December 2026",
     schedTitle: "Schedule",
     sched: [
@@ -56,6 +65,9 @@ export const T = {
     travelB: "Travelling to us that day.",
     travel: " 27 December is the remembrance of Shaheed Mohtarma Benazir Bhutto, with the central gathering at Garhi Khuda Bakhsh near Larkana. Caravans travel the highways throughout the day and a provincial holiday is often announced. If you are coming from Karachi, upper Sindh or further afield, please set out early and allow generous time on the road. Your safe arrival matters most to us.",
     calendar: "Calendar", map: "Map", save: "Save card",
+    calPick: "Add to your calendar",
+    calGoogle: "Google Calendar",
+    calIcs: "Apple, Outlook & others",
     calSummary: "Rukhsati & Walima — Tashkeen & Anusha",
     calDesc: "Kindly be seated by 7:00 PM. The programme begins promptly and follows the schedule exactly, and the evening concludes at 12:00 AM.",
     dressKicker: "A gentle request", dressTitle: "Dress Code",
@@ -68,27 +80,34 @@ export const T = {
     closeTitle: "With love and prayers",
     closeNote: "Your presence is the blessing we are asking for. We cannot wait to begin this chapter with you beside us.",
     closeGuest: n => `Written for you, ${n}.`,
-    dotLabels: { s1:"Invitation", s2:"Verse", s3:"Countdown", s4:"Schedule", s5:"Dress", s6:"Farewell" },
+    dotLabels: { s1:"Invitation", s2:"Countdown", s3:"Verse", s4:"Schedule", s5:"Dress", s6:"Farewell" },
     // One shape for every reply, so the family can scan a WhatsApp thread and count heads.
-    rsvpMsgYes: (g, count, names) =>
-      `Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.\n` +
+    // The four labels — Invitation, Attending, How many, Names — are the whole point: they
+    // let the family scan a WhatsApp thread and count. Note is appended after them and only when
+    // a guest wrote one, so the shape a counter reads never changes.
+    rsvpMsgYes: (g, count, names, note, update) =>
+      `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Rukhsati & Walima of ` +
+      `Tashkeen & Anusha, 27 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: yes\nHow many: ${count}\n` +
-      `${names.length ? "Names: " + names.join(", ") : "Names: not given"}`,
-    rsvpMsgNo: (g) =>
-      `Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.\n` +
+      `${names.length ? "Names: " + names.join(", ") : "Names: not given"}` +
+      `${note ? "\nNote: " + note : ""}`,
+    rsvpMsgNo: (g, note, update) =>
+      `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Rukhsati & Walima of ` +
+      `Tashkeen & Anusha, 27 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
-      `Attending: no\nOur prayers and love are with you both.`,
+      `Attending: no\nOur prayers and love are with you both.` +
+      `${note ? "\nNote: " + note : ""}`,
   },
   sd: {
     bismillah: "بسم الله الرحمٰن الرحيم",
-    names: "تاشقين ۽ انوشا",
     invite: "اوهان کي محبت سان دعوت ڏجي ٿي",
     greet: n => `${n} جن،`,
     tapSeal: "مهر کولجو",
     scroll: "هيٺ ڏسجو",
     tapRead: "پڙهڻ لاءِ ڇهجو",
     tapClose: "بند ڪرڻ لاءِ ڇهجو",
+    langSwitch: "انگريزيءَ ۾ پڙهجو",
     verseKicker: "قرآن شريف جو پيغام",
     translit: "Wa min āyātihi an khalaqa lakum min anfusikum azwājan li-taskunū ilayhā, wa jaʿala baynakum mawaddatan wa raḥmah",
     verse: "۽ سندس نشانين مان هڪ هيءَ به آهي ته هن اوهان لاءِ اوهان مان ئي ساٿي پيدا ڪيا، ته جيئن اوهين هڪ ٻئي وٽ سُک ۽ سڪون ماڻيو، ۽ اوهان جي وچ ۾ محبت ۽ رحمت رکيائين.",
@@ -101,7 +120,6 @@ export const T = {
     scratchAlmost: "بس ٿورو ئي رهيو آهي…",
     revealed: "اتي ملنداسين!",
     revealDate: "تاريخ ظاهر ڪجو",
-    photoSoon: "تصوير جلد ڏيکارينداسين",
     labels: ["ڏينهن", "ڪلاڪ", "منٽ", "سيڪنڊ"],
     dateBig: "27 ڊسمبر 2026",
     venueLine: "آچر · نيرون ڪوٽ هال، قاسم آباد، حيدرآباد",
@@ -122,6 +140,16 @@ export const T = {
     rsvpThanks: "مهرباني",
     rsvpSent: "اوهان جو جواب اسان ڏانهن اماڻجي رهيو آهي.",
     rsvpOne: "ڄڻو", rsvpMany: "ڄڻا",
+    rsvpNote: "اسان لاءِ پيغام (مرضي)",
+    rsvpNotePh: "جيڪي دل چاهي، لکجو",
+    rsvpContact: "اوهان جو نمبر (مرضي)",
+    rsvpAgain: "اوهان اڳ ۾ ئي جواب ڏنو آهي",
+    rsvpAgainYes: (n) => `اوهان ٻڌايو هو ته ${n} ڄڻا ايندا.`,
+    rsvpAgainNo: "اوهان ٻڌايو هو ته اچي نه سگهندؤ.",
+    rsvpUpdate: "جواب مٽائجو",
+    rsvpKeep: "ائين ئي رهڻ ڏجو",
+    rsvpQueued: "اوهان جي فون ۾ محفوظ ٿي ويو. انٽرنيٽ ايندي ئي اسان تائين پهچي ويندو.",
+    rsvpBy: (d) => `مهرباني ڪري ${d} تائين ٻڌائجو.`,
     schedKicker: "آچر، 27 ڊسمبر 2026",
     schedTitle: "ڏينهن جي ترتيب",
     sched: [
@@ -137,6 +165,9 @@ export const T = {
     travelB: "ان ڏينهن سفر بابت.",
     travel: " 27 ڊسمبر شهيد محترمه بينظير ڀٽو جي ياد جو ڏينهن آهي، جنهن جي مرڪزي تقريب ڳڙهي خدا بخش، لاڙڪاڻي ۾ ٿيندي آهي. سڄو ڏينهن روڊن تي قافلا ايندا ويندا آهن ۽ ڪيترائي ڀيرا صوبائي موڪل به ٿيندي آهي. جيڪڏهن اوهين ڪراچي، مٿينءَ سنڌ يا ڪنهن پري هنڌان اچي رهيا آهيو، ته ٿورو سويرو نڪرجو ۽ رستي لاءِ ڪجهه وڌيڪ وقت رکجو. اوهان جو خيريت سان پهچڻ اسان لاءِ سڀ کان وڌيڪ اهم آهي.",
     calendar: "ڪئلينڊر", map: "نقشو", save: "ڪارڊ سانڍجو",
+    calPick: "ڪئلينڊر ۾ رکجو",
+    calGoogle: "گوگل ڪئلينڊر",
+    calIcs: "ايپل، آئوٽلُڪ ۽ ٻيا",
     calSummary: "رخصتي ۽ وليمو — تاشقين ۽ انوشا",
     calDesc: "شام 7:00 وڳي تائين ضرور تشريف آڻجو. پروگرام ٺيڪ وقت تي شروع ٿيندو ۽ ڏنل ترتيب مطابق هلندو، ۽ شام 12:00 وڳي پڄاڻي ٿيندي.",
     dressKicker: "ننڍڙي گذارش", dressTitle: "لباس",
@@ -149,16 +180,18 @@ export const T = {
     closeTitle: "دعائن سان",
     closeNote: "اوهان جو اچڻ ئي اسان لاءِ سڀ کان وڏي دعا آهي. دل سان انتظار اٿئون ته هيءَ نئين شروعات اوهان سان گڏ ڪريون.",
     closeGuest: n => `خاص اوهان لاءِ، ${n}.`,
-    dotLabels: { s1:"دعوت", s2:"آيت", s3:"ڳڻپ", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
-    rsvpMsgYes: (g, count, names) =>
-      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ جواب، 27 ڊسمبر 2026.\n` +
+    dotLabels: { s1:"دعوت", s2:"ڳڻپ", s3:"آيت", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
+    rsvpMsgYes: (g, count, names, note, update) =>
+      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: ها\nڪيترا ڄڻا: ${count}\n` +
-      `${names.length ? "نالا: " + names.join("، ") : "نالا: نه ڏنا ويا"}`,
-    rsvpMsgNo: (g) =>
-      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ جواب، 27 ڊسمبر 2026.\n` +
+      `${names.length ? "نالا: " + names.join("، ") : "نالا: نه ڏنا ويا"}` +
+      `${note ? "\nپيغام: " + note : ""}`,
+    rsvpMsgNo: (g, note, update) =>
+      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
-      `اچڻ: هن ڀيري نه\nاسان جون دعائون اوهان ٻنهي سان گڏ آهن.`,
+      `اچڻ: هن ڀيري نه\nاسان جون دعائون اوهان ٻنهي سان گڏ آهن.` +
+      `${note ? "\nپيغام: " + note : ""}`,
   },
 };
 export const ARABIC_VERSE =

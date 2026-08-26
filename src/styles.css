@@ -24,6 +24,9 @@ body.lock{overflow:hidden;height:100svh}
 ::-webkit-scrollbar{width:0}
 ::selection{background:var(--wine1);color:var(--gold-p)}
 .sd-t{font-family:var(--fsd);letter-spacing:0;text-transform:none;line-height:1.9}
+/* read aloud, never drawn — the section headings a screen reader needs and the design does not */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;border:0;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 /* leafed gold — a real metal ramp on the display type instead of one flat tint.
    `color` stays set on each rule, so anything without background-clip still reads gold. */
 .script,.h-caps,.big,.nm-sd,.heartbase b,.rsvp-q{
@@ -136,7 +139,10 @@ body.lock{overflow:hidden;height:100svh}
 .pill{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--gold-line);
   border-radius:100px;background:rgba(22,4,10,.78);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
   box-shadow:0 4px 14px rgba(0,0,0,.4);color:var(--gold-p);
-  font-family:var(--fs);font-size:10px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+  /* spelled out rather than var(--fs): that stack ends in a generic serif, which would win the
+     Arabic of "سنڌي" before our own Naskh face ever got a look at it */
+  font-family:'Cormorant Garamond','Noto Naskh Arabic',serif;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
 .pill svg{width:13px;height:13px}
 .pill:active{transform:scale(.95)}
 
@@ -211,8 +217,6 @@ body.lock{overflow:hidden;height:100svh}
 .zoomhint.sd-t{font-size:11px;letter-spacing:0}
 .names{margin-top:24px}
 .nm-sd{font-family:var(--fsd-c);font-size:clamp(22px,6.4vw,29px);color:var(--gold-p);line-height:2.1;}
-.mini{margin-top:12px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-l);opacity:.95}
-.mini.sd-t{letter-spacing:0;font-size:13px}
 .cue{position:absolute;bottom:calc(13px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
   z-index:6;color:var(--gold-p);opacity:.7;font-size:8.5px;letter-spacing:.36em;text-transform:uppercase;
   display:grid;justify-items:center;gap:4px;animation:bob 2.4s ease-in-out infinite}
@@ -269,12 +273,6 @@ body.lock{overflow:hidden;height:100svh}
 .sc-hint{margin-top:12px;font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-l);
   opacity:.9;transition:opacity .3s}
 .sc-hint.sd-t{font-size:12px;letter-spacing:0}
-.frame{margin:22px auto 0;width:min(50vw,172px);aspect-ratio:4/5;position:relative;border:1px solid var(--gold-line);
-  display:grid;place-content:center;gap:7px;background:linear-gradient(160deg,rgba(247,227,181,.06),transparent)}
-.frame::before{content:'';position:absolute;inset:5px;border:.5px solid var(--gold-hair)}
-.frame em{font-family:var(--fi);font-size:32px;color:var(--gold-p);font-style:normal;opacity:.75}
-.frame small{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-p);opacity:.6}
-.frame small.sd-t{font-size:11px;letter-spacing:0}
 
 .sig{margin-top:16px;font-family:var(--fi);font-size:clamp(19px,5.2vw,23px);color:var(--gold-p);opacity:.85}
 .sig.sd-t{font-family:var(--fsd);font-size:clamp(13px,3.6vw,15px);line-height:2.1;opacity:.9}
@@ -344,14 +342,20 @@ body.lock{overflow:hidden;height:100svh}
   background:rgba(14,2,7,.9);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
   animation:rsvpIn .3s var(--e)}
 @keyframes rsvpIn{from{opacity:0}}
-.rsvp-sheet{position:relative;width:100%;max-width:440px;overflow:hidden;
+.rsvp-sheet{position:relative;width:100%;max-width:440px;overflow:hidden;display:flex;
+  max-height:92svh;
   padding:26px 22px calc(20px + env(safe-area-inset-bottom));
   background:radial-gradient(120% 90% at 50% 0%,var(--wine2),var(--wine3) 58%,var(--wine4));
   border:1px solid var(--gold-line);border-bottom:0;border-radius:14px 14px 0 0;
   box-shadow:0 -20px 60px rgba(0,0,0,.7);animation:rsvpUp .42s var(--e)}
 @keyframes rsvpUp{from{transform:translateY(26px)}}
 .rsvp-sheet .ajrak{opacity:.06}
-.rsvp-in{position:relative;z-index:2;text-align:center}
+/* The sheet used to have to fit the viewport exactly — it had nowhere to scroll, so one longer
+   string could push the send button off the bottom of a 360px phone in Sindhi. It scrolls inside
+   itself now: the panel is capped at the viewport and this is what moves, so the sheet can grow a
+   field without the layout having to be re-measured every time. */
+.rsvp-in{position:relative;z-index:2;text-align:center;width:100%;overflow-y:auto;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .rsvp-q{font-family:var(--fc);font-size:clamp(20px,5.6vw,25px);letter-spacing:.06em;
   color:var(--gold-p);margin-top:8px}
 .rsvp-q.sd-t{font-family:var(--fsd);font-size:clamp(16px,4.4vw,19px);letter-spacing:0;line-height:2}
@@ -380,10 +384,25 @@ body.lock{overflow:hidden;height:100svh}
   line-height:1.9;text-align:center}
 .rsvp-names.sd-t{font-family:var(--fsd);direction:rtl;line-height:2.2;font-size:13px}
 .rsvp-names:focus{outline:none;border-color:var(--gold-p)}
+.rsvp-names::placeholder{color:var(--chalk-x);opacity:.75}
+.rsvp-names.sd-t::placeholder{font-family:var(--fsd)}
+/* the contact number is one line and always Latin digits, so it keeps the textarea's frame
+   without its height or its right-to-left flip */
+.rsvp-one{resize:none;line-height:1.6;-webkit-appearance:none;appearance:none;border-radius:0}
 .rsvp-hint{margin-top:8px;font-size:11px;color:var(--chalk-x);font-weight:300;line-height:1.6}
 .rsvp-hint.sd-t{font-size:12px;line-height:2}
 .rsvp-acts{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:20px}
-.rsvp-x{display:block;margin:16px auto 0;border:0;background:none;padding:6px 10px;cursor:pointer;
+/* The send button holds its place at the bottom of the sheet while the fields scroll under it.
+   The fade is there so a field passing behind it reads as going under an edge rather than being
+   clipped; it ends on the sheet's own ground, so the ajrak carries on through it. */
+/* The padding is load-bearing: without it .rsvp-acts' top margin collapses straight through the
+   footer, taking the fade with it and leaving the field above sitting in clear air over the
+   buttons. The blur catches whatever still shows through the transparent top of the ramp. */
+.rsvp-foot{position:sticky;bottom:0;z-index:3;padding:17px 0 2px;
+  background:linear-gradient(180deg,rgba(51,9,19,0),rgba(51,9,19,.97) 26%,rgba(51,9,19,.99));
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.rsvp-foot .rsvp-acts{margin-top:0}
+.rsvp-x{display:block;margin:14px auto 0;border:0;background:none;padding:6px 10px;cursor:pointer;
   font-family:var(--fs);font-size:9px;letter-spacing:.26em;text-transform:uppercase;
   color:var(--gold-p);opacity:.7}
 .rsvp-x.sd-t{font-size:12px;letter-spacing:0}
@@ -403,9 +422,20 @@ body.lock{overflow:hidden;height:100svh}
 #reader img{max-width:100%;max-height:88svh;border-radius:3px;
   box-shadow:0 30px 80px rgba(0,0,0,.8),0 0 0 1px var(--gold-line);animation:rdUp .45s var(--e)}
 @keyframes rdUp{from{transform:scale(.9);opacity:0}}
-#reader .x{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;
+#reader .x{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;z-index:2;
+  border:0;background:none;padding:6px 4px;cursor:pointer;font-family:var(--fs);
   font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold-p);opacity:.75}
+#reader .x:focus-visible{outline:2px solid var(--gold-p);outline-offset:3px;opacity:1}
 #reader .x.sd-t{font-size:12px;letter-spacing:0}
+
+/* the last-resort invitation in main.jsx, if the app itself ever fails to render */
+.bare{max-width:32rem;margin:0 auto;padding:12vh 8vw;text-align:center;line-height:1.9}
+.bare h1{font-family:var(--fi);font-size:2.4rem;font-weight:400;color:var(--gold-p);margin:.4rem 0 1.2rem}
+.bare hr{border:0;border-top:1px solid var(--gold-line);margin:0 auto 1.4rem;width:60%}
+.bare p{margin-bottom:1.1rem;color:var(--chalk-d);font-weight:300}
+.bare a{color:var(--gold-p)}
+.bare-k{font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold-p)}
+.bare-t{color:var(--gold-p)}
 
 @media(max-width:430px){.corner{width:min(33vw,116px)}}
 @media(max-height:740px){
@@ -420,6 +450,9 @@ body.lock{overflow:hidden;height:100svh}
 .scratch canvas:focus-visible{outline:2px solid var(--gold-p);outline-offset:5px;border-radius:8px}
 .pill:focus-visible,.btn:focus-visible,.dots a:focus-visible,.seal:focus-visible{
   outline:2px solid var(--gold-p);outline-offset:3px}
+/* the card opens the full-size reader, so it has to be reachable without a pointer. The ring sits
+   outside .gilt rather than on the card, which is tilted in a preserve-3d context. */
+.cardwrap:focus-visible{outline:2px solid var(--gold-p);outline-offset:14px;border-radius:4px}
 
 /* ═ print ═
    Guests do print these. On paper the invitation becomes a single flowing sheet: ink on white,
@@ -441,7 +474,7 @@ body.lock{overflow:hidden;height:100svh}
   .cd-wrap{grid-template-rows:1fr!important}
   .cd-wrap .cd-inner{overflow:visible}
   .cd-wrap .cd-big,.cd-wrap .cd-sub{opacity:1!important;transform:none!important;filter:none!important}
-  .cd,.scratch,.frame{display:none}          /* the countdown and the foil are screen things */
+  .cd,.scratch{display:none}                 /* the countdown and the foil are screen things */
   .script,.h-caps,.big,.nm-sd,.heartbase b{-webkit-text-fill-color:currentColor;background:none;color:#7a1228}
   .kicker,.chip,.sched b,.notice b,.gtk b,.sig,.sdt,.pre-sd{color:#7a1228}
   .body,.sched span,.notice p,.gtk p,.translit{color:#2b1016}

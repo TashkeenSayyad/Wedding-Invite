@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "check": "node scripts/check.mjs",
+    "prebuild": "node scripts/check.mjs",
     "build": "vite build && node scripts/gen-sw.mjs",
     "preview": "vite preview",
     "fonts": "node scripts/build-fonts.mjs",

@@ -38,9 +38,14 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    English; the nikkah note was cleared in English but kept shipping in Sindhi). Check with:
 
    ```bash
-   node --input-type=module -e "import('./src/i18n.js').then(m=>console.log(
-     JSON.stringify(Object.keys(m.T.en).sort())===JSON.stringify(Object.keys(m.T.sd).sort())))"
+   npm run check
    ```
+
+   That one-liner has been replaced by `npm run check`, which runs before every build and also
+   catches a key that is empty in one language and still asserting itself in the other. A string
+   that is genuinely one-sided has to be listed in `ONE_SIDED` in `scripts/check.mjs` with a
+   reason — `closeSd` is the only one, because in Sindhi the farewell heading already *is* that
+   phrase.
 
    A line that mixes a Latin guest name into Sindhi needs an RTL base direction or the
    honorific renders before the name instead of after it — see `.greet.sd-t,.sig.sd-t` in
@@ -59,11 +64,15 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   so it matches exactly. Corners sit flush at section edges and bloom in on scroll.
 - The ajrak background is a custom SVG *kakar jaal* — eight-petal rosettes on a lattice.
   An earlier generic star-grid version was rejected as inauthentic.
-- 6 sections: `s1` card · `s2` verse · `s3` countdown+scratch heart · `s4` schedule ·
+- 6 sections: `s1` card · `s2` countdown+scratch heart · `s3` verse · `s4` schedule ·
   `s5` dress code · `s6` closing. (There used to be a `s4` menu section between the countdown
   and schedule — it was removed along with the share button; RSVP moved into `s4` schedule's
   `.acts` row as the solid CTA, and `s4` switched from `deep` to `wine` tone to keep the
   wine/deep alternation from running three `deep` sections in a row.)
+  The scratch heart used to sit *after* the verse and was moved in front of it — the ids are
+  positional, so they moved with the content rather than the numbering going out of order.
+  Both sections are `deep`, so the tone rhythm is untouched; the four corner ornaments stayed
+  with the verse, which is the framed section, not with the countdown.)
 
 **Known CSS trap:** a class named `.tl` will collide with `.corner.tl` and break corner
 positioning. This bug already happened once (a timeline used `.tl`; renamed to `.sched`).
@@ -120,10 +129,19 @@ it made offline impossible). `npm run fonts` builds `src/assets/fonts/` and gene
 
 English first paint is ~247 KB of fonts, down from ~393 KB. Sindhi adds ~159 KB on the switch.
 
-**Gotcha: `npm run fonts` reads the Sindhi strings straight out of `src/i18n.js` and the
-components. Add or change any Sindhi text and you must re-run it, or the new characters are
-not in the subset and render in a fallback face.** It needs `python3` with `fonttools` and
-`brotli`; a plain `npm run build` does not.
+**Gotcha: `npm run fonts` reads the Sindhi strings straight out of `src/i18n.js`, `src/config.js`
+and the components. Add or change any Sindhi text and you must re-run it, or the new characters
+are not in the subset and render in a fallback face.** It needs `python3` with `fonttools` and
+`brotli`; a plain `npm run build` does not. `src/config.js` is in that list because `RSVP_BY`
+carries a Sindhi date the moment the family sets one.
+
+One place is deliberately outside the subset: `scripts/guest-links.mjs` holds a Sindhi WhatsApp
+invitation, but it is a Node script whose output is pasted into WhatsApp and never rendered by
+the page, so it needs no glyphs of ours.
+
+The language pill spells its font stack out — `'Cormorant Garamond','Noto Naskh Arabic',serif` —
+rather than using `var(--fs)`. That variable ends in a generic `serif`, which would have won the
+Arabic of "سنڌي" before our own Naskh face was ever offered it.
 
 ## Offline and installable
 
@@ -169,12 +187,29 @@ labels stable** — the whole point is that the family can scan a thread and cou
 The count and the names are allowed to disagree (four coming, two named, is a real answer about
 children) — do not "fix" that by forcing one to match the other.
 
+The sheet also asks for a note and, optionally, a number to reach them on. The note is asked of
+the guests who *cannot* come as well — a regret often carries the kindest thing anyone writes all
+week. Both are appended to the WhatsApp message after the four labels, never among them.
+
+A guest who has replied from this phone before is shown their own answer instead of an empty
+form. Changing it reuses the id their phone generated the first time, which the Apps Script
+matches on and overwrites — so remembering a cousin an hour later corrects one row rather than
+adding a second. `lastRsvp()` in `src/rsvp-store.js` is what remembers.
+
 ### Where a reply goes
 
-Two places, on purpose. `RSVP_ENDPOINT` in `src/App.jsx` is a Google Apps Script web app that
-appends a row to the family's Sheet — `scripts/rsvp-sheet.gs` is the script and carries its own
-setup instructions. WhatsApp still opens as well, because it lands on a phone immediately and it
-is what works when the Sheet cannot be reached.
+Two places, on purpose. `RSVP_ENDPOINT` in **`src/config.js`** (not App.jsx any more — see
+*Configuration* below) is a Google Apps Script web app that appends a row to the family's Sheet;
+`scripts/rsvp-sheet.gs` is the script and carries its own setup instructions. WhatsApp still
+opens as well, because it lands on a phone immediately and it is what works when the Sheet cannot
+be reached.
+
+`scripts/rsvp-sheet.gs` is more than an endpoint now. `setup()`, run once from the Apps Script
+editor, builds and formats three sheets: **RSVPs** (one row per reply), **Summary** (live counts
+and the notes guests left) and **Guest list** — where the family types names into column A and
+the personalised link, a ready-to-send WhatsApp message and that guest's reply fill themselves
+in. An **RSVPs** menu in the Sheet turns on an email per reply or an evening digest. Nothing is
+emailed unless someone asks for it.
 
 `src/rsvp-store.js` is what makes that safe:
 
@@ -198,12 +233,52 @@ The endpoint is public and write-only — it is in the page source, so anyone co
 row. The script caps field lengths and validates the shape; do not put anything sensitive in
 that Sheet.
 
-The sheet must never grow taller than the viewport; it has nowhere to scroll. If a string gets
-longer, check it again at 360px in Sindhi, which is the tightest case.
+**The sheet used to have nowhere to scroll**, so one longer string could push the send button off
+a 360px phone. It scrolls inside itself now (`.rsvp-in`, capped at 92svh) and the send button
+lives in a sticky `.rsvp-foot` that holds its place while the fields scroll under it — measured
+across 360×640 up to 430×932, in both languages, with the button on screen everywhere. Two
+things to know if you touch it: the footer's `padding-top` is load-bearing (without it
+`.rsvp-acts`' top margin collapses through the footer and takes the fade with it), and 360px in
+Sindhi is still the tightest case worth re-checking.
+
+## Configuration
+
+Everything the family might change lives in **`src/config.js`**: `RSVP_PHONE`, `RSVP_ENDPOINT`,
+`SITE`, an optional `RSVP_BY` deadline, the venue, the maps URL and the three instants the
+countdown and the calendar are built from. `.env` values (`VITE_RSVP_PHONE`, `VITE_RSVP_ENDPOINT`,
+`VITE_SITE`) win over the file, so the family can rebuild without editing source.
+
+Nothing else should hard-code the date, the venue or the URL. `scripts/guest-links.mjs` and
+`src/ics.js` both import from here, which is why the .ics and the Google Calendar link cannot
+drift apart.
+
+`RSVP_BY` ships empty in both languages and renders nothing until both are set — a deadline is
+the family's fact to state, not one to invent.
+
+## npm run check
+
+`scripts/check.mjs` runs before every build and proves the four things this project has broken
+before or would not notice breaking:
+
+- the two languages are the same shape — same keys, same types, arrays the same length, and no
+  key emptied in one language while still asserting itself in the other
+- every `t.something` a component reaches for exists, and nothing is defined that nothing renders
+  (this is what found `photoSoon` and `names`, both long dead)
+- the `.ics` is RFC 5545 in **both** languages: CRLF, folded under 75 octets, every BEGIN closed,
+  and a plain UTC `DTSTART` so it needs no `VTIMEZONE`
+- the config is readable, and it says out loud which of `RSVP_PHONE` / `RSVP_ENDPOINT` are still
+  blank
+
+Warnings do not fail the build; a malformed phone number or endpoint does.
+
+`.github/workflows/check.yml` runs it on every push and then fails if `docs/` has fallen behind
+`src/`. The site is served from the committed `docs/`, so a source change that was never rebuilt
+ships nothing at all while looking perfectly fine. The build is byte-for-byte reproducible, which
+is what makes that check trustworthy.
 
 ## The countdown has three phases
 
-`useCountdown` returns `phase`, and s3 renders one of three things:
+`useCountdown` returns `phase`, and s2 renders one of three things:
 
 - `before` — the digits, counting down to **7:00 PM on the 27th**, not to midnight. Running to
   the top of the day left the digits at `00:00:00:00` from midnight onwards, on the one day
@@ -214,6 +289,37 @@ longer, check it again at 360px in Sindhi, which is the tightest case.
 
 The ticking interval stops itself once the day arrives.
 
+## Reaching a guest who is not you
+
+Four things exist because the invitation travels further than the people who built it:
+
+- **The calendar is a choice, not a download.** One button used to hand everyone an `.ics`. That
+  is right for Apple Calendar and Outlook and close to useless on Android, where the file lands
+  in a folder and no calendar app offers to open it — so the guests most likely to be driving up
+  from Karachi were the ones who could not add the evening to their phone. `CalPick` in `App.jsx`
+  offers Google Calendar alongside the file; both are built from the same two instants in
+  `config.js`, so they cannot drift.
+- **`?lang=sd`** on a guest link opens the invitation in Sindhi, and beats whatever that phone
+  last chose — the family sent that link on purpose. `npm run links` writes it per guest from a
+  `Name, sd` line in `guests.txt`.
+- **A `<noscript>` invitation** in `index.html`, and an error boundary in `main.jsx` that renders
+  the same essentials if the app ever throws. Both are built from literals: a fallback that read
+  from `i18n.js` would fail alongside it. An invitation that renders a blank screen is worse than
+  a plain one.
+- **Event JSON-LD** in the head, so a WhatsApp or search preview states the evening rather than
+  guessing at it.
+
+Accessibility, in the same spirit: every section carries a real `<h2>` (visually hidden, using
+the same label the dot navigation shows) because the design is built out of ornament and script
+faces and offers a screen reader nothing to navigate by. `Sheet.jsx` owns the scroll lock,
+Escape and the tab ring for both panels, and hands focus back to whatever opened it. The card on
+`s1` is now a real tab stop that opens on Enter or Space, the reader closes on Escape, its close
+affordance is a real button rather than a `<span>`, and focus makes the whole round trip — card →
+close button → back to the card. The countdown is
+`role="timer"` and deliberately **not** a live region — four numbers announced once a second
+would make that section unusable. And with `prefers-reduced-motion` the envelope's 3.2-second
+opening is cut to 0.26s, because with the animation switched off that wait is just a stall.
+
 ## Testing convention
 
 Every change was verified in a real browser before shipping. Please keep this up:
@@ -222,7 +328,14 @@ Every change was verified in a real browser before shipping. Please keep this up
 npm run build && cd docs && python3 -m http.server 8901
 ```
 
-Then check with Playwright (or manually) at **360, 393, 430 and 820px**, in **both languages**:
+Then check with Playwright (or manually) at **360, 393, 430 and 820px**, in **both languages**.
+The sweep that was run for the configuration/RSVP pass covered all of the below plus the scratch
+reveal, the RSVP sheet fitting with its send button on screen, Escape closing both panels and the
+reader, offline reload with a `?to=` name intact, and `@media print`. Chromium is at
+`/opt/pw-browsers/chromium`; pass it as `executablePath` if the installed Playwright expects a
+different build.
+
+
 - no section content taller than its section (overflow)
 - no horizontal scroll
 - corners flush to section edges
@@ -245,7 +358,7 @@ once silently repainted the canvas, wiping the user's scratch. `ScratchHeart`'s 
 depend on anything that changes per-tick (`onDone` is held in a ref for this reason).
 
 More scratch-heart invariants (added in the scratch-card-improvements pass):
-- **`s3` must not show the date before scratching.** The big "27 December 2026" heading used to
+- **`s2` must not show the date before scratching.** The big "27 December 2026" heading used to
   sit right above the heart and spoiled the reveal; it now lives *inside* `.cd-wrap` (with the
   venue line) and only appears after `onDone`. Don't re-add a visible date above the heart.
 - **Nor may the card on `s1`, nor the letter that rises out of the envelope.** The artwork prints
@@ -261,7 +374,7 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
   divider ornament (ends 73.9%) and the venue line (starts 79.8%) with almost nothing to spare,
   so re-measure all of it if the artwork is ever re-typeset. It is hidden under `@media print` —
   paper should carry the date. The download button on `s4` still hands over the unveiled PNG,
-  which is deliberate: it sits after `s3`, and the file is the real invitation.
+  which is deliberate: it sits after `s2`, and the file is the real invitation.
 - **The band says why it is there** (`maskHint`, "Scratch the heart to find out the date"),
   struck into the leaf in wine. Sizing is proportional, not fixed: each host sets `--cw` to the
   width of the card the band is sitting on — `.cardwrap`, `.rd-card` and `.letter` all differ,
@@ -288,17 +401,27 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 
 ## Still open — ask the user, don't invent
 
-1. **`RSVP_PHONE` and `RSVP_ENDPOINT` in `src/App.jsx` are both still empty.** `RSVP_PHONE`
-   needs the family WhatsApp number, digits only (e.g. `"923001234567"`); until then RSVP opens
-   WhatsApp's contact picker. `RSVP_ENDPOINT` needs the deployed Apps Script URL from
-   `scripts/rsvp-sheet.gs`; until then replies queue on each guest's phone and only WhatsApp
-   carries them. These two are the highest-value things left.
-2. **Couple photograph** — `s3` has a placeholder frame ("Photograph to follow").
+1. **`RSVP_PHONE` and `RSVP_ENDPOINT` are both still empty** — they now live in
+   `src/config.js`, or in `.env` as `VITE_RSVP_PHONE` / `VITE_RSVP_ENDPOINT`. `RSVP_PHONE` needs
+   the family WhatsApp number, digits only (e.g. `"923001234567"`); until then RSVP opens
+   WhatsApp's contact picker. `RSVP_ENDPOINT` needs the deployed Apps Script URL — the script is
+   ready and `setup()` builds the whole Sheet, but only the family can create the Sheet and
+   deploy it. These two are still the highest-value things left, and `npm run check` says so on
+   every build.
+2. **Couple photograph** — there is no frame for one any more. The old `.frame` CSS and its
+   "Photograph to follow" string were never rendered by any component, so both were removed
+   rather than left as dead code. When there is a photograph, build the frame around the real
+   image and check `s2` for overflow at 360px — that section already carries the countdown and
+   the scratch heart.
 3. **Native Sindhi proofread** — outstanding, especially the timing notice. Also unchecked:
    the honorific `جن` used in the greeting (`{name} جن،`), the closing `خاص اوهان لاءِ،`,
    and the three new countdown strings (`today`/`todayNote`/`past`/`pastNote`), and
    `maskHint` on the gold band (`تاريخ ڄاڻڻ لاءِ دل کي کرچجو`).
-4. **"The verse that was recited at our nikkah"** on `s2` — `verseNote` is now empty in *both*
+   Newer and equally unchecked: `langSwitch`, the RSVP additions (`rsvpNote`, `rsvpNotePh`,
+   `rsvpContact`, `rsvpAgain`, `rsvpAgainYes`, `rsvpAgainNo`, `rsvpUpdate`, `rsvpKeep`,
+   `rsvpQueued`, `rsvpBy`), the calendar chooser (`calPick`, `calGoogle`, `calIcs`), and the
+   Sindhi WhatsApp invitation in `scripts/guest-links.mjs`.
+4. **"The verse that was recited at our nikkah"** on `s3` — `verseNote` is now empty in *both*
    languages. It had been cleared in English but was still asserting the claim in Sindhi.
    Restore both, or neither.
 5. **What the "rasms" at 10:30 PM are** — the schedule just says "Rasms" / "رسمون" for now;
@@ -309,11 +432,15 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 
 ## Nice-to-haves discussed but not built
 
-- QR code of the live URL, styled in gold, for the printed cards
 - "Light a diya for us" tap interaction on the closing page
 - Background music toggle (off by default)
 
 ## Deployment
 
 `npm run build` outputs to `docs/`. GitHub Pages: Settings → Pages → deploy from branch
-`main`, folder `/docs`. Guest links take `?to=Name` and render "Dear Name," on the envelope.
+`main`, folder `/docs`. Guest links take `?to=Name` and render "Dear Name," on the envelope, and
+`?lang=sd` opens it in Sindhi.
+
+`docs/` is committed, so the build is part of the change — push a source edit without rebuilding
+and the site quietly keeps serving the previous version. `.github/workflows/check.yml` catches
+exactly that.
