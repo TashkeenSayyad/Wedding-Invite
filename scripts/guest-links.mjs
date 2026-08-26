@@ -86,15 +86,18 @@ const linkFor = ({ name, lang }) => {
   return SITE + "?to=" + encodeURIComponent(name.slice(0, 40)) + (l ? "&lang=" + l : "");
 };
 const csvCell = (v) => (/[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v);
+// The date is left out on purpose: this message sits directly above the link preview in the
+// thread, and the preview no longer carries it either — the scratch heart is what tells a guest
+// the date. The venue stays; only the date is the surprise.
 const message = (name, url) =>
-  `Assalamu alaikum ${name}! You are warmly invited to the Rukhsati & Walima of Tashkeen & Anusha, ` +
-  `Sunday 27 December 2026 at Nerunkot Hall, Qasimabad, Hyderabad. ` +
-  `Your invitation is here: ${url}`;
+  `Assalamu alaikum ${name}! You are warmly invited to the Rukhsati & Walima of Tashkeen & Anusha ` +
+  `at Nerunkot Hall, Qasimabad, Hyderabad. ` +
+  `Your invitation is here — scratch the heart to find out the date: ${url}`;
 // Kept in the same shape as the English so the family can scan either list the same way.
 const messageSd = (name, url) =>
   `السلام عليڪم ${name}! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي ۾ اوهان کي محبت سان دعوت آهي — ` +
-  `آچر، 27 ڊسمبر 2026، نيرون ڪوٽ هال، قاسم آباد، حيدرآباد. ` +
-  `اوهان جي دعوت هتي آهي: ${url}`;
+  `نيرون ڪوٽ هال، قاسم آباد، حيدرآباد. ` +
+  `اوهان جي دعوت هتي آهي، تاريخ ڄاڻڻ لاءِ دل کي کرچجو: ${url}`;
 
 const list = rows.map((r) => {
   const url = linkFor(r);

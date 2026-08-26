@@ -157,14 +157,50 @@ there would be a nuisance.
 
 ## Generated artwork
 
-- `npm run og` → `public/assets/og-card.jpg` (1200×630, ~90 KB) and the three PWA icons.
+- `npm run og` → `public/assets/og-card.jpg` (1200×630, ~94 KB) and the three PWA icons.
   `og:image` used to point at the 2.1 MB portrait `card-print.png`, which WhatsApp will not
   render — and WhatsApp is how this invitation actually travels. Needs pillow + fonttools.
+  **The preview card carries the gold band, not the date** — see *Nothing previews the date* below.
 - `npm run links` → personalised `?to=` links as CSV and as paste-ready WhatsApp messages, plus
   the gold QR for the printed cards, into `out/` (not committed). Reads `guests.txt`, or names
   as arguments, or `--list <file>`; `--qr-each` adds a QR per guest. The QR is deliberately
   **wine modules on a pale gold ground**, not gold on wine — inverted polarity is not something
   every phone camera will read.
+
+## Nothing previews the date
+
+The date is what the scratch heart reveals, so nothing a guest meets *before* opening the
+invitation may state it. `DateMask` covers the line printed on the artwork (see the scratch-heart
+invariants under *Testing convention*); this is the rest of that rule, and the outside half of it
+was open for a while — WhatsApp was printing "Sunday, 27 December 2026" both in the preview card
+and in the line of text under it, so the heart revealed something every guest already knew.
+
+Where the date must **not** appear:
+
+- `public/assets/og-card.jpg`. Where the date line used to be set, `scripts/build-og.py` now draws
+  the same band `.datemask` does — the same 100deg leaf ramp, the same wine ink, the same words as
+  `maskHint`. The writing measures itself down until it fits the band, so the hint can be
+  re-worded without running over the ends.
+- `og:description`, `og:image:alt` and `<meta name="description">` in `index.html`, and
+  `description` in `public/manifest.webmanifest`.
+- The paste-ready WhatsApp message in `scripts/guest-links.mjs` (both languages) and its twin
+  `INVITE_TEXT` in `scripts/rsvp-sheet.gs`. That message sits directly above the preview in the
+  thread, so fixing the preview and leaving the message fixes nothing. **Keep the two in step** —
+  the Sheet's copy is only a default and the family can rewrite it in `Guest list!J3`.
+
+Where it deliberately still does: the `<noscript>` invitation and the error boundary in
+`main.jsx` (a guest whose script never runs cannot scratch anything, and a fallback that withholds
+the date is worse than a plain one); the Event JSON-LD's `startDate`, which is search-only — an
+Event without one is not an Event, and no link preview reads JSON-LD, so delete the whole block if
+the date should be nowhere at all; the Summary header in the family's own Sheet; and the printed
+card, which is paper.
+
+The venue stays everywhere. Only the date is the surprise.
+
+**Caches:** WhatsApp holds a scraped preview per URL for days, so `og:image` ends `?v=2` — bump it
+whenever the card is redrawn. Each personalised `?to=` link is its own URL and is scraped fresh;
+it is the bare site URL, in threads where it has already been shared, that can keep showing the
+old card for a while.
 
 ## The RSVP is composed, not free-text
 

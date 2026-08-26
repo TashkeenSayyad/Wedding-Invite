@@ -9,8 +9,9 @@ as the site, and keeps it under 200 KB.
 Run with `npm run og`. Needs pillow + fonttools; the output is committed.
 """
 import io
+import math
 import os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from fontTools.ttLib import TTFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +23,13 @@ WINE_OUT = (26, 6, 14)
 GOLD = (233, 200, 126)
 GOLD_PALE = (247, 227, 181)
 CHALK = (247, 239, 225)
+DM_INK = (76, 16, 32)          # the wine the mask's writing is struck in, as .dm-t
+# the leaf ramp of .datemask in styles.css, as (stop, colour) along a 100deg gradient line
+DM_LEAF = [(0.0, (138, 106, 52)), (0.34, (233, 200, 126)), (0.5, (247, 227, 181)),
+           (0.66, (217, 178, 100)), (1.0, (138, 106, 52))]
+DM_ANGLE = 100
+# the same words the band on the card carries — i18n.js `maskHint`, upper-cased as .dm-t is
+MASK_HINT = "SCRATCH THE HEART TO FIND OUT THE DATE"
 
 
 def face(pkg, name, size):
@@ -48,16 +56,72 @@ def backdrop():
     return small.resize((W, H), Image.LANCZOS)
 
 
+def tracked(d, x, y, text, font, fill, tracking):
+    """Letter-spacing, which PIL has no notion of — laid out a glyph at a time."""
+    for c in text:
+        d.text((x, y), c, font=font, fill=fill)
+        x += d.textlength(c, font=font) + tracking
+
+
+def tracked_width(d, text, font, tracking):
+    return sum(d.textlength(c, font=font) for c in text) + tracking * (len(text) - 1)
+
+
 def centred(d, y, text, font, fill, tracking=0):
     if tracking:
-        widths = [d.textlength(c, font=font) for c in text]
-        total = sum(widths) + tracking * (len(text) - 1)
-        x = (W - total) / 2
-        for c, w in zip(text, widths):
-            d.text((x, y), c, font=font, fill=fill)
-            x += w + tracking
+        tracked(d, (W - tracked_width(d, text, font, tracking)) / 2, y, text, font, fill, tracking)
         return
     d.text((W / 2, y), text, font=font, fill=fill, anchor="ma")
+
+
+def leaf(w, h):
+    """The .datemask gradient at the size of the band. CSS 0deg points to the top, so the
+    gradient line for 100deg is (sin, -cos) in a coordinate system whose y runs down."""
+    im = Image.new("RGB", (w, h))
+    px = im.load()
+    a = math.radians(DM_ANGLE)
+    dx, dy = math.sin(a), -math.cos(a)
+    span = abs(w * dx) + abs(h * dy)
+    cx, cy = w / 2, h / 2
+    for y in range(h):
+        for x in range(w):
+            t = min(1.0, max(0.0, ((x - cx) * dx + (y - cy) * dy) / span + 0.5))
+            for (s0, c0), (s1, c1) in zip(DM_LEAF, DM_LEAF[1:]):
+                if t <= s1:
+                    e = 0.0 if s1 == s0 else (t - s0) / (s1 - s0)
+                    px[x, y] = tuple(round(p + (q - p) * e) for p, q in zip(c0, c1))
+                    break
+    return im
+
+
+def datemask(x0, y0, x1, y1):
+    """The leaf of gold that stands in for the date, so the preview says as much as the card does
+    with the mask on it — and the scratch heart still has something to reveal. Same band, same
+    words, same ramp as .datemask / .dm-t; a guest meets it here and again on the invitation."""
+    w, h = x1 - x0, y1 - y0
+
+    # box-shadow 0 1px 5px rgba(20,3,9,.55) — the band lifts off the wash instead of lying on it
+    shade = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(shade).rectangle([x0, y0 + 1, x1, y1 + 1], fill=140)
+    img.paste(Image.new("RGB", (W, H), (20, 3, 9)), (0, 0), shade.filter(ImageFilter.GaussianBlur(2.5)))
+
+    band = leaf(w, h)
+    bd = ImageDraw.Draw(band)
+    bd.rectangle([0, 0, w - 1, h - 1], outline=(216, 190, 148), width=1)  # inset 0 0 0 .5px
+
+    # the writing fills the band, as it does on the card — measured down until it fits, so the
+    # hint can be re-worded without going over the ends
+    room = w - h
+    for size in range(34, 9, -1):
+        font, tracking = sc(size), size * 0.05                     # letter-spacing:.05em
+        tw = tracked_width(bd, MASK_HINT, font, tracking)
+        if tw <= room:
+            break
+    ink = bd.textbbox((0, 0), MASK_HINT, font=font)
+    x, y = (w - tw) / 2, (h - ink[1] - ink[3]) / 2
+    tracked(bd, x, y + 1, MASK_HINT, font, (245, 228, 190), tracking)  # text-shadow 0 .5px 0
+    tracked(bd, x, y, MASK_HINT, font, DM_INK, tracking)
+    img.paste(band, (x0, y0))
 
 
 img = backdrop()
@@ -103,7 +167,10 @@ draw.line([(W / 2 - 190, 392), (W / 2 + 190, 392)], fill=(150, 120, 70), width=1
 for cxx in (W / 2 - 205, W / 2 + 205):
     draw.ellipse([cxx - 3, 389, cxx + 3, 395], fill=GOLD)
 
-centred(draw, 424, "SUNDAY  ·  27 DECEMBER 2026", sc(40), CHALK, tracking=4)
+# where "SUNDAY · 27 DECEMBER 2026" used to be set. WhatsApp is how this invitation travels, so
+# the preview was handing every guest the date before they had opened anything — and the scratch
+# heart on s2 was revealing something they already knew.
+datemask(250, 406, 950, 470)
 centred(draw, 498, "NERUNKOT HALL · QASIMABAD · HYDERABAD", cg(28), (214, 190, 170), tracking=3)
 
 img.save(OUT, "JPEG", quality=86, optimize=True, progressive=True)

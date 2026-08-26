@@ -55,11 +55,13 @@
 var SITE = 'https://tashkeensayyad.github.io/Wedding-Invite/';
 
 /** The WhatsApp message the Guest list builds for each guest. {name} and {link} are filled in.
- *  This is only the default; the live copy is Guest list!J3 and you can rewrite it there. */
+ *  This is only the default; the live copy is Guest list!J3 and you can rewrite it there.
+ *  It leaves the date out to match the invitation and its link preview, where the date is what
+ *  the scratch heart reveals — the same wording as scripts/guest-links.mjs. */
 var INVITE_TEXT =
   'Assalamu alaikum {name}! You are warmly invited to the Rukhsati & Walima of ' +
-  'Tashkeen & Anusha, Sunday 27 December 2026 at Nerunkot Hall, Qasimabad, Hyderabad. ' +
-  'Your invitation is here: {link}';
+  'Tashkeen & Anusha at Nerunkot Hall, Qasimabad, Hyderabad. ' +
+  'Your invitation is here — scratch the heart to find out the date: {link}';
 
 var SHEET_NAME = 'RSVPs';
 var SUMMARY_NAME = 'Summary';
