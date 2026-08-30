@@ -262,7 +262,7 @@ export default function App() {
         {/* 1 · card */}
         <Sec id="s1" tone="wine" label={t.dotLabels.s1} refMap={refMap}
           foot={<div className={"cue" + (sd ? " sd-t" : "")}>{t.scroll}
-            <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>}>
           {/* the tap target is the card itself, not an overlay laid over it: .cardwrap is a
               preserve-3d context, so a sibling's z-index loses to the tilted .card3d, which
@@ -324,7 +324,7 @@ export default function App() {
           <Rv d={0.26} cls="band" />
           <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
           <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
-          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 12.5 }}>{t.verseNote}</Rv>
+          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 14 }}>{t.verseNote}</Rv>
         </Sec>
 
         {/* 4 · schedule */}
@@ -376,7 +376,7 @@ export default function App() {
           <Rv d={0.1} cls="band" />
           <div className="dc">
             <Rv d={0.16}>
-              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 14 : 11.5, letterSpacing: sd ? 0 : ".2em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.encouraged}</h3>
+              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.encouraged}</h3>
               <div className="chips">
                 {t.colors.map(([c, n], i) => (
                   <span key={i} className="chip"><i style={{ background: c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
@@ -384,7 +384,7 @@ export default function App() {
               </div>
             </Rv>
             <Rv d={0.24}>
-              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 14 : 11.5, letterSpacing: sd ? 0 : ".2em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.reserved}</h3>
+              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.reserved}</h3>
               <div className="chips">
                 {t.resChips.map(([c, n], i) => (
                   <span key={i} className="chip no"><i style={{ background: c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>

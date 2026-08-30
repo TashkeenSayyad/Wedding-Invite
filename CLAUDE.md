@@ -124,6 +124,37 @@ Gold contrast is a system, not ad-hoc tints:
 - A gold seam (`.sec::after`) separates sections; `.gilt` is the offset gold rule around the card.
 - The revealed scratch heart keeps a gilt outline (`.heartring-base`); only the progress ring fades.
 
+### Readability pass (type scale and the scroll cue)
+
+The whole page was set a size too small to read comfortably on a phone held at arm's length,
+so every size was lifted in one pass. Treat these as floors, not suggestions — do not set new
+type below them:
+
+- body copy `.body` / `.sched span` **15px**, the framed notes `.notice p` 13.2px and `.gtk p` 13px
+- letterspaced small caps — `.kicker`, `.btn`, `.chip`, `.sc-hint`, `.rsvp-lab`, `.cd small`,
+  `.zoomhint`, the dot labels, `.tap`, `.pre-sub`, both close buttons — **at least 9.5px**, and
+  their tracking was eased in step (`.kicker` .44em → .38em, `.btn` .2em → .18em, and so on):
+  a bigger face at the old tracking wraps a line that used to fit.
+- every Sindhi twin (`.sd-t`) moved with its English rule. Nastaliq needs about 1.3× the size
+  of the Latin to read at all, which is why those numbers are the larger ones.
+- the two `.dc h3` headings and `verseNote` are set inline in `App.jsx` rather than from the
+  stylesheet, so they had to be changed there as well. `.dm-t` on the gold band is the one thing
+  deliberately left alone — it is measured against the band, not the page.
+
+Sizes were re-swept at 360 / 393 / 430 / 820 in both languages: nothing overflows, nothing
+scrolls sideways, and the RSVP sheet's send button is still on screen at 360 in Sindhi with the
+count, names, note and contact fields all open. `s4` is still the one section taller than the
+viewport, as it always was.
+
+The scroll cue on `s1` (`.cue`) was 8.5px of text and a bare 12px chevron over the busiest
+artwork on the site, and read as part of the ornament. It is now 11px (Sindhi 14px) at .95
+opacity, and the chevron sits in a 30px gold-hairline disc with a dark ground of its own so it
+carries against the card. The existing `bob` is what makes it a scroll cue rather than a
+decoration — travel went 7px → 9px, and it is still the only looping motion on the page, so
+this is not the door back in for the effects the restraint pass removed. The scroll progress
+thread and the dot navigation were lifted with it (thread 2px → 3px on a .2α track, dots
+6px → 8px, labels 8.5px → 10px).
+
 ## Fonts — self-hosted and split
 
 Nothing is fetched from fonts.googleapis.com any more (two connections before first paint, and
