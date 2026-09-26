@@ -19,12 +19,16 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   link-preview card (`og-card.jpg`), one under each name, and nowhere else. If they are ever
   wanted on the artwork after all, the working script is in git at 5e2a7cd, along with the
   measurements it took.
-- **Date:** Sunday, 27 December 2026
-- **Venue:** Nerunkot Hall, Qasimabad, Hyderabad, Sindh, Pakistan
-- **Schedule:** 7:00 PM guests arrive · 8:00 PM entrance of the bride & groom · 9:00 PM dinner ·
+- **Two evenings, two cities:**
+  - **Rukhsati** — Sunday, 27 December 2026, **Nerunkot Hall, Qasimabad, Hyderabad**
+  - **Walima** — Tuesday, 29 December 2026, **Zam Zam Hall, Thatta**. Its time is **not fixed
+    yet** — the page, the calendar and the fallbacks give its date and hall with no hour. When the
+    family sets one, fill `WALIMA_ICS_START` / `WALIMA_ICS_END` in `src/config.js` and give it a
+    programme in `s4`; do not invent one.
+- **Rukhsati schedule:** 7:00 PM guests arrive · 8:00 PM entrance of the bride & groom · 9:00 PM dinner ·
   10:30 PM rasms · 12:00 AM Rukhsati (Rukhsati is the final event of the night — the rasms happen
   before it, not after)
-- Parking is directly at Nerunkot Hall
+- Parking is directly at Nerunkot Hall (said of the Rukhsati only — nothing is known about Zam Zam Hall)
 - The nikkah has **already happened** — do not add nikkah details
 - There is **no mehndi event** on this invitation — it was deliberately removed
 - There is **no printed menu** on this invitation — the menu section was removed; do not re-add it
@@ -65,7 +69,12 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    Cormorant SC). Do not regenerate it with AI and do not edit the Canva file — that design is
    out of date. A line of type on it is changed by lifting it off the wine and re-setting it in
    place — the ground under the text is a smooth vertical gradient, so a column redrawn from the
-   clean rows just outside the erase is invisible. **`src/assets/card-web.webp` is not a resize
+   clean rows just outside the erase is invisible. The foot of the card reads
+   `27 & 29 DECEMBER 2026` / `Rukhsati · Nerunkot Hall, Qasimabad · Hyderabad` /
+   `Walima · Zam Zam Hall · Thatta`, set by `scripts/card-dates.py` with faces, sizes and
+   baselines fitted to the lines it replaced; the date stays one caps line in its old place so
+   DateMask's band still covers it (now 76.5–78.4% high, 31–69% wide).
+   **`src/assets/card-web.webp` is not a resize
    of the master** — it is a separate, flatter rendering with a brighter wine and a paler cream,
    so any edit has to be made to both cuts on their own terms, each measured against its own
    ground. 5e2a7cd is a worked example of all of this.
@@ -243,7 +252,7 @@ card, which is paper.
 
 The venue stays everywhere. Only the date is the surprise.
 
-**Caches:** WhatsApp holds a scraped preview per URL for days, so `og:image` ends `?v=2` — bump it
+**Caches:** WhatsApp holds a scraped preview per URL for days, so `og:image` ends `?v=3` — bump it
 whenever the card is redrawn. Each personalised `?to=` link is its own URL and is scraped fresh;
 it is the bare site URL, in threads where it has already been shared, that can keep showing the
 old card for a while.
@@ -358,15 +367,19 @@ Warnings do not fail the build; a malformed phone number or endpoint does.
 ships nothing at all while looking perfectly fine. The build is byte-for-byte reproducible, which
 is what makes that check trustworthy.
 
-## The countdown has three phases
+## The countdown has five phases
 
-`useCountdown` returns `phase`, and s2 renders one of three things:
+`useCountdown` returns `phase`, and s2 renders one of these. The Walima has no hour, so after the
+Rukhsati there are no digits — only its date and hall. The heart under the foil reads
+`27 & 29` over `12 · 2026`.
 
 - `before` — the digits, counting down to **7:00 PM on the 27th**, not to midnight. Running to
   the top of the day left the digits at `00:00:00:00` from midnight onwards, on the one day
   every guest opens this.
 - `today` — from midnight on the 27th, "Today is the day" and the evening's start time.
-- `past` — from 6:00 AM on the 28th, a thank-you. The invitation ages gracefully instead of
+- `next` — from 6:00 AM on the 28th, "Next, the Walima" with its date and hall.
+- `walima` — from midnight on the 29th, "Today is the Walima".
+- `past` — from 6:00 AM on the 30th, a thank-you. The invitation ages gracefully instead of
   sitting at zero forever.
 
 The ticking interval stops itself once the day arrives.
@@ -379,8 +392,9 @@ Four things exist because the invitation travels further than the people who bui
   is right for Apple Calendar and Outlook and close to useless on Android, where the file lands
   in a folder and no calendar app offers to open it — so the guests most likely to be driving up
   from Karachi were the ones who could not add the evening to their phone. `CalPick` in `App.jsx`
-  offers Google Calendar alongside the file; both are built from the same two instants in
-  `config.js`, so they cannot drift.
+  offers a Google Calendar link per evening (Google takes one event per link) alongside the file,
+  which carries both; all are built from the same values in `config.js`, so they cannot drift.
+  Until the Walima has an hour it is an all-day `VALUE=DATE` entry, which `npm run check` accepts.
 - **`?lang=sd`** on a guest link opens the invitation in Sindhi, and beats whatever that phone
   last chose — the family sent that link on purpose. `npm run links` writes it per guest from a
   `Name, sd` line in `guests.txt`.
@@ -483,6 +497,10 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 
 ## Still open — ask the user, don't invent
 
+0. **The Walima's time and programme** — not fixed yet (see the event facts above). Also worth
+   asking: whether the RSVP should ask separately for each evening. It is still one yes/no and one
+   headcount for both, though they are two days and two cities apart.
+
 1. **`RSVP_PHONE` and `RSVP_ENDPOINT` are both still empty** — they now live in
    `src/config.js`, or in `.env` as `VITE_RSVP_PHONE` / `VITE_RSVP_ENDPOINT`. `RSVP_PHONE` needs
    the family WhatsApp number, digits only (e.g. `"923001234567"`); until then RSVP opens
@@ -499,7 +517,9 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
    the honorific `جن` used in the greeting (`{name} جن،`), the closing `خاص اوهان لاءِ،`,
    and the three new countdown strings (`today`/`todayNote`/`past`/`pastNote`), and
    `maskHint` on the gold band (`تاريخ ڄاڻڻ لاءِ دل کي کرچجو`).
-   Newer and equally unchecked: `langSwitch`, the RSVP additions (`rsvpNote`, `rsvpNotePh`,
+   Newer and equally unchecked: the Walima strings (`walimaKicker`, `walimaPlace`, `walimaNote`,
+   `walimaMap`, `walimaNext`, `walimaNextNote`, `walimaToday`, `walimaTodayNote`, `calGoogleR`,
+   `calGoogleW`, `calWalima`, `calWalimaDesc`, the two-line `venueLine`), `langSwitch`, the RSVP additions (`rsvpNote`, `rsvpNotePh`,
    `rsvpContact`, `rsvpAgain`, `rsvpAgainYes`, `rsvpAgainNo`, `rsvpUpdate`, `rsvpKeep`,
    `rsvpQueued`, `rsvpBy`), the calendar chooser (`calPick`, `calGoogle`, `calIcs`), and the
    Sindhi WhatsApp invitation in `scripts/guest-links.mjs`.

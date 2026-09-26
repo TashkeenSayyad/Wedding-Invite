@@ -7,12 +7,18 @@ import Rsvp from "./components/Rsvp.jsx";
 import Sheet from "./components/Sheet.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
 import { buildIcs } from "./ics.js";
-import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
+import {
+  AFTER, ARRIVE, BETWEEN, DAY, GCAL_URL, MAPS_URL, RSVP_ENDPOINT, RSVP_PHONE,
+  WALIMA_DAY, WALIMA_GCAL_URL, WALIMA_MAPS_URL,
+} from "./config.js";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
 // Counts down to 7:00 PM rather than to midnight — running to the top of the day left the
 // digits reading 00:00:00:00 from midnight onwards, on the one day everyone opens this.
+// After the Rukhsati the page turns to the Walima: "next" from the morning after, "walima" on
+// its day, and a thank-you once both are over. The Walima has no hour yet, so there are no
+// digits to run for it — only the date and the hall.
 function useCountdown() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -27,7 +33,8 @@ function useCountdown() {
   const t = Math.max(0, ARRIVE - now);
   const p = (n) => String(n).padStart(2, "0");
   return {
-    phase: now >= AFTER ? "past" : now >= DAY ? "today" : "before",
+    phase: now >= AFTER ? "past" : now >= WALIMA_DAY ? "walima" : now >= BETWEEN ? "next"
+      : now >= DAY ? "today" : "before",
     d: Math.floor(t / 864e5),
     h: p(Math.floor(t / 36e5) % 24),
     m: p(Math.floor(t / 6e4) % 60),
@@ -98,11 +105,15 @@ function CalPick({ t, lang, onIcs, onClose }) {
       <p className={"rsvp-q" + (sd ? " sd-t" : "")}>{t.calPick}</p>
       <div className="band" />
       <div className="rsvp-pick">
-        <a className="btn solid" target="_blank" rel="noopener"
-          href={GCAL_URL(t.calSummary, t.calDesc)} onClick={onClose}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
-          <span className={sd ? "sd-t" : ""}>{t.calGoogle}</span>
-        </a>
+        {/* Google takes one event per link, so each evening has its own; the file carries both.
+            Only the first is filled — one solid call to action per panel, as everywhere else. */}
+        {[[GCAL_URL(t.calRukhsati, t.calDesc), t.calGoogleR],
+          [WALIMA_GCAL_URL(t.calWalima, t.calWalimaDesc), t.calGoogleW]].map(([href, label], i) => (
+          <a key={label} className={"btn" + (i ? "" : " solid")} target="_blank" rel="noopener" href={href} onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+            <span className={sd ? "sd-t" : ""}>{label}</span>
+          </a>
+        ))}
         <button className="btn" onClick={() => { onIcs(); onClose(); }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 3v12M8 11l4 4 4-4M4 19h16" /></svg>
           <span className={sd ? "sd-t" : ""}>{t.calIcs}</span>
@@ -297,10 +308,12 @@ export default function App() {
           <div className={"cd-wrap" + (scratched ? " show" : "")} aria-hidden={!scratched}>
             <div className="cd-inner">
               <p className={"big cd-big" + (sd ? " sd-t" : "")}>
-                {cd.phase === "before" ? t.dateBig : cd.phase === "today" ? t.today : t.past}
+                {{ before: t.dateBig, today: t.today, next: t.walimaNext, walima: t.walimaToday, past: t.past }[cd.phase]}
               </p>
               <p className={"body cd-sub" + (sd ? " sd-t" : "")}>
-                {cd.phase === "before" ? t.venueLine : cd.phase === "today" ? t.todayNote : t.pastNote}
+                {cd.phase === "before"
+                  ? t.venueLine.map((l, i) => <span key={i}>{i > 0 && <br />}{l}</span>)
+                  : { today: t.todayNote, next: t.walimaNextNote, walima: t.walimaTodayNote, past: t.pastNote }[cd.phase]}
               </p>
               {cd.phase === "before" && (
                 // a timer, not a live region: announcing four numbers once a second would make
@@ -352,6 +365,16 @@ export default function App() {
           <Rv d={0.62} cls="gtk">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M4 19h16M7 19V9l5-5 5 5v10M10 19v-5h4v5" /></svg>
             <p className={sd ? "sd-t" : ""}><b>{t.travelB}</b>{t.travel}</p>
+          </Rv>
+          {/* The Walima, two days on and in another city. It has a date and a hall but no hour
+              yet, so it is a block of its own rather than more rows on the Rukhsati's timeline. */}
+          <Rv d={0.68} cls="walima">
+            <p className={"kicker" + (sd ? " sd-t" : "")}>{t.walimaKicker}</p>
+            <p className={"wl-place" + (sd ? " sd-t" : "")}>{t.walimaPlace}</p>
+            <p className={"body" + (sd ? " sd-t" : "")}>{t.walimaNote}</p>
+            <a className="btn" target="_blank" rel="noopener" href={WALIMA_MAPS_URL}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
+              <span className={sd ? "sd-t" : ""}>{t.walimaMap}</span></a>
           </Rv>
           <div className="acts">
             <button className="btn solid" onClick={rsvp}>

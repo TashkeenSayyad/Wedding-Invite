@@ -60,7 +60,8 @@ var SITE = 'https://tashkeensayyad.github.io/Wedding-Invite/';
  *  the scratch heart reveals — the same wording as scripts/guest-links.mjs. */
 var INVITE_TEXT =
   'Assalamu alaikum {name}! You are warmly invited to the Rukhsati & Walima of ' +
-  'Tashkeen & Anusha at Nerunkot Hall, Qasimabad, Hyderabad. ' +
+  'Tashkeen & Anusha — the Rukhsati at Nerunkot Hall, Qasimabad, Hyderabad, ' +
+  'and the Walima at Zam Zam Hall, Thatta. ' +
   'Your invitation is here — scratch the heart to find out the date: {link}';
 
 var SHEET_NAME = 'RSVPs';
@@ -319,7 +320,7 @@ function buildSummarySheet(ss) {
   var G = "'" + GUESTS_NAME + "'!";
   var rows = [
     ['Rukhsati & Walima — Tashkeen & Anusha', ''],
-    ['Sunday, 27 December 2026 · Nerunkot Hall, Qasimabad, Hyderabad', ''],
+    ['Rukhsati Sun 27 Dec · Nerunkot Hall, Hyderabad  ·  Walima Tue 29 Dec · Zam Zam Hall, Thatta', ''],
     ['', ''],
     ['Coming', ''],
     ['Guests attending', '=IFERROR(SUM(' + R + '$E$2:$E),0)'],

@@ -21,12 +21,16 @@ export const T = {
     revealed: "See you there!",
     revealDate: "Reveal the date",
     labels: ["Days", "Hours", "Mins", "Secs"],
-    dateBig: "27 December 2026",
-    venueLine: "Sunday · Nerunkot Hall, Qasimabad, Hyderabad",
+    dateBig: "27 & 29 December 2026",
+    venueLine: ["Rukhsati · Sunday · Nerunkot Hall, Hyderabad", "Walima · Tuesday · Zam Zam Hall, Thatta"],
     today: "Today is the day",
     todayNote: "The evening begins at 7:00 PM at Nerunkot Hall. We will see you there.",
     past: "Thank you for being beside us",
-    pastNote: "You made the evening what it was. We carry your duas with us into everything that follows.",
+    walimaNext: "Next, the Walima",
+    walimaNextNote: "Tuesday, 29 December, at Zam Zam Hall, Thatta. We will see you there.",
+    walimaToday: "Today is the Walima",
+    walimaTodayNote: "At Zam Zam Hall, Thatta. We will see you there.",
+    pastNote: "You made both evenings what they were. We carry your duas with us into everything that follows.",
     rsvp: "RSVP on WhatsApp",
     rsvpTitle: "Will you be joining us?",
     rsvpYes: "Joyfully attending",
@@ -50,7 +54,7 @@ export const T = {
     rsvpKeep: "Leave it as it is",
     rsvpQueued: "Saved on your phone. It reaches us the moment you are back online.",
     rsvpBy: (d) => `Kindly let us know by ${d}.`,
-    schedKicker: "Sunday, 27 December 2026",
+    schedKicker: "Rukhsati · Sunday, 27 December 2026",
     schedTitle: "Schedule",
     sched: [
       ["7:00 PM", "Guests arrive"],
@@ -64,12 +68,20 @@ export const T = {
     parkB: "Parking", park: " is available directly at Nerunkot Hall.",
     travelB: "Travelling to us that day.",
     travel: " 27 December is the remembrance of Shaheed Mohtarma Benazir Bhutto, with the central gathering at Garhi Khuda Bakhsh near Larkana. Caravans travel the highways throughout the day and a provincial holiday is often announced. If you are coming from Karachi, upper Sindh or further afield, please set out early and allow generous time on the road. Your safe arrival matters most to us.",
-    calendar: "Calendar", map: "Map", save: "Save card",
+    walimaKicker: "Walima · Tuesday, 29 December 2026",
+    walimaPlace: "Zam Zam Hall, Thatta",
+    walimaNote: "The Walima's timings will follow — we will share them with you the moment they are set.",
+    walimaMap: "Walima map",
+    calendar: "Calendar", map: "Rukhsati map", save: "Save card",
     calPick: "Add to your calendar",
-    calGoogle: "Google Calendar",
-    calIcs: "Apple, Outlook & others",
+    calGoogleR: "Rukhsati · Google Calendar",
+    calGoogleW: "Walima · Google Calendar",
+    calIcs: "Both · Apple & others",
     calSummary: "Rukhsati & Walima — Tashkeen & Anusha",
+    calRukhsati: "Rukhsati — Tashkeen & Anusha",
     calDesc: "Kindly be seated by 7:00 PM. The programme begins promptly and follows the schedule exactly, and the evening concludes at 12:00 AM.",
+    calWalima: "Walima — Tashkeen & Anusha",
+    calWalimaDesc: "Zam Zam Hall, Thatta. The timings will follow — we will share them the moment they are set.",
     dressKicker: "A gentle request", dressTitle: "Dress Code",
     encouraged: "Warmly encouraged",
     colors: [["#12513f","Emerald"],["#1b3a63","Sapphire"],["#c9a35e","Gold"],["#e8dcc4","Ivory"]],
@@ -87,14 +99,14 @@ export const T = {
     // a guest wrote one, so the shape a counter reads never changes.
     rsvpMsgYes: (g, count, names, note, update) =>
       `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Rukhsati & Walima of ` +
-      `Tashkeen & Anusha, 27 December 2026.\n` +
+      `Tashkeen & Anusha, 27 & 29 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: yes\nHow many: ${count}\n` +
       `${names.length ? "Names: " + names.join(", ") : "Names: not given"}` +
       `${note ? "\nNote: " + note : ""}`,
     rsvpMsgNo: (g, note, update) =>
       `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Rukhsati & Walima of ` +
-      `Tashkeen & Anusha, 27 December 2026.\n` +
+      `Tashkeen & Anusha, 27 & 29 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: no\nOur prayers and love are with you both.` +
       `${note ? "\nNote: " + note : ""}`,
@@ -121,12 +133,16 @@ export const T = {
     revealed: "اتي ملنداسين!",
     revealDate: "تاريخ ظاهر ڪجو",
     labels: ["ڏينهن", "ڪلاڪ", "منٽ", "سيڪنڊ"],
-    dateBig: "27 ڊسمبر 2026",
-    venueLine: "آچر · نيرون ڪوٽ هال، قاسم آباد، حيدرآباد",
+    dateBig: "27 ۽ 29 ڊسمبر 2026",
+    venueLine: ["رخصتي · آچر · نيرون ڪوٽ هال، حيدرآباد", "وليمو · اڱارو · زم زم هال، ٺٽو"],
     today: "اڄ ئي اُهو ڏينهن آهي",
     todayNote: "شام 7:00 وڳي نيرون ڪوٽ هال ۾ شروعات ٿيندي. اتي ملنداسين.",
     past: "اوهان جي ساٿ لاءِ ٿورا",
-    pastNote: "اوهان جي اچڻ سان ئي اها شام سهڻي ٿي. اوهان جون دعائون اسان سان گڏ آهن.",
+    walimaNext: "هاڻي وليمي جو وارو آهي",
+    walimaNextNote: "اڱارو، 29 ڊسمبر، زم زم هال، ٺٽي ۾. اتي ملنداسين.",
+    walimaToday: "اڄ وليمو آهي",
+    walimaTodayNote: "زم زم هال، ٺٽي ۾. اتي ملنداسين.",
+    pastNote: "اوهان جي اچڻ سان ئي ٻئي شامون سهڻيون ٿيون. اوهان جون دعائون اسان سان گڏ آهن.",
     rsvp: "واٽس ايپ تي ٻڌائجو",
     rsvpTitle: "ڇا اوهين اسان سان گڏ هوندا؟",
     rsvpYes: "خوشيءَ سان اينداسين",
@@ -150,7 +166,7 @@ export const T = {
     rsvpKeep: "ائين ئي رهڻ ڏجو",
     rsvpQueued: "اوهان جي فون ۾ محفوظ ٿي ويو. انٽرنيٽ ايندي ئي اسان تائين پهچي ويندو.",
     rsvpBy: (d) => `مهرباني ڪري ${d} تائين ٻڌائجو.`,
-    schedKicker: "آچر، 27 ڊسمبر 2026",
+    schedKicker: "رخصتي · آچر، 27 ڊسمبر 2026",
     schedTitle: "ڏينهن جي ترتيب",
     sched: [
       ["7:00 PM", "مهمان تشريف آڻين"],
@@ -164,11 +180,19 @@ export const T = {
     parkB: "گاڏي بيهارڻ", park: " جي سهولت نيرون ڪوٽ هال ۾ ئي موجود آهي.",
     travelB: "ان ڏينهن سفر بابت.",
     travel: " 27 ڊسمبر شهيد محترمه بينظير ڀٽو جي ياد جو ڏينهن آهي، جنهن جي مرڪزي تقريب ڳڙهي خدا بخش، لاڙڪاڻي ۾ ٿيندي آهي. سڄو ڏينهن روڊن تي قافلا ايندا ويندا آهن ۽ ڪيترائي ڀيرا صوبائي موڪل به ٿيندي آهي. جيڪڏهن اوهين ڪراچي، مٿينءَ سنڌ يا ڪنهن پري هنڌان اچي رهيا آهيو، ته ٿورو سويرو نڪرجو ۽ رستي لاءِ ڪجهه وڌيڪ وقت رکجو. اوهان جو خيريت سان پهچڻ اسان لاءِ سڀ کان وڌيڪ اهم آهي.",
-    calendar: "ڪئلينڊر", map: "نقشو", save: "ڪارڊ سانڍجو",
+    walimaKicker: "وليمو · اڱارو، 29 ڊسمبر 2026",
+    walimaPlace: "زم زم هال، ٺٽو",
+    walimaNote: "وليمي جو وقت طئي ٿيندي ئي اوهان کي ٻڌائينداسين.",
+    walimaMap: "وليمي جو نقشو",
+    calendar: "ڪئلينڊر", map: "رخصتيءَ جو نقشو", save: "ڪارڊ سانڍجو",
     calPick: "ڪئلينڊر ۾ رکجو",
-    calGoogle: "گوگل ڪئلينڊر",
-    calIcs: "ايپل، آئوٽلُڪ ۽ ٻيا",
+    calGoogleR: "رخصتي · گوگل ڪئلينڊر",
+    calGoogleW: "وليمو · گوگل ڪئلينڊر",
+    calIcs: "ٻئي · ايپل ۽ ٻيا",
     calSummary: "رخصتي ۽ وليمو — تاشقين ۽ انوشا",
+    calRukhsati: "رخصتي — تاشقين ۽ انوشا",
+    calWalima: "وليمو — تاشقين ۽ انوشا",
+    calWalimaDesc: "زم زم هال، ٺٽو. وقت طئي ٿيندي ئي ٻڌائينداسين.",
     calDesc: "شام 7:00 وڳي تائين ضرور تشريف آڻجو. پروگرام ٺيڪ وقت تي شروع ٿيندو ۽ ڏنل ترتيب مطابق هلندو، ۽ شام 12:00 وڳي پڄاڻي ٿيندي.",
     dressKicker: "ننڍڙي گذارش", dressTitle: "لباس",
     encouraged: "اهي رنگ ڏاڍا وڻندا",
@@ -182,13 +206,13 @@ export const T = {
     closeGuest: n => `خاص اوهان لاءِ، ${n}.`,
     dotLabels: { s1:"دعوت", s2:"ڳڻپ", s3:"آيت", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
     rsvpMsgYes: (g, count, names, note, update) =>
-      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
+      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ۽ 29 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: ها\nڪيترا ڄڻا: ${count}\n` +
       `${names.length ? "نالا: " + names.join("، ") : "نالا: نه ڏنا ويا"}` +
       `${note ? "\nپيغام: " + note : ""}`,
     rsvpMsgNo: (g, note, update) =>
-      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
+      `السلام عليڪم! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ۽ 29 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: هن ڀيري نه\nاسان جون دعائون اوهان ٻنهي سان گڏ آهن.` +
       `${note ? "\nپيغام: " + note : ""}`,

@@ -147,7 +147,8 @@ export default function ScratchHeart({ t, lang, onDone }) {
     <div>
       <div className={"scratch" + (done ? " done" : "")}>
         <div className="heartbase">
-          <b>27 · 12 · 2026</b>
+          {/* both evenings: the Rukhsati on the 27th, the Walima on the 29th */}
+          <b>27 &amp; 29<span className="hb-sub">12 · 2026</span></b>
           <i />
           <small className={lang === "sd" ? "sd-t" : ""}>{done ? t.revealed : t.saveDate}</small>
         </div>

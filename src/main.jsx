@@ -19,13 +19,17 @@ class Fallback extends React.Component {
         <h1>Tashkeen &amp; Anusha</h1>
         <hr />
         <p className="bare-t">Rukhsati &amp; Walima</p>
-        <p>Sunday, 27 December 2026<br />Nerunkot Hall, Qasimabad, Hyderabad, Sindh</p>
+        <p>Rukhsati · Sunday, 27 December 2026<br />Nerunkot Hall, Qasimabad, Hyderabad, Sindh</p>
         <p>7:00 PM · Guests arrive<br />8:00 PM · Entrance of the bride &amp; groom<br />
           9:00 PM · Dinner is served<br />10:30 PM · Rasms<br />12:00 AM · Rukhsati</p>
         <p>Kindly be seated by 7:00 PM — the programme begins promptly and follows the times
           above exactly.</p>
         <p><a href="https://www.google.com/maps/search/?api=1&query=Nerunkot%20Hall%20Qasimabad%20Hyderabad">
           Directions to Nerunkot Hall</a></p>
+        <p>Walima · Tuesday, 29 December 2026<br />Zam Zam Hall, Thatta, Sindh<br />
+          The timings will follow.</p>
+        <p><a href="https://www.google.com/maps/search/?api=1&query=Zam%20Zam%20Hall%20Thatta">
+          Directions to Zam Zam Hall</a></p>
         <p className="bare-t">With love and prayers,<br />Tashkeen &amp; Anusha</p>
       </div>
     )

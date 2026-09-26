@@ -91,12 +91,12 @@ const csvCell = (v) => (/[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v
 // the date. The venue stays; only the date is the surprise.
 const message = (name, url) =>
   `Assalamu alaikum ${name}! You are warmly invited to the Rukhsati & Walima of Tashkeen & Anusha ` +
-  `at Nerunkot Hall, Qasimabad, Hyderabad. ` +
+  `— the Rukhsati at Nerunkot Hall, Qasimabad, Hyderabad, and the Walima at Zam Zam Hall, Thatta. ` +
   `Your invitation is here — scratch the heart to find out the date: ${url}`;
 // Kept in the same shape as the English so the family can scan either list the same way.
 const messageSd = (name, url) =>
   `السلام عليڪم ${name}! تاشقين ۽ انوشا جي رخصتيءَ ۽ وليمي ۾ اوهان کي محبت سان دعوت آهي — ` +
-  `نيرون ڪوٽ هال، قاسم آباد، حيدرآباد. ` +
+  `رخصتي نيرون ڪوٽ هال، قاسم آباد، حيدرآباد ۾ ۽ وليمو زم زم هال، ٺٽي ۾. ` +
   `اوهان جي دعوت هتي آهي، تاريخ ڄاڻڻ لاءِ دل کي کرچجو: ${url}`;
 
 const list = rows.map((r) => {

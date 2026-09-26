@@ -109,9 +109,15 @@ for (const lang of ["en", "sd"]) {
     if (!unfolded.includes(need)) fail(`${where}: no ${need}`);
   }
   // a floating or zoned time with no VTIMEZONE is the classic way to land an event an hour out
-  if (/DTSTART(;|:)/.test(unfolded) && !/DTSTART:\d{8}T\d{6}Z/.test(unfolded)) {
-    fail(`${where}: DTSTART is not a plain UTC stamp, so it would need a VTIMEZONE`);
+  // every one of them, not just the first: the Walima is an all-day DATE until it has an hour,
+  // which is floating by definition and fine; a local DATE-TIME is not
+  for (const m of unfolded.matchAll(/^(DTSTART|DTEND)([;:].*)$/gm)) {
+    if (!/^:\d{8}T\d{6}Z$/.test(m[2]) && !/^;VALUE=DATE:\d{8}$/.test(m[2])) {
+      fail(`${where}: ${m[1]}${m[2]} is neither a plain UTC stamp nor an all-day date, so it would need a VTIMEZONE`);
+    }
   }
+  const events = unfolded.split("BEGIN:VEVENT").length - 1;
+  if (events !== 2) fail(`${where}: carries ${events} events, expected the Rukhsati and the Walima`);
   if (unfolded.includes("TZID") && !unfolded.includes("BEGIN:VTIMEZONE")) {
     fail(`${where}: uses TZID without a VTIMEZONE`);
   }

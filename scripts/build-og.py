@@ -132,8 +132,12 @@ for cxx in (W / 2 - 205, W / 2 + 205):
 # the fact a guest needs — and the hint sits below it as a quiet kicker, in --gold-l small caps,
 # where it explains the absence without becoming the loudest thing on the card. The one rule above
 # is enough ornament for this half; a second pair of hairlines around the hint only crowded it.
-centred(draw, 428, "NERUNKOT HALL · QASIMABAD · HYDERABAD", cg(32), (222, 199, 180), tracking=3)
-centred(draw, 502, MASK_HINT, sc(21), GOLD_L, tracking=5)
+# Two evenings in two cities, so two lines — the Rukhsati in Hyderabad, the Walima in Thatta —
+# each led by its name so a guest reads which hall is which. One line of both would run into the
+# corner ornaments, which reach x=232 from each side at this height.
+centred(draw, 418, "RUKHSATI · NERUNKOT HALL, HYDERABAD", cg(29), (222, 199, 180), tracking=3)
+centred(draw, 456, "WALIMA · ZAM ZAM HALL, THATTA", cg(29), (222, 199, 180), tracking=3)
+centred(draw, 516, MASK_HINT, sc(21), GOLD_L, tracking=5)
 
 img.save(OUT, "JPEG", quality=86, optimize=True, progressive=True)
 size = os.path.getsize(OUT)
