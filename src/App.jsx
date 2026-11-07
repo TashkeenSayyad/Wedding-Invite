@@ -343,7 +343,7 @@ export default function App() {
           <Rv d={0.26} cls="band" />
           <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
           <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
-          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 14 }}>{t.verseNote}</Rv>
+          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20 }}>{t.verseNote}</Rv>
         </Sec>
 
         {/* 4 · schedule */}
@@ -391,7 +391,7 @@ export default function App() {
           <Rv d={0.1} cls="band" />
           <div className="dc">
             <Rv d={0.16}>
-              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.encouraged}</h3>
+              <h3 className={sd ? "sd-t" : ""}>{t.encouraged}</h3>
               <div className="swatches">
                 {t.colors.map(([c, n], i) => (
                   <span key={i} className="swatch"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
@@ -399,7 +399,7 @@ export default function App() {
               </div>
             </Rv>
             <Rv d={0.24}>
-              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.reserved}</h3>
+              <h3 className={sd ? "sd-t" : ""}>{t.reserved}</h3>
               <div className="kept">
                 {t.resChips.map(([c, n], i) => (
                   <span key={i} className="keep"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
@@ -413,8 +413,8 @@ export default function App() {
         {/* 6 · closing */}
         <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr","bl","br"]} refMap={refMap}>
           <Rv cls="star" />
-          {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: 17, marginTop: 14 }}>{t.closeSd}</Rv>}
-          <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "clamp(26px,7vw,34px)" : "clamp(28px,7.6vw,36px)" }}>{t.closeTitle}</Rv>
+          {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: 21, marginTop: 14 }}>{t.closeSd}</Rv>}
+          <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "clamp(28px,7.6vw,36px)" : "clamp(32px,8.6vw,42px)" }}>{t.closeTitle}</Rv>
           <Rv d={0.26} cls="band" />
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>

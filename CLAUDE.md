@@ -213,6 +213,30 @@ this is not the door back in for the effects the restraint pass removed. The scr
 thread and the dot navigation were lifted with it (thread 2px → 3px on a .2α track, dots
 6px → 8px, labels 8.5px → 10px).
 
+### Large-print pass (Nov 2026)
+
+The user found the type still too small for guests with poor eyesight, so the scale went up a
+second time, by a lot. These are the new floors — the older figures above are history:
+
+- body copy `.body` / `.sched span` **19px** at weight **400** (was 15px at 300), with
+  `--chalk-d` raised from .7 to .92 alpha and `--chalk-x` from .42 to .66. Cormorant has a small
+  x-height and its 300 weight is a hairline; size alone did not fix it.
+- the framed notes `.notice p` / `.gtk p` 16.5px, swatch names 14px, the reserved-colour lines 16.5px
+- every letterspaced small cap at **12–14.5px** (kickers 13px, buttons 14.5px, hints 14px,
+  countdown labels 12px), with tracking eased to .1–.22em so lines that fit still fit
+- Sindhi running text has sizes of its own now: `.body.sd-t` and `.sched span.sd-t` 20px,
+  notes 17.5px. Before this they inherited the Latin size, so Sindhi body copy was set *smaller*
+  than English — the opposite of what Nastaliq needs.
+- buttons are at least 48px tall; swatch names dropped uppercase (four tracked capitals no
+  longer fit four columns at 360px)
+- the inline sizes in `App.jsx` (`.dc h3`, `verseNote`) moved into the stylesheet
+- the skyline is `clamp(80px,19svh,200px)` tall, down from `clamp(110px,24svh,210px)`, because
+  the taller Sindhi sections now reach the bottom of a 640px screen and lit windows behind the
+  text hurt legibility
+
+Re-swept at 360/393/430/820 in both languages: no overflow, no sideways scroll, no console
+errors, the scratch completes, the RSVP send button is on screen at 360×640 in both languages.
+
 ## Fonts — self-hosted and split
 
 Nothing is fetched from fonts.googleapis.com any more (two connections before first paint, and
