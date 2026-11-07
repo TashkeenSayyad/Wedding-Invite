@@ -106,7 +106,7 @@ it = lambda s: face("italianno", "italianno-latin-400-normal.woff2", s)
 cg = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-normal.woff2", s)
 cgi = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-italic.woff2", s)
 
-centred(draw, 118, "THE RUKHSATI OF", sc(30), GOLD, tracking=7)
+centred(draw, 118, "BAARAT & RUKHSATI", sc(30), GOLD, tracking=7)
 
 # The couple, and a surname under each — Syed under Tashkeen, Nizamani under Anusha. Each one is
 # centred on the name it belongs to rather than on the card, so they are read as two full names

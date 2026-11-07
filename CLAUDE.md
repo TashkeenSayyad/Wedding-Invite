@@ -9,7 +9,17 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 
 ## The event — verified facts, do not change without asking
 
-- **Event name:** "Rukhsati" — the invitation is for the Rukhsati alone, on the 27th. It was
+- **Event name (Nov 2026): the Baarat, and the Rukhsati of Anusha.** The evening is the groom's
+  side's event, so the user asked for it to be named as the Baarat, with the Rukhsati as Anusha's.
+  The card's title line now reads, in two lines of the same Italianno gold, **"Baarat" over
+  "& Rukhsati of Anusha"** — set by `scripts/card-baarat.py`, which takes every size and colour off
+  the artwork and is safe to re-run. The user asked for "& Rukhsati" **not** to be the small line:
+  an italic sub-line in the parents' voice was built first and rejected. Everywhere else the
+  event is "Baarat & Rukhsati" (title, og:title, calendar, manifest, JSON-LD, the og-card kicker)
+  or "the Baarat of Tashkeen and the Rukhsati of Anusha" (descriptions, the WhatsApp invite text
+  in `guest-links.mjs` and `rsvp-sheet.gs`, the RSVP message header — its four labels unchanged).
+  "12:00 AM Rukhsati" stays in the schedule: that is the moment itself. `og:image` is `?v=4`.
+- **Before that:** "Rukhsati" — the invitation was for the Rukhsati alone, on the 27th. It was
   "Rukhsati & Walima" until the user asked for the Walima to come off; do not put it back. The
   card artwork was changed to match by `scripts/card-title.py`, which lifted "& Walima" off both
   cuts and moved the existing Italianno "Rukhsati" to the centre axis (no re-typesetting). The
