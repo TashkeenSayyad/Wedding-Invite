@@ -250,8 +250,9 @@ errors, the scratch completes, the RSVP send button is on screen at 360×640 in 
 
 ### Text-size control (Nov 2026)
 
-Top left, beside the language pill, **A− / A+** step the type through four sizes — small (.88),
-**medium (1, the default)**, large (1.2), extra large (1.45) — for guests with poor eyesight.
+Top left, beside the language pill, **A− / A+** step the type through four sizes — small (.8),
+**medium (.9, the default)**, large (1.08), extra large (1.3). Medium was 1 until the user asked
+for the base type a little smaller; the CSS sizes were left alone and the whole ladder moved instead — for guests with poor eyesight.
 `FZ` in `App.jsx` holds the steps; the choice is remembered on that phone in `localStorage`
 (`ta-fz`, wrapped in try/catch — a convenience, never needed for the page to work).
 

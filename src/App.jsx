@@ -128,7 +128,7 @@ function CalPick({ t, lang, onIcs, onClose }) {
 // Text size, for guests who find the page hard to read. Four steps; medium is where everyone
 // starts. The factor multiplies every font-size in styles.css through --fz, so only the type
 // grows. Remembered on this phone only — a convenience, not something the page depends on.
-const FZ = [0.88, 1, 1.2, 1.45];
+const FZ = [0.8, 0.9, 1.08, 1.3];
 const readFz = () => {
   try {
     const v = localStorage.getItem("ta-fz");
