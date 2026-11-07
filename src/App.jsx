@@ -125,6 +125,18 @@ function CalPick({ t, lang, onIcs, onClose }) {
   );
 }
 
+// Text size, for guests who find the page hard to read. Four steps; medium is where everyone
+// starts. The factor multiplies every font-size in styles.css through --fz, so only the type
+// grows. Remembered on this phone only — a convenience, not something the page depends on.
+const FZ = [0.88, 1, 1.2, 1.45];
+const readFz = () => {
+  try {
+    const v = localStorage.getItem("ta-fz");
+    if (["0", "1", "2", "3"].includes(v)) return +v;
+  } catch {}
+  return 1;
+};
+
 const readLang = () => {
   // ?lang=sd wins over a stored choice — the family sent that link on purpose, to a guest who
   // reads Sindhi, and it should not be overruled by whatever the last reader on that phone picked.
@@ -147,6 +159,7 @@ export default function App() {
   const [scratched, setScratched] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
+  const [fz, setFz] = useState(readFz);
   const t = T[lang];
   const sd = lang === "sd";
   const refMap = useRef({});
@@ -175,6 +188,11 @@ export default function App() {
       if (returnTo instanceof HTMLElement) returnTo.focus();
     };
   }, [reader]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--fz", String(FZ[fz]));
+    try { localStorage.setItem("ta-fz", String(fz)); } catch {}
+  }, [fz]);
 
   // anything a previous visit could not deliver goes out now, or when the phone reconnects
   useEffect(() => watchRsvpQueue(RSVP_ENDPOINT), []);
@@ -251,6 +269,12 @@ export default function App() {
         <button className="pill" onPointerEnter={loadSindhiFonts} aria-label={t.langSwitch}
           lang={sd ? "en" : "sd"}
           onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
+        <div className="fz" role="group" aria-label={t.textSize}>
+          <button className="dn" aria-label={t.textSmaller} disabled={fz === 0}
+            onClick={() => { setFz((v) => Math.max(0, v - 1)); buzz(6); }}>A−</button>
+          <button className="up" aria-label={t.textLarger} disabled={fz === FZ.length - 1}
+            onClick={() => { setFz((v) => Math.min(FZ.length - 1, v + 1)); buzz(6); }}>A+</button>
+        </div>
       </div>
 
       {rsvpOpen && (
@@ -413,8 +437,8 @@ export default function App() {
         {/* 6 · closing */}
         <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr"]} refMap={refMap}>
           <Rv cls="star" />
-          {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: 21, marginTop: 14 }}>{t.closeSd}</Rv>}
-          <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "clamp(28px,7.6vw,36px)" : "clamp(32px,8.6vw,42px)" }}>{t.closeTitle}</Rv>
+          {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: "calc(21px*var(--fz,1))", marginTop: 14 }}>{t.closeSd}</Rv>}
+          <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "calc(clamp(28px,7.6vw,36px)*var(--fz,1))" : "calc(clamp(32px,8.6vw,42px)*var(--fz,1))" }}>{t.closeTitle}</Rv>
           <Rv d={0.26} cls="band" />
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>

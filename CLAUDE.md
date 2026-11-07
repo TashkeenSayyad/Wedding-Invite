@@ -247,6 +247,27 @@ second time, by a lot. These are the new floors — the older figures above are 
 Re-swept at 360/393/430/820 in both languages: no overflow, no sideways scroll, no console
 errors, the scratch completes, the RSVP send button is on screen at 360×640 in both languages.
 
+### Text-size control (Nov 2026)
+
+Top left, beside the language pill, **A− / A+** step the type through four sizes — small (.88),
+**medium (1, the default)**, large (1.2), extra large (1.45) — for guests with poor eyesight.
+`FZ` in `App.jsx` holds the steps; the choice is remembered on that phone in `localStorage`
+(`ta-fz`, wrapped in try/catch — a convenience, never needed for the page to work).
+
+How it works: App.jsx sets `--fz` on `<html>`, and **every `font-size` in `styles.css` is
+`calc(<size>*var(--fz,1))`**, as are the two inline sizes in `App.jsx`. So only type grows — the
+layout, the card, the envelope and the heart keep their size. **Any new font-size must be
+written the same way**, or it will not follow the control. Deliberately left out: the language
+pill and the control itself (so the bar never moves), `.dm-t` on the gold band (it is measured
+against the card), `.heartbase b` (the date has to fit the fixed 300px heart), and `.bare`.
+Two things were changed to make extra large fit at 360px: the schedule's time column is
+`calc(84px*var(--fz,1))` with `white-space:nowrap` on the time (it wrapped "10:30 / PM"), and
+the Italianno "Rukhsati" in the schedule is capped at `12vw`.
+
+Swept at all four steps, at 360×640 and 430×932, in both languages: no overflow, no sideways
+scroll, no console errors, the scratch completes, the envelope and its "Tap the seal" fit on the
+intro, and the RSVP send button stays on screen.
+
 ## Sindhi is set in Naskh, not Nastaliq (Nov 2026)
 
 **Do not put Nastaliq back.** The user, reading the site, said plainly: "the script is Urdu, not
