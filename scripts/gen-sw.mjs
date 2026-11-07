@@ -20,13 +20,18 @@ const RUNTIME_ONLY = [
   "assets/og-card.jpg",    // only ever fetched by link-preview crawlers, never by the page
 ];
 
+// Audio is left to the browser entirely: not precached (a song is several MB to push onto a phone
+// that may never unmute it) and not served from the cache, because a media element asks for byte
+// ranges and Safari will not play a whole-file answer to a range request.
+const AUDIO = /\.(mp3|m4a|aac|ogg|opus|wav)$/i;
+
 const walk = (dir) => readdirSync(dir).flatMap((name) => {
   const full = join(dir, name);
   return statSync(full).isDirectory() ? walk(full) : [relative(docs, full).split("\\").join("/")];
 });
 
 const files = walk(docs)
-  .filter((f) => f !== "sw.js" && !RUNTIME_ONLY.includes(f))
+  .filter((f) => f !== "sw.js" && !RUNTIME_ONLY.includes(f) && !AUDIO.test(f))
   .sort();
 
 // The cache name changes whenever any built file does, which is what evicts the previous version.
@@ -64,6 +69,8 @@ self.addEventListener("fetch", (e) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // the song streams straight from the network — see AUDIO in scripts/gen-sw.mjs
+  if (request.destination === "audio" || request.headers.has("range")) return;
 
   // Navigations go to the network first, revalidated rather than taken from the browser's ten-
   // minute copy, so the page is always the one the current build's files belong to. The cached

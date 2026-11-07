@@ -3,7 +3,7 @@ import DateMask from "./DateMask.jsx";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
-export default function Intro({ t, lang, guest, onOpened }) {
+export default function Intro({ t, lang, guest, onOpened, onTap }) {
   const [open, setOpen] = useState(false);
   const [gone, setGone] = useState(false);
   const envRef = useRef(null);
@@ -30,6 +30,7 @@ export default function Intro({ t, lang, guest, onOpened }) {
   const doOpen = () => {
     if (open) return;
     setOpen(true); buzz([12, 60, 20]);
+    onTap?.();                         // the music: it has to start inside the tap itself
     // With reduced motion the flap, the letter and the cross-fade are all switched off in CSS, so
     // these waits would leave the reader looking at a still envelope for three seconds wondering
     // whether the tap registered. Cut them to the shortest gap that still reads as a response.

@@ -666,10 +666,27 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
    "With love and prayers" below it — the two line boxes are exactly adjacent. Pre-existing;
    a small `margin-bottom` on `.sdt` fixes it, but it is the user's typography to change.
 
+## Music (Nov 2026)
+
+The user asked for **"Hum" by Murtaza Qizilbash** to play as background music, starting when the
+envelope is opened — **no play button** (they said so explicitly). `src/music.js` (`useMusic`)
+creates the audio on the seal tap and calls `play()` synchronously inside it (Intro's `onTap`),
+because browsers only allow sound from within a gesture and Safari refuses it after a timeout.
+It loops, fades in where the browser allows volume (not iOS), pauses when the page is hidden and
+resumes on return unless the guest turned it off. A small speaker icon (`.pill.mu`) appears in
+the top bar only once sound is actually playing — the mute control, which audio that plays by
+itself needs (WCAG 1.4.2). It is not a play button; do not add one.
+
+The file is `public/assets/music.mp3`, set in `MUSIC` in `src/config.js` with the credit read on
+the mute control. **The file is supplied by the family**, who are responsible for having the
+right to publish it — the site and its repo are public, so the whole track can be downloaded by
+anyone. Until it is there the envelope opens in silence and `npm run check` warns. Audio is kept
+out of the service worker entirely (no precache, no cache-served range requests — Safari will
+not play a whole-file reply to a range request).
+
 ## Nice-to-haves discussed but not built
 
 - "Light a diya for us" tap interaction on the closing page
-- Background music toggle (off by default)
 
 ## Deployment
 

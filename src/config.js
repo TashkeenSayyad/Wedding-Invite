@@ -61,3 +61,14 @@ export const GCAL_URL = (summary, details) =>
   "&details=" + encodeURIComponent(details + "\n\n" + SITE) +
   "&location=" + encodeURIComponent(VENUE) +
   "&ctz=Asia/Karachi";
+
+// ── Music ──────────────────────────────────────────────────────────────────────────────────
+/** The song that starts when a guest taps the seal and plays on a loop while they read.
+ *  Drop the file at public/assets/music.mp3 — until it is there nothing plays and no mute
+ *  control appears, so the invitation works the same with or without it. Encode it small:
+ *  ffmpeg -i song.mp3 -ac 2 -b:a 96k -map_metadata -1 public/assets/music.mp3
+ *  (about 0.7 MB a minute). The credit is read aloud on the mute control. */
+export const MUSIC = {
+  src: "./assets/music.mp3",
+  credit: "Hum · Murtaza Qizilbash",
+};
