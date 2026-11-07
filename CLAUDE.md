@@ -107,25 +107,17 @@ one evening, from dusk to the Rukhsati at midnight, rather than six cards stacke
   one sky. The per-section `.ajrak`, `.vig` and `.grain` went with them; a single grain sits on
   the sky. `.notice` and `.gtk` got a dark translucent ground of their own because on `s4` they
   sit over the lit windows.
-- **The intro is a haveli door, not an envelope** (`Intro.jsx`): carved wine-lacquer leaves with
-  gold inlay, jaali panels, ajrak rosettes, brass studs and ring knockers, in a beaded arch,
-  under a toran of marigold and jasmine. The seal opens the leaves *outward toward the guest*
-  (78°, with `perspective:520px` on `.scene` — at 1400px or at 100°+ they read as squashed or
-  vanish edge-on), the room behind glows, and the scene then zooms through the arch. The zoom is
-  **measured, not guessed**: on tap, `doOpen` reads the card behind the door and the `.cardwrap`
-  on `s1`, and sets `--zoom` so the door's card lands exactly on the s1 card as the intro fades —
-  one card, never two cross-fading. **Do not put a `filter` on `.door`** — it flattens the 3D
-  context and the leaves squash toward their hinges instead of swinging (the drop shadow is a
-  `::before` for this reason). The card inside the door wears `DateMask`, with `--cw` derived
-  from `--dw`, the door width.
+- **The intro is the envelope again, and the heart is plain gold foil again.** A haveli door
+  (carved leaves, toran, a measured zoom through the arch onto the s1 card) and a shisha
+  mirror-work foil on the heart were both built in the redesign, and the user asked for both to
+  be put back as they were. `Intro.jsx` and `ScratchHeart.jsx` are `main`'s versions, and the
+  intro CSS is `main`'s envelope block — except the greeting, names, invite line and "Tap the
+  seal", which keep their large-print sizes and the Sindhi (Lateef) settings. Do not bring
+  the door or the mirror-work back unasked; the door is in git at `ee720a3` if it is wanted.
 - **The schedule is a string of lanterns** (`Lantern.jsx`). Each hour's fanoos is dark until the
   reader scrolls to it, then lights and stays lit (`useLit`, an IntersectionObserver). The last,
   the Rukhsati, is the largest lantern and is set in Italianno. The rows are no longer `.rv` —
   the lighting is their reveal.
-- **The scratch foil is shisha** — Sindhi mirror-work: round mirrors held to the gold by wine
-  chain-stitch, on a lattice, with a clear stitched band for the hint. Only the *painting*
-  changed; everything is drawn before `foilTotal` is counted, so the progress invariants below
-  still hold (re-measured: the heart still completes in all eight width/language runs).
 - **Dress code colours are cloth swatches** — folded, with a weave and gold stitching — and
   the two reserved colours are small swatches beside their sentence. The diagonal strike that
   used to cross them out is gone; the heading "Reserved with love" says it.

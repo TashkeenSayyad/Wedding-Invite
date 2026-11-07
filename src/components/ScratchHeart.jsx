@@ -49,36 +49,6 @@ export default function ScratchHeart({ t, lang, onDone }) {
       ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(W, y0 + (Math.random() * 22 - 11)); ctx.stroke();
     }
     ctx.globalAlpha = 1;
-    // shisha — the mirror-work of Sindhi embroidery. Small round mirrors held to the gold by a
-    // ring of wine chain-stitch, set on a lattice. A clear band is left for the hint.
-    const mirror = (x, y, rad) => {
-      const m = ctx.createRadialGradient(x - rad * 0.35, y - rad * 0.4, rad * 0.1, x, y, rad);
-      m.addColorStop(0, "#ffffff"); m.addColorStop(0.35, "#dfe3e6");
-      m.addColorStop(0.75, "#8e979e"); m.addColorStop(1, "#5d646a");
-      ctx.fillStyle = m;
-      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "rgba(77,14,28,.9)"; ctx.lineWidth = 2.2;
-      ctx.setLineDash([2.2, 1.6]);
-      ctx.beginPath(); ctx.arc(x, y, rad + 1.8, 0, Math.PI * 2); ctx.stroke();
-      ctx.setLineDash([]);
-      // the stitched petals that hold each mirror
-      ctx.strokeStyle = "rgba(77,14,28,.55)"; ctx.lineWidth = 1;
-      for (let k = 0; k < 8; k++) {
-        const a = (k * Math.PI) / 4;
-        ctx.beginPath();
-        ctx.moveTo(x + Math.cos(a) * (rad + 3.5), y + Math.sin(a) * (rad + 3.5));
-        ctx.lineTo(x + Math.cos(a) * (rad + 7), y + Math.sin(a) * (rad + 7));
-        ctx.stroke();
-      }
-    };
-    for (let row = 0, y = 34; y < H; y += 30, row++) {
-      if (y > 108 && y < 152) continue;
-      for (let x = row % 2 ? 30 : 15; x < W; x += 30) mirror(x, y, row % 3 === 1 ? 5.2 : 6.6);
-    }
-    // a stitched border either side of the hint
-    ctx.strokeStyle = "rgba(77,14,28,.6)"; ctx.lineWidth = 1.2; ctx.setLineDash([3, 2.5]);
-    ctx.beginPath(); ctx.moveTo(0, 112); ctx.lineTo(W, 112); ctx.moveTo(0, 148); ctx.lineTo(W, 148); ctx.stroke();
-    ctx.setLineDash([]);
     // etched hint on the foil, set between two hairlines
     ctx.fillStyle = "rgba(77,14,28,.85)";
     ctx.font = "600 12px 'Cormorant SC', serif";
