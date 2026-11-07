@@ -5,6 +5,8 @@ import ScratchHeart from "./components/ScratchHeart.jsx";
 import DateMask from "./components/DateMask.jsx";
 import Rsvp from "./components/Rsvp.jsx";
 import Sheet from "./components/Sheet.jsx";
+import Sky from "./components/Sky.jsx";
+import { Lantern, useLit } from "./components/Lantern.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
 import { buildIcs } from "./ics.js";
 import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
@@ -35,8 +37,8 @@ function useCountdown() {
   };
 }
 
-// The Nastaliq face is 160 KB a weight. Only the handful of Sindhi flourishes that show in
-// English mode ship up front (as 'Nastaliq Core'); the full cut is fetched the moment a
+// Sindhi is set in Lateef, a Naskh face made for Sindhi. Only the handful of Sindhi words that
+// show in English mode ship up front (as 'Lateef Core'); the full cut is fetched the moment a
 // reader actually chooses سنڌي.
 let sindhiFonts;
 const loadSindhiFonts = () => {
@@ -44,12 +46,12 @@ const loadSindhiFonts = () => {
   sindhiFonts = (async () => {
     if (!document.fonts || !window.FontFace) return;
     const files = await Promise.all([
-      import("./assets/fonts/nastaliq-400.woff2?url"),
-      import("./assets/fonts/nastaliq-600.woff2?url"),
+      import("./assets/fonts/lateef-400.woff2?url"),
+      import("./assets/fonts/lateef-600.woff2?url"),
     ]);
     await Promise.all(files.map(async (m, i) => {
-      const face = new FontFace("Noto Nastaliq Urdu", `url(${m.default}) format("woff2")`,
-        { weight: i ? "600" : "400", display: "swap" });
+      const face = new FontFace("Lateef", `url(${m.default}) format("woff2")`,
+        { weight: i ? "600" : "400", display: "swap", sizeAdjust: "135%" /* as LATEEF_SIZE in build-fonts */ });
       document.fonts.add(await face.load());
     }));
   })().catch(() => {});
@@ -71,14 +73,24 @@ function Sec({ id, tone, label, corners = [], children, foot, refMap }) {
       {corners.includes("tr") && <i className="corner tr" />}
       {corners.includes("bl") && <i className="corner bl" />}
       {corners.includes("br") && <i className="corner br" />}
-      <i className="ajrak" />
       {/* Every section is built out of ornament, kickers and script faces, none of which is a
           heading. Without this a screen reader is handed six unnamed regions and no way to move
           between them; the label is the same one the dot navigation already uses. */}
       <div className="inner"><h2 className="vh">{label}</h2>{children}</div>
       {foot}
-      <i className="vig" /><i className="grain" />
     </section>
+  );
+}
+
+// one hour of the evening, under its own lantern, which lights when the reader reaches it
+function Hour({ time, what, last, sd }) {
+  const [ref, lit] = useLit(0.72);
+  return (
+    <li ref={ref} className={(lit ? "lit" : "") + (last ? " last" : "")}>
+      <Lantern big={last} />
+      <b>{time}</b>
+      <span className={sd ? "sd-t" : last ? "fin" : ""}>{what}</span>
+    </li>
   );
 }
 
@@ -113,6 +125,18 @@ function CalPick({ t, lang, onIcs, onClose }) {
   );
 }
 
+// Text size, for guests who find the page hard to read. Four steps; medium is where everyone
+// starts. The factor multiplies every font-size in styles.css through --fz, so only the type
+// grows. Remembered on this phone only — a convenience, not something the page depends on.
+const FZ = [0.8, 0.9, 1.08, 1.3];
+const readFz = () => {
+  try {
+    const v = localStorage.getItem("ta-fz");
+    if (["0", "1", "2", "3"].includes(v)) return +v;
+  } catch {}
+  return 1;
+};
+
 const readLang = () => {
   // ?lang=sd wins over a stored choice — the family sent that link on purpose, to a guest who
   // reads Sindhi, and it should not be overruled by whatever the last reader on that phone picked.
@@ -135,6 +159,7 @@ export default function App() {
   const [scratched, setScratched] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
+  const [fz, setFz] = useState(readFz);
   const t = T[lang];
   const sd = lang === "sd";
   const refMap = useRef({});
@@ -163,6 +188,11 @@ export default function App() {
       if (returnTo instanceof HTMLElement) returnTo.focus();
     };
   }, [reader]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--fz", String(FZ[fz]));
+    try { localStorage.setItem("ta-fz", String(fz)); } catch {}
+  }, [fz]);
 
   // anything a previous visit could not deliver goes out now, or when the phone reconnects
   useEffect(() => watchRsvpQueue(RSVP_ENDPOINT), []);
@@ -198,10 +228,12 @@ export default function App() {
       const g = Math.max(-26, Math.min(26, e.gamma || 0));
       el.style.setProperty("--cx", (b * 0.18).toFixed(1) + "deg");
       el.style.setProperty("--cy", (g * 0.28).toFixed(1) + "deg");
+      el.style.setProperty("--gx", (50 + g * 1.9).toFixed(1) + "%");
     };
     const onMove = (e) => {
       el.style.setProperty("--cx", (-(e.clientY / innerHeight - 0.5) * 8).toFixed(1) + "deg");
       el.style.setProperty("--cy", ((e.clientX / innerWidth - 0.5) * 10).toFixed(1) + "deg");
+      el.style.setProperty("--gx", (e.clientX / innerWidth * 100).toFixed(1) + "%");
     };
     if (phone && window.DeviceOrientationEvent) addEventListener("deviceorientation", onOri, { passive: true });
     else addEventListener("pointermove", onMove);
@@ -237,6 +269,12 @@ export default function App() {
         <button className="pill" onPointerEnter={loadSindhiFonts} aria-label={t.langSwitch}
           lang={sd ? "en" : "sd"}
           onClick={() => { setLang(sd ? "en" : "sd"); buzz(8); }}>{sd ? "English" : "سنڌي"}</button>
+        <div className="fz" role="group" aria-label={t.textSize}>
+          <button className="dn" aria-label={t.textSmaller} disabled={fz === 0}
+            onClick={() => { setFz((v) => Math.max(0, v - 1)); buzz(6); }}>A−</button>
+          <button className="up" aria-label={t.textLarger} disabled={fz === FZ.length - 1}
+            onClick={() => { setFz((v) => Math.min(FZ.length - 1, v + 1)); buzz(6); }}>A+</button>
+        </div>
       </div>
 
       {rsvpOpen && (
@@ -258,6 +296,8 @@ export default function App() {
         )}
       </div>
 
+      <Sky live={opened} />
+
       <main>
         {/* 1 · card */}
         <Sec id="s1" tone="wine" label={t.dotLabels.s1} refMap={refMap}
@@ -277,6 +317,9 @@ export default function App() {
             }}>
             <div className="card3d" ref={card3dRef}>
               <div className="cardimg" />
+              {/* a glare that slides across the card as the phone tilts — it answers the hand,
+                  it does not sweep on its own */}
+              <i className="sheen" />
               <DateMask t={t} lang={lang} off={scratched} />
             </div>
             <i className="gilt" />
@@ -316,7 +359,7 @@ export default function App() {
         </Sec>
 
         {/* 3 · verse */}
-        <Sec id="s3" tone="deep" label={t.dotLabels.s3} corners={["tl","tr","bl","br"]} refMap={refMap}>
+        <Sec id="s3" tone="deep" label={t.dotLabels.s3} corners={["tl","tr"]} refMap={refMap}>
           <Rv cls="star" />
           <Rv d={0.06} cls={"kicker" + (sd ? " sd-t" : "")} style={{ marginTop: 14 }}>{t.verseKicker}</Rv>
           <Rv d={0.14} cls="arab">{ARABIC_VERSE}</Rv>
@@ -324,21 +367,17 @@ export default function App() {
           <Rv d={0.26} cls="band" />
           <Rv d={0.3} cls={"body" + (sd ? " sd-t" : "")} style={{ fontStyle: sd ? "normal" : "italic" }}>{t.verse}</Rv>
           <Rv d={0.4} cls="kicker" style={{ marginTop: 12 }}>{t.verseRef}</Rv>
-          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontSize: 14 }}>{t.verseNote}</Rv>
+          <Rv d={0.5} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20 }}>{t.verseNote}</Rv>
         </Sec>
 
         {/* 4 · schedule */}
-        <Sec id="s4" tone="wine" label={t.dotLabels.s4} corners={["tr","bl"]} refMap={refMap}>
+        <Sec id="s4" tone="wine" label={t.dotLabels.s4} corners={["tr"]} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.schedKicker}</Rv>
           <Rv d={0.05} cls={"script h-lg" + (sd ? " sd-t" : "")}>{sd ? t.schedTitle : "Schedule"}</Rv>
           <Rv d={0.1} cls="band" />
-          <ol className="sched">
+          <ol className={"sched" + (sd ? " rtl" : "")}>
             {t.sched.map(([time, what], i) => (
-              <Rv key={i} d={0.16 + i * 0.06}>
-                <li className={i === t.sched.length - 1 ? "last" : ""}>
-                  <b>{time}</b><span className={sd ? "sd-t" : ""}>{what}</span>
-                </li>
-              </Rv>
+              <Hour key={i} time={time} what={what} sd={sd} last={i === t.sched.length - 1} />
             ))}
           </ol>
           <Rv d={0.48} cls="notice">
@@ -370,24 +409,24 @@ export default function App() {
         </Sec>
 
         {/* 5 · dress code */}
-        <Sec id="s5" tone="wine" label={t.dotLabels.s5} corners={["tr","bl"]} refMap={refMap}>
+        <Sec id="s5" tone="wine" label={t.dotLabels.s5} corners={["tr"]} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.dressKicker}</Rv>
           <Rv d={0.05} cls={"h-caps" + (sd ? " sd-t" : "")}>{t.dressTitle}</Rv>
           <Rv d={0.1} cls="band" />
           <div className="dc">
             <Rv d={0.16}>
-              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.encouraged}</h3>
-              <div className="chips">
+              <h3 className={sd ? "sd-t" : ""}>{t.encouraged}</h3>
+              <div className="swatches">
                 {t.colors.map(([c, n], i) => (
-                  <span key={i} className="chip"><i style={{ background: c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
+                  <span key={i} className="swatch"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
                 ))}
               </div>
             </Rv>
             <Rv d={0.24}>
-              <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.reserved}</h3>
-              <div className="chips">
+              <h3 className={sd ? "sd-t" : ""}>{t.reserved}</h3>
+              <div className="kept">
                 {t.resChips.map(([c, n], i) => (
-                  <span key={i} className="chip no"><i style={{ background: c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
+                  <span key={i} className="keep"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
                 ))}
               </div>
             </Rv>
@@ -396,10 +435,10 @@ export default function App() {
         </Sec>
 
         {/* 6 · closing */}
-        <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr","bl","br"]} refMap={refMap}>
+        <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr"]} refMap={refMap}>
           <Rv cls="star" />
-          {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: 17, marginTop: 14 }}>{t.closeSd}</Rv>}
-          <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "clamp(26px,7vw,34px)" : "clamp(28px,7.6vw,36px)" }}>{t.closeTitle}</Rv>
+          {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: "calc(21px*var(--fz,1))", marginTop: 14 }}>{t.closeSd}</Rv>}
+          <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "calc(clamp(28px,7.6vw,36px)*var(--fz,1))" : "calc(clamp(32px,8.6vw,42px)*var(--fz,1))" }}>{t.closeTitle}</Rv>
           <Rv d={0.26} cls="band" />
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>

@@ -14,7 +14,7 @@
  *
  * ── Setting it up (about five minutes) ──────────────────────────────────────────────────────
  *
- *  1. Make a new Google Sheet. Call it whatever you like — "Rukhsati RSVPs".
+ *  1. Make a new Google Sheet. Call it whatever you like — "Baarat RSVPs".
  *  2. In that Sheet: Extensions → Apps Script. Delete the sample code.
  *  3. Paste this whole file in and press Save.
  *  4. Choose `setup` in the function dropdown and press Run. Authorise it when asked — the
@@ -59,7 +59,7 @@ var SITE = 'https://tashkeensayyad.github.io/Wedding-Invite/';
  *  It leaves the date out to match the invitation and its link preview, where the date is what
  *  the scratch heart reveals — the same wording as scripts/guest-links.mjs. */
 var INVITE_TEXT =
-  'Assalamu alaikum {name}! You are warmly invited to the Rukhsati of ' +
+  'Assalamu alaikum {name}! You are warmly invited to the Baarat & Rukhsati of ' +
   'Tashkeen & Anusha at Nerunkot Hall, Qasimabad, Hyderabad. ' +
   'Your invitation is here — scratch the heart to find out the date: {link}';
 
@@ -318,7 +318,7 @@ function buildSummarySheet(ss) {
   var R = SHEET_NAME + '!';
   var G = "'" + GUESTS_NAME + "'!";
   var rows = [
-    ['Rukhsati — Tashkeen & Anusha', ''],
+    ['Baarat & Rukhsati — Tashkeen & Anusha', ''],
     ['Sunday, 27 December 2026 · Nerunkot Hall, Qasimabad, Hyderabad', ''],
     ['', ''],
     ['Coming', ''],
@@ -453,7 +453,7 @@ function sendDigest() {
     }
   }
   var body = [
-    'Rukhsati — RSVPs so far',
+    'Baarat & Rukhsati — RSVPs so far',
     '',
     heads + ' guests attending, across ' + yes + ' repl' + (yes === 1 ? 'y' : 'ies') + '.',
     no + ' unable to attend.',

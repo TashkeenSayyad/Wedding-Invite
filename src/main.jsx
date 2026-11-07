@@ -18,7 +18,7 @@ class Fallback extends React.Component {
         <p className="bare-k">Request the honour of your presence</p>
         <h1>Tashkeen &amp; Anusha</h1>
         <hr />
-        <p className="bare-t">Rukhsati</p>
+        <p className="bare-t">Baarat &amp; Rukhsati</p>
         <p>Sunday, 27 December 2026<br />Nerunkot Hall, Qasimabad, Hyderabad, Sindh</p>
         <p>7:00 PM · Guests arrive<br />8:00 PM · Entrance of the bride &amp; groom<br />
           9:00 PM · Dinner is served<br />10:30 PM · Rasms<br />12:00 AM · Rukhsati</p>

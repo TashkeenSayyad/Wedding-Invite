@@ -9,7 +9,18 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 
 ## The event — verified facts, do not change without asking
 
-- **Event name:** "Rukhsati" — the invitation is for the Rukhsati alone, on the 27th. It was
+- **Event name (Nov 2026): the Baarat, and the Rukhsati of Anusha.** The evening is the groom's
+  side's event, so the user asked for it to be named as the Baarat, with the Rukhsati as Anusha's.
+  The card's title line now reads, in two lines of the same Italianno gold at the same size,
+  **"Baarat" over "& Rukhsati"** ("of Anusha" was on the second line and the user took it off) — set by `scripts/card-baarat.py`, which takes every size and colour off
+  the artwork. It always starts from the original card in git (`e003ce4`), never from its own
+  output — an earlier version re-read the gold from its last result and dulled it every run. The user asked for "& Rukhsati" **not** to be the small line:
+  an italic sub-line in the parents' voice was built first and rejected. Everywhere else the
+  event is "Baarat & Rukhsati" (title, og:title, calendar, manifest, JSON-LD, the og-card kicker)
+  or "the Baarat & Rukhsati of Tashkeen & Anusha" (descriptions, the WhatsApp invite text
+  in `guest-links.mjs` and `rsvp-sheet.gs`, the RSVP message header — its four labels unchanged).
+  "12:00 AM Rukhsati" stays in the schedule: that is the moment itself. `og:image` is `?v=4`.
+- **Before that:** "Rukhsati" — the invitation was for the Rukhsati alone, on the 27th. It was
   "Rukhsati & Walima" until the user asked for the Walima to come off; do not put it back. The
   card artwork was changed to match by `scripts/card-title.py`, which lifted "& Walima" off both
   cuts and moved the existing Italianno "Rukhsati" to the centre axis (no re-typesetting). The
@@ -45,7 +56,7 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    and don't make it sound like a warning.
 2. **Everything must translate.** Every user-visible string lives in `src/i18n.js` with both
    `en` and `sd` keys. If you add UI text, add both. Sindhi elements need `className="sd-t"`
-   for the Nastaliq font and line-height. The two key sets must stay identical — this has
+   for the Sindhi face (Lateef, Naskh), line-height and right-to-left direction. The two key sets must stay identical — this has
    already drifted twice (a Plum dress-code chip lived on in Sindhi after being dropped from
    English; the nikkah note was cleared in English but kept shipping in Sindhi). Check with:
 
@@ -74,6 +85,59 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    of the master** — it is a separate, flatter rendering with a brighter wine and a paler cream,
    so any edit has to be made to both cuts on their own terms, each measured against its own
    ground. 5e2a7cd is a worked example of all of this.
+
+## The redesign — "one evening over Hyderabad" (prototype, Nov 2026)
+
+The user asked for a full rework that makes people say "wow". The idea is that the whole page is
+one evening, from dusk to the Rukhsati at midnight, rather than six cards stacked up.
+
+- **The sky** (`src/components/Sky.jsx`) is a fixed layer behind everything. One scroll listener
+  writes `--p` (0 → 1, rAF-throttled) on `.sky`, and *everything* in it is a pure function of
+  that: the wine-red dusk gives way to an indigo night (`.sky-night` opacity), stars come out at
+  their own thresholds (`--at`), the moon rises out of the rooftops on the right, and the windows
+  of the city light one by one. **Nothing in the sky moves on its own** — stop scrolling and it
+  is still. The moon is kept low over the skyline, in the clear ground under each section's
+  content (sections carry `padding-bottom:max(58px,18svh)` for this), because a moon that
+  crossed the page passed behind lines of text.
+- **The skyline is Hyderabad's**: flat roofs crowned with *manghs*, the windcatchers the city is
+  known for, all leaning the same way into the sea breeze; a mosque dome and minaret; and one
+  house dressed in strings of wedding lights, which come on at `--at:.1`. It is generated from a
+  fixed seed, so it is identical on every load and the build stays reproducible.
+- **Sections have no background of their own any more** (`.wine`/`.deep` are still on the
+  markup but style nothing; the gold seams between sections are gone). They are panes over the
+  one sky. The per-section `.ajrak`, `.vig` and `.grain` went with them; a single grain sits on
+  the sky. `.notice` and `.gtk` got a dark translucent ground of their own because on `s4` they
+  sit over the lit windows.
+- **The intro is the envelope again, and the heart is plain gold foil again.** A haveli door
+  (carved leaves, toran, a measured zoom through the arch onto the s1 card) and a shisha
+  mirror-work foil on the heart were both built in the redesign, and the user asked for both to
+  be put back as they were. `Intro.jsx` and `ScratchHeart.jsx` are `main`'s versions, and the
+  intro CSS is `main`'s envelope block — except the greeting, names, invite line and "Tap the
+  seal", which keep their large-print sizes and the Sindhi (Lateef) settings. Do not bring
+  the door or the mirror-work back unasked; the door is in git at `ee720a3` if it is wanted.
+- **The schedule is a string of lanterns** (`Lantern.jsx`). Each hour's fanoos is dark until the
+  reader scrolls to it, then lights and stays lit (`useLit`, an IntersectionObserver). The last,
+  the Rukhsati, is the largest lantern and is set in Italianno. The rows are no longer `.rv` —
+  the lighting is their reveal.
+- **Dress code colours are cloth swatches** — folded, with a weave and gold stitching — and
+  the two reserved colours are small swatches beside their sentence. The diagonal strike that
+  used to cross them out is gone; the heading "Reserved with love" says it.
+- **Corners are top-only and fade out.** Over the open sky, the four square-cut corner
+  ornaments read as boxes stuck onto the page, and the bottom pair drew their pattern over the
+  skyline and the moon. Sections now carry only `tl`/`tr`, and `.corner` has a radial mask so
+  the ornament fades toward the middle instead of ending in a hard edge.
+- **On phones the dot labels are hidden** (`max-width:600px`): the section name beside the
+  active dot printed straight over the body text. The dots alone carry the position.
+- The moon rises only to just above the rooftops, and each lantern's light is a small 48px
+  pool — the larger 124px glows ran into one smudge down the schedule.
+- The card on `s1` has a `.sheen` that follows the phone's tilt (`--gx`). It moves only when the
+  hand does; it is not the looping `.shine` the restraint pass removed.
+
+**How this squares with the restraint pass below.** The user asked for the showy effects to go
+because they read as unprofessional, and that still stands: no bursts, sparks, petals, pings,
+motes, breathing halos or loops were brought back. The new light on the page — lit windows,
+lanterns, the moon — is light *in a scene*, and every bit of it answers either a tap or the
+reader's scroll. If a future change wants something to move by itself, that is the line.
 
 ## Layout / design system
 
@@ -160,6 +224,77 @@ this is not the door back in for the effects the restraint pass removed. The scr
 thread and the dot navigation were lifted with it (thread 2px → 3px on a .2α track, dots
 6px → 8px, labels 8.5px → 10px).
 
+### Large-print pass (Nov 2026)
+
+The user found the type still too small for guests with poor eyesight, so the scale went up a
+second time, by a lot. These are the new floors — the older figures above are history:
+
+- body copy `.body` / `.sched span` **19px** at weight **400** (was 15px at 300), with
+  `--chalk-d` raised from .7 to .92 alpha and `--chalk-x` from .42 to .66. Cormorant has a small
+  x-height and its 300 weight is a hairline; size alone did not fix it.
+- the framed notes `.notice p` / `.gtk p` 16.5px, swatch names 14px, the reserved-colour lines 16.5px
+- every letterspaced small cap at **12–14.5px** (kickers 13px, buttons 14.5px, hints 14px,
+  countdown labels 12px), with tracking eased to .1–.22em so lines that fit still fit
+- Sindhi running text has sizes of its own now: `.body.sd-t` and `.sched span.sd-t` 20px,
+  notes 17.5px. Before this they inherited the Latin size, so Sindhi body copy was set *smaller*
+  than English — the opposite of what Nastaliq needs.
+- buttons are at least 48px tall; swatch names dropped uppercase (four tracked capitals no
+  longer fit four columns at 360px)
+- the inline sizes in `App.jsx` (`.dc h3`, `verseNote`) moved into the stylesheet
+- the skyline is `clamp(80px,19svh,200px)` tall, down from `clamp(110px,24svh,210px)`, because
+  the taller Sindhi sections now reach the bottom of a 640px screen and lit windows behind the
+  text hurt legibility
+
+Re-swept at 360/393/430/820 in both languages: no overflow, no sideways scroll, no console
+errors, the scratch completes, the RSVP send button is on screen at 360×640 in both languages.
+
+### Text-size control (Nov 2026)
+
+Top left, beside the language pill, **A− / A+** step the type through four sizes — small (.8),
+**medium (.9, the default)**, large (1.08), extra large (1.3). Medium was 1 until the user asked
+for the base type a little smaller; the CSS sizes were left alone and the whole ladder moved instead — for guests with poor eyesight.
+`FZ` in `App.jsx` holds the steps; the choice is remembered on that phone in `localStorage`
+(`ta-fz`, wrapped in try/catch — a convenience, never needed for the page to work).
+
+How it works: App.jsx sets `--fz` on `<html>`, and **every `font-size` in `styles.css` is
+`calc(<size>*var(--fz,1))`**, as are the two inline sizes in `App.jsx`. So only type grows — the
+layout, the card, the envelope and the heart keep their size. **Any new font-size must be
+written the same way**, or it will not follow the control. Deliberately left out: the language
+pill and the control itself (so the bar never moves), `.dm-t` on the gold band (it is measured
+against the card), `.heartbase b` (the date has to fit the fixed 300px heart), and `.bare`.
+Two things were changed to make extra large fit at 360px: the schedule's time column is
+`calc(84px*var(--fz,1))` with `white-space:nowrap` on the time (it wrapped "10:30 / PM"), and
+the Italianno "Rukhsati" in the schedule is capped at `12vw`.
+
+Swept at all four steps, at 360×640 and 430×932, in both languages: no overflow, no sideways
+scroll, no console errors, the scratch completes, the envelope and its "Tap the seal" fit on the
+intro, and the RSVP send button stays on screen.
+
+## Sindhi is set in Naskh, not Nastaliq (Nov 2026)
+
+**Do not put Nastaliq back.** The user, reading the site, said plainly: "the script is Urdu, not
+Sindhi". Nastaliq is the Urdu convention; Sindhi is printed in Naskh — newspapers, books, signage.
+Everything Sindhi now uses **Lateef** (SIL), a Naskh face made for Sindhi and named after Shah
+Abdul Latif Bhittai. It covers every Sindhi letter (ڄ ڃ ٻ ڀ ٽ ٿ ڌ ڏ ڊ ڍ ڙ ڪ ڳ ڱ ڻ ٺ ڦ ڇ) and
+carries a `SND` language system, picked up from `lang="sd"` on `<html>` (and
+`font-language-override:'SND'` where Sindhi shows on an English page).
+
+- Lateef draws small for its em, so both cuts carry **`size-adjust:135%`** — in the `@font-face`
+  that `npm run fonts` writes and in the `FontFace` call in `App.jsx`. That one figure is why the
+  Sindhi CSS sizes look like the Latin ones; change it in both places or neither.
+- Naskh is far shorter and tighter than Nastaliq: every Sindhi line-height came down (1.9–2.4 →
+  1.4–1.85). The old Nastaliq notes elsewhere in this file about 2.14em ink, the 19% upward
+  nudge on `.dm-t.sd-t`, and descenders touching on `s6` no longer apply.
+- **`.sd-t` is `direction:rtl`.** Before, Sindhi paragraphs had a left-to-right base, so a full
+  stop typed at the end of a sentence was drawn at the start of the line. The framed notes and
+  the reserved-colour lines align right in Sindhi, and the schedule mirrors as a whole
+  (`.sched.rtl`: lantern on the right, then the time, then the event), with `.sched b` isolated
+  LTR so "7:00 PM" never reorders.
+- `.h-lg.sd-t` has a real display size: `.script.sd-t` had been sizing the Sindhi schedule heading
+  as a fraction of the *body* text, so it rendered smaller than the kicker above it.
+- Font weight is lower too: English first paint 208 KB (was ~247), and switching to سنڌي adds
+  27 KB (was ~159).
+
 ## Fonts — self-hosted and split
 
 Nothing is fetched from fonts.googleapis.com any more (two connections before first paint, and
@@ -169,7 +304,7 @@ it made offline impossible). `npm run fonts` builds `src/assets/fonts/` and gene
 - Latin faces are copied out of `@fontsource`, declared with the real `unicode-range` so
   latin-ext is only fetched when a guest's name actually needs it
 - Noto Naskh Arabic is subset to the Qur'anic verse and the bismillah — 51 KB → 13 KB
-- Noto Nastaliq Urdu is split in two. **`Nastaliq Core`** is a ~46 KB cut holding only the
+- Lateef (formerly Noto Nastaliq Urdu — see above) is split in two. **`Lateef Core`** is a ~8 KB cut holding only the
   Sindhi flourishes that appear while the site is in English (bismillah, the couple's names,
   the closing line) and is used by `.pre-sd`, `.nm-sd`, `.sdt` via `--fsd-c`. The full Sindhi
   cut is *not* in the CSS at all — `App.jsx` loads it through the FontFace API the moment a
@@ -197,9 +332,23 @@ Arabic of "سنڌي" before our own Naskh face was ever offered it.
 `npm run build` runs `vite build` then `scripts/gen-sw.mjs`, which writes `docs/sw.js` with the
 built file list baked in and a cache name hashed from it (so a new build evicts the old cache).
 Everything is precached except `card-print.png` (2.1 MB) and `og-card.jpg`, which are cached at
-runtime instead. Navigations serve the cached shell first and refresh behind the reader, so a
-`?to=` link opens instantly with no signal. `public/manifest.webmanifest` plus the generated
+runtime instead. Navigations go to the network first and fall back to the cached shell, so a `?to=` link
+still opens with no signal (see the white-screen note below). `public/manifest.webmanifest` plus the generated
 icons make it installable to a home screen.
+
+**The white-screen bug (fixed Nov 2026).** GitHub Pages sends `Cache-Control: max-age=600`, and
+the precache used to be filled with plain `fetch`es — so a new service worker could store the
+*previous* build's `index.html`, served from the browser's ten-minute copy, as its shell. That page
+asks for hashed scripts the server no longer has: on a phone that had seen the old site, the
+redesign rendered a completely white screen. Three things now prevent it, and each was reproduced
+against a local server sending the same header:
+
+- the precache fetches with `cache: "reload"`, and navigations go **network-first** with
+  `cache: "no-cache"`, falling back to the cached shell offline or after 3 seconds
+- the cache name hashes file *contents*, not just names (`index.html` never changes name)
+- an inline script in `index.html` catches a failed load of `./assets/index-*`, unregisters the
+  worker, clears the caches and reloads once (guarded by `sessionStorage`), and an inline style
+  paints the page dark before any stylesheet arrives, so a failure is never a white page
 
 Registration is guarded by `import.meta.env.PROD` — there is no `sw.js` in dev and a stale cache
 there would be a nuisance.
@@ -429,7 +578,7 @@ different build.
 - no duplicated visible Sindhi strings
 - no console errors
 - the language pill is reachable **on the intro**, before the envelope is opened
-- in English only `Nastaliq Core` loads; picking سنڌي pulls in `Noto Nastaliq Urdu` 400 and 600
+- in English only `Lateef Core` loads; picking سنڌي pulls in `Lateef` 400 and 600
 
 Note that **s4 is legitimately taller than the viewport** at every width — it carries the
 schedule, the timing notice, the parking and travel notes and four buttons. `.sec` grows to fit

@@ -8,9 +8,11 @@
 //     only fetches latin-ext when a guest's name actually needs it
 //   * Noto Naskh Arabic is cut down to the Qur'anic verse and the bismillah — the only Arabic the
 //     face ever renders here — which takes it from 51 KB to about 12
-//   * Noto Nastaliq Urdu is split in two: `nastaliq-core` carries just the Sindhi flourishes that
-//     show while the site is in English (the bismillah, the couple's names, the closing line), and
-//     the full Sindhi cut is fetched only when a reader switches to سنڌي
+//   * Sindhi is set in Lateef (SIL), a Naskh face made for Sindhi and named after Shah Abdul Latif
+//     Bhittai. Sindhi is printed in Naskh; the Nastaliq the site used before is the Urdu
+//     convention, and a Sindhi reader saw it as Urdu. Lateef is split in two: `lateef-core`
+//     carries just the Sindhi that shows while the site is in English (the bismillah, the couple's
+//     names, the closing line), and the full cut is fetched only when a reader switches to سنڌي
 //
 // Run `npm run fonts` after changing any Sindhi string. The woff2 output is committed, so an
 // ordinary `npm run build` needs neither python nor the @fontsource packages.
@@ -78,7 +80,7 @@ const CORE = [...new Set(arabicOf("بسم الله الرحمٰن الرحيم �
 const subset = (src, dst, text) => {
   execFileSync("python3", ["-m", "fontTools.subset", src,
     `--text=${text}`,
-    "--layout-features=*",        // Nastaliq is almost entirely GSUB; dropping features breaks joining
+    "--layout-features=*",        // joining and the Sindhi letter forms are all GSUB; keep every feature
     "--notdef-outline", "--drop-tables+=DSIG",
     "--flavor=woff2", `--output-file=${dst}`], { stdio: ["ignore", "ignore", "inherit"] });
   return statSync(dst).size;
@@ -89,23 +91,27 @@ const naskh = subset(naskhSrc, resolve(out, "naskh-arabic-400.woff2"), ALL);
 css += `@font-face{font-family:'Noto Naskh Arabic';font-style:normal;font-weight:400;font-display:swap;` +
        `src:url(./assets/fonts/naskh-arabic-400.woff2) format('woff2')}\n`;
 
-const nastaliq = (w) => mod(`noto-nastaliq-urdu/files/noto-nastaliq-urdu-arabic-${w}-normal.woff2`);
-const core = subset(nastaliq(400), resolve(out, "nastaliq-core.woff2"), CORE);
-css += `@font-face{font-family:'Nastaliq Core';font-style:normal;font-weight:400;font-display:swap;` +
-       `src:url(./assets/fonts/nastaliq-core.woff2) format('woff2')}\n`;
+const lateef = (w) => mod(`lateef/files/lateef-arabic-${w}-normal.woff2`);
+const core = subset(lateef(400), resolve(out, "lateef-core.woff2"), CORE);
+// Lateef draws small for its em — set at the same size as the Latin it read a size smaller — so
+// both cuts are scaled up as fonts, once, rather than every Sindhi rule being enlarged by hand.
+// App.jsx passes the same figure to the full cut it loads through the FontFace API.
+export const LATEEF_SIZE = "135%";
+css += `@font-face{font-family:'Lateef Core';font-style:normal;font-weight:400;font-display:swap;size-adjust:${LATEEF_SIZE};` +
+       `src:url(./assets/fonts/lateef-core.woff2) format('woff2')}\n`;
 
 // Not declared here — App.jsx loads these through the FontFace API the moment Sindhi is chosen.
-const sd400 = subset(nastaliq(400), resolve(out, "nastaliq-400.woff2"), ALL);
-const sd600 = subset(nastaliq(600), resolve(out, "nastaliq-600.woff2"), ALL);
+const sd400 = subset(lateef(400), resolve(out, "lateef-400.woff2"), ALL);
+const sd600 = subset(lateef(600), resolve(out, "lateef-600.woff2"), ALL);
 
 writeFileSync(resolve(root, "src/fonts.css"), css);
 
-const before = statSync(nastaliq(400)).size + statSync(nastaliq(600)).size + statSync(naskhSrc).size;
+const before = statSync(lateef(400)).size + statSync(lateef(600)).size + statSync(naskhSrc).size;
 console.log(`latin (first paint)   ${k(eagerLatin)}`);
 console.log(`naskh arabic          ${k(naskh)}   ← ${k(statSync(naskhSrc).size)}`);
-console.log(`nastaliq core         ${k(core)}   ← ${k(statSync(nastaliq(400)).size)}`);
+console.log(`lateef core           ${k(core)}   ← ${k(statSync(lateef(400)).size)}`);
 console.log(`  english first paint ${k(eagerLatin + naskh + core)}`);
-console.log(`nastaliq sindhi 400   ${k(sd400)}`);
-console.log(`nastaliq sindhi 600   ${k(sd600)}   ← ${k(statSync(nastaliq(600)).size)}`);
+console.log(`lateef sindhi 400     ${k(sd400)}`);
+console.log(`lateef sindhi 600     ${k(sd600)}   ← ${k(statSync(lateef(600)).size)}`);
 console.log(`  sindhi total        ${k(eagerLatin + naskh + core + sd400 + sd600)}`);
 console.log(`arabic faces cut from ${k(before)} to ${k(naskh + core + sd400 + sd600)}`);
