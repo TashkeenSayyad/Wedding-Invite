@@ -11,12 +11,13 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 
 - **Event name (Nov 2026): the Baarat, and the Rukhsati of Anusha.** The evening is the groom's
   side's event, so the user asked for it to be named as the Baarat, with the Rukhsati as Anusha's.
-  The card's title line now reads, in two lines of the same Italianno gold, **"Baarat" over
-  "& Rukhsati of Anusha"** — set by `scripts/card-baarat.py`, which takes every size and colour off
-  the artwork and is safe to re-run. The user asked for "& Rukhsati" **not** to be the small line:
+  The card's title line now reads, in two lines of the same Italianno gold at the same size,
+  **"Baarat" over "& Rukhsati"** ("of Anusha" was on the second line and the user took it off) — set by `scripts/card-baarat.py`, which takes every size and colour off
+  the artwork. It always starts from the original card in git (`e003ce4`), never from its own
+  output — an earlier version re-read the gold from its last result and dulled it every run. The user asked for "& Rukhsati" **not** to be the small line:
   an italic sub-line in the parents' voice was built first and rejected. Everywhere else the
   event is "Baarat & Rukhsati" (title, og:title, calendar, manifest, JSON-LD, the og-card kicker)
-  or "the Baarat of Tashkeen and the Rukhsati of Anusha" (descriptions, the WhatsApp invite text
+  or "the Baarat & Rukhsati of Tashkeen & Anusha" (descriptions, the WhatsApp invite text
   in `guest-links.mjs` and `rsvp-sheet.gs`, the RSVP message header — its four labels unchanged).
   "12:00 AM Rukhsati" stays in the schedule: that is the moment itself. `og:image` is `?v=4`.
 - **Before that:** "Rukhsati" — the invitation was for the Rukhsati alone, on the 27th. It was

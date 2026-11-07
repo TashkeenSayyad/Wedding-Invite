@@ -90,12 +90,12 @@ const csvCell = (v) => (/[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v
 // thread, and the preview no longer carries it either — the scratch heart is what tells a guest
 // the date. The venue stays; only the date is the surprise.
 const message = (name, url) =>
-  `Assalamu alaikum ${name}! You are warmly invited to the Baarat of Tashkeen and the Rukhsati of Anusha ` +
+  `Assalamu alaikum ${name}! You are warmly invited to the Baarat & Rukhsati of Tashkeen & Anusha ` +
   `at Nerunkot Hall, Qasimabad, Hyderabad. ` +
   `Your invitation is here — scratch the heart to find out the date: ${url}`;
 // Kept in the same shape as the English so the family can scan either list the same way.
 const messageSd = (name, url) =>
-  `السلام عليڪم ${name}! تاشقين جي بارات ۽ انوشا جي رخصتيءَ ۾ اوهان کي محبت سان دعوت آهي — ` +
+  `السلام عليڪم ${name}! تاشقين ۽ انوشا جي بارات ۽ رخصتيءَ ۾ اوهان کي محبت سان دعوت آهي — ` +
   `نيرون ڪوٽ هال، قاسم آباد، حيدرآباد. ` +
   `اوهان جي دعوت هتي آهي، تاريخ ڄاڻڻ لاءِ دل کي کرچجو: ${url}`;
 

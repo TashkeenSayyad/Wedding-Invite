@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Retitles the invitation artwork: "Baarat" over "& Rukhsati of Anusha", both in the title script.
+"""Retitles the invitation artwork: "Baarat" over "& Rukhsati", both in the title script.
 
 The evening is the groom's side's Baarat, and the Rukhsati is Anusha's — so the card's title
 line, which said only "Rukhsati", now says "Baarat", and a second, smaller line under it names
@@ -10,9 +10,8 @@ Nothing is guessed. Every size and colour is taken off the artwork itself:
   * "Baarat" is set in Italianno at the size that makes the word "Rukhsati" come out exactly as
     tall as the "Rukhsati" being replaced, and in that word's own gold, row by row — the
     original's ink is a vertical ramp, and the new word carries the same ramp.
-  * "& Rukhsati of Anusha" is the same face and the same gold — the user asked for the Rukhsati
-    not to be the small line. It is set a step under "Baarat" only because it is three times as
-    long and has to fit between the arches.
+  * "& Rukhsati" is the same face, the same gold and the same size — the user asked for the
+    Rukhsati not to be the small line. ("of Anusha" was on it too, and the user took it off.)
   * The two lines share the clear ground between "TOGETHER WITH THEIR FAMILIES" and the divider,
     with equal space above, between and below them.
 
@@ -22,11 +21,14 @@ their own terms: card-web.webp is a separate, flatter rendering, not a resize of
 
 Nothing below the divider moves, so DateMask's measurements of the date line still hold.
 
-Safe to run twice: the erase box takes in everything this script sets. Needs pillow, numpy and
+It always starts from the artwork as it stood before any of this — the single Italianno
+"Rukhsati", read out of git at ORIGINAL — never from its own output. An earlier version re-read
+the gold from whatever title it had set last time, and every run dulled it a little further. Needs pillow, numpy and
 fonttools.
 """
 import io
 import os
+import subprocess
 from functools import lru_cache
 
 import numpy as np
@@ -37,11 +39,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FS = os.path.join(ROOT, "node_modules/@fontsource")
 TITLE_FONT = f"{FS}/italianno/files/italianno-latin-400-normal.woff2"
 
+ORIGINAL = "e003ce4"   # the commit that left the card titled "Rukhsati" alone
+
 TITLE = "Baarat"
-SUB = "& Rukhsati of Anusha"
+SUB = "& Rukhsati"
 
 # sizes, as fractions of the size that set the original single "Rukhsati"
-TITLE_SCALE, SUB_SCALE = 0.86, 0.66
+TITLE_SCALE, SUB_SCALE = 0.86, 0.86
 
 # Measured off each cut (rows and columns of ink, scanning the clear ground between the arches):
 #   centre  the axis every line on the card is centred on
@@ -120,19 +124,20 @@ def place(a, m, ramp, top, centre):
 
 for cut in CUTS:
     p = os.path.join(ROOT, cut["path"])
-    a = np.asarray(Image.open(p).convert("RGB")).astype(float)
+    src = subprocess.run(["git", "show", f"{ORIGINAL}:{cut['path']}"], cwd=ROOT,
+                         capture_output=True, check=True).stdout
+    a = np.asarray(Image.open(io.BytesIO(src)).convert("RGB")).astype(float)
     c = cut["centre"]
     x0, y0, x1, y1 = cut["erase"]
 
     r0, r1 = cut["ref"]
     base = fit(TITLE_FONT, "Rukhsati", r1 - r0 + 1, 0)
 
-    # the gold ramp, from the first run of ink rows in the box — the title, whichever stands there
-    lum = a[y0:y1 + 1, x0:x1 + 1].mean(2)
-    rows = np.where((lum > 110).sum(1) > 3)[0]
-    gaps = np.where(np.diff(rows) > 4)[0]
-    rows = rows[:gaps[0] + 1] if len(gaps) else rows
-    ramp = ink_ramp(a, (rows.min() + y0, rows.max() + y0), (x0, x1))
+    # the gold ramp, from the original "Rukhsati" — sampled only across the columns its ink
+    # actually occupies, so the wine either side never dilutes it
+    lum = a[r0:r1 + 1, x0:x1 + 1].mean(2)
+    cols = np.where((lum > 110).any(0))[0]
+    ramp = ink_ramp(a, (r0, r1), (cols.min() + x0, cols.max() + x0))
 
     a[y0:y1 + 1, x0:x1 + 1] = ground_of(a, cut["erase"])
 

@@ -89,15 +89,15 @@ export const T = {
     // let the family scan a WhatsApp thread and count. Note is appended after them and only when
     // a guest wrote one, so the shape a counter reads never changes.
     rsvpMsgYes: (g, count, names, note, update) =>
-      `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Baarat of Tashkeen ` +
-      `& Rukhsati of Anusha, 27 December 2026.\n` +
+      `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Baarat & Rukhsati ` +
+      `of Tashkeen & Anusha, 27 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: yes\nHow many: ${count}\n` +
       `${names.length ? "Names: " + names.join(", ") : "Names: not given"}` +
       `${note ? "\nNote: " + note : ""}`,
     rsvpMsgNo: (g, note, update) =>
-      `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Baarat of Tashkeen ` +
-      `& Rukhsati of Anusha, 27 December 2026.\n` +
+      `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Baarat & Rukhsati ` +
+      `of Tashkeen & Anusha, 27 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: no\nOur prayers and love are with you both.` +
       `${note ? "\nNote: " + note : ""}`,
@@ -188,13 +188,13 @@ export const T = {
     closeGuest: n => `خاص اوهان لاءِ، ${n}.`,
     dotLabels: { s1:"دعوت", s2:"ڳڻپ", s3:"آيت", s4:"ترتيب", s5:"لباس", s6:"پڄاڻي" },
     rsvpMsgYes: (g, count, names, note, update) =>
-      `السلام عليڪم! تاشقين جي بارات ۽ انوشا جي رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
+      `السلام عليڪم! تاشقين ۽ انوشا جي بارات ۽ رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: ها\nڪيترا ڄڻا: ${count}\n` +
       `${names.length ? "نالا: " + names.join("، ") : "نالا: نه ڏنا ويا"}` +
       `${note ? "\nپيغام: " + note : ""}`,
     rsvpMsgNo: (g, note, update) =>
-      `السلام عليڪم! تاشقين جي بارات ۽ انوشا جي رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
+      `السلام عليڪم! تاشقين ۽ انوشا جي بارات ۽ رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: هن ڀيري نه\nاسان جون دعائون اوهان ٻنهي سان گڏ آهن.` +
       `${note ? "\nپيغام: " + note : ""}`,

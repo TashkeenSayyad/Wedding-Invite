@@ -59,8 +59,8 @@ var SITE = 'https://tashkeensayyad.github.io/Wedding-Invite/';
  *  It leaves the date out to match the invitation and its link preview, where the date is what
  *  the scratch heart reveals — the same wording as scripts/guest-links.mjs. */
 var INVITE_TEXT =
-  'Assalamu alaikum {name}! You are warmly invited to the Baarat of Tashkeen ' +
-  'and the Rukhsati of Anusha at Nerunkot Hall, Qasimabad, Hyderabad. ' +
+  'Assalamu alaikum {name}! You are warmly invited to the Baarat & Rukhsati of ' +
+  'Tashkeen & Anusha at Nerunkot Hall, Qasimabad, Hyderabad. ' +
   'Your invitation is here — scratch the heart to find out the date: {link}';
 
 var SHEET_NAME = 'RSVPs';
