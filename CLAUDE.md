@@ -668,7 +668,7 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
 
 ## Music (Nov 2026)
 
-The user asked for **"Hum" by Murtaza Qizilbash** to play as background music, starting when the
+The user asked for **"Alfaaz" (the instrumental, no vocals)** to play as background music (it replaced "Hum" by Murtaza Qizilbash, the first choice, before any file was ever supplied), starting when the
 envelope is opened — **no play button** (they said so explicitly). `src/music.js` (`useMusic`)
 creates the audio on the seal tap and calls `play()` synchronously inside it (Intro's `onTap`),
 because browsers only allow sound from within a gesture and Safari refuses it after a timeout.
@@ -677,7 +677,7 @@ resumes on return unless the guest turned it off. A small speaker icon (`.pill.m
 the top bar only once sound is actually playing — the mute control, which audio that plays by
 itself needs (WCAG 1.4.2). It is not a play button; do not add one.
 
-The file is `public/assets/music.mp3`, set in `MUSIC` in `src/config.js` with the credit read on
+The file is `public/assets/music.mp3` (re-encoded to 96k stereo, ~2.2 MB, from the user's upload), set in `MUSIC` in `src/config.js` with the credit read on
 the mute control. **The file is supplied by the family**, who are responsible for having the
 right to publish it — the site and its repo are public, so the whole track can be downloaded by
 anyone. Until it is there the envelope opens in silence and `npm run check` warns. Audio is kept

@@ -70,5 +70,5 @@ export const GCAL_URL = (summary, details) =>
  *  (about 0.7 MB a minute). The credit is read aloud on the mute control. */
 export const MUSIC = {
   src: "./assets/music.mp3",
-  credit: "Hum · Murtaza Qizilbash",
+  credit: "Alfaaz · instrumental",
 };
