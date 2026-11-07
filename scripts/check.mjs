@@ -7,12 +7,12 @@
 // and defined in only one language, and an .ics that a phone would have refused. The fourth —
 // telling you which settings are still blank — is the difference between an RSVP button that
 // works and one that opens WhatsApp's contact picker.
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { T } from "../src/i18n.js";
 import { buildIcs } from "../src/ics.js";
-import { RSVP_ENDPOINT, RSVP_PHONE, SITE } from "../src/config.js";
+import { MUSIC, RSVP_ENDPOINT, RSVP_PHONE, SITE } from "../src/config.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fails = [];
@@ -129,6 +129,12 @@ if (!RSVP_ENDPOINT) {
   warn("config: RSVP_ENDPOINT is empty — replies queue on each guest's phone; only WhatsApp carries them");
 } else if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(RSVP_ENDPOINT)) {
   fail(`config: RSVP_ENDPOINT should be a Google Apps Script /exec URL, got "${RSVP_ENDPOINT}"`);
+}
+
+if (MUSIC.src) {
+  const file = resolve(root, "public", MUSIC.src.replace(/^\.\//, ""));
+  if (!existsSync(file)) warn(`config: no song at public/${MUSIC.src.slice(2)} — the envelope opens in silence`);
+  else if (statSync(file).size > 8 * 1024 * 1024) fail(`config: the song is ${(statSync(file).size / 1048576).toFixed(1)} MB — re-encode it at 96k (see MUSIC in src/config.js)`);
 }
 
 if (!/^https:\/\/.+\/$/.test(SITE)) fail(`config: SITE should be an https URL ending in a slash, got "${SITE}"`);

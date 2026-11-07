@@ -9,7 +9,8 @@ import Sky from "./components/Sky.jsx";
 import { Lantern, useLit } from "./components/Lantern.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
 import { buildIcs } from "./ics.js";
-import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
+import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, MUSIC, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
+import { useMusic } from "./music.js";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
@@ -160,6 +161,7 @@ export default function App() {
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
   const [fz, setFz] = useState(readFz);
+  const music = useMusic(MUSIC.src);
   const t = T[lang];
   const sd = lang === "sd";
   const refMap = useRef({});
@@ -255,7 +257,7 @@ export default function App() {
 
   return (
     <>
-      <Intro t={t} lang={lang} guest={guest} onOpened={() => { setOpened(true); scrollTo(0, 0); }} />
+      <Intro t={t} lang={lang} guest={guest} onTap={music.start} onOpened={() => { setOpened(true); scrollTo(0, 0); }} />
 
       <div className="thread"><i style={{ height: prog + "%" }} /></div>
 
@@ -275,6 +277,18 @@ export default function App() {
           <button className="up" aria-label={t.textLarger} disabled={fz === FZ.length - 1}
             onClick={() => { setFz((v) => Math.min(FZ.length - 1, v + 1)); buzz(6); }}>A+</button>
         </div>
+        {music.ready && (
+          <button className="pill mu" aria-pressed={music.on} title={MUSIC.credit}
+            aria-label={(music.on ? t.musicOff : t.musicOn) + " — " + MUSIC.credit}
+            onClick={() => { music.toggle(); buzz(6); }}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" fillOpacity=".18" />
+              {music.on
+                ? <><path d="M15.5 9.2a4 4 0 0 1 0 5.6" /><path d="M18 6.8a7.4 7.4 0 0 1 0 10.4" /></>
+                : <path d="M15.5 9.5l5 5M20.5 9.5l-5 5" />}
+            </svg>
+          </button>
+        )}
       </div>
 
       {rsvpOpen && (

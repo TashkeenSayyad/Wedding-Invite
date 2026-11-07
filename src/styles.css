@@ -192,6 +192,10 @@ body.lock{overflow:hidden;height:100svh}
   font-family:'Cormorant Garamond','Noto Naskh Arabic',serif;
   font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .pill svg{width:14px;height:14px}
+/* the mute control: icon only, as tall as its neighbours, a 44px tap target */
+.pill.mu{min-width:44px;min-height:38px;justify-content:center;padding:0 10px}
+.pill.mu svg{width:20px;height:20px}
+.pill.mu[aria-pressed="false"]{opacity:.7}
 /* Text size: four steps — small, medium (the default), large, extra large. Every font-size on the page is multiplied by --fz,
    set on <html> by App.jsx — so only type grows, not the layout, the card or the heart. This
    control and the language pill are left out of it so the bar itself never moves. */
