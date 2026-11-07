@@ -9,7 +9,12 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 
 ## The event — verified facts, do not change without asking
 
-- **Event name:** "Rukhsati & Walima" (in that order — this was changed late, don't revert)
+- **Event name:** "Rukhsati" — the invitation is for the Rukhsati alone, on the 27th. It was
+  "Rukhsati & Walima" until the user asked for the Walima to come off; do not put it back. The
+  card artwork was changed to match by `scripts/card-title.py`, which lifted "& Walima" off both
+  cuts and moved the existing Italianno "Rukhsati" to the centre axis (no re-typesetting). The
+  `.ics` UID still says `rukhsati-walima` on purpose — changing it would make a guest's calendar
+  treat the evening as a second event.
 - **Groom:** Tashkeen Syed, son of Jallal Hyder & Rubina
 - **Bride:** Anusha Nizamani, daughter of Barkat Ali & Mumtaz
 - The surnames belong to one person each — Syed is Tashkeen's, Nizamani is Anusha's. They are
@@ -243,7 +248,7 @@ card, which is paper.
 
 The venue stays everywhere. Only the date is the surprise.
 
-**Caches:** WhatsApp holds a scraped preview per URL for days, so `og:image` ends `?v=2` — bump it
+**Caches:** WhatsApp holds a scraped preview per URL for days, so `og:image` ends `?v=3` — bump it
 whenever the card is redrawn. Each personalised `?to=` link is its own URL and is scraped fresh;
 it is the bare site URL, in threads where it has already been shared, that can keep showing the
 old card for a while.
@@ -256,7 +261,7 @@ so the sheet asks the two questions that matter and hands WhatsApp a message wit
 every time:
 
 ```
-Assalamu alaikum! RSVP for the Rukhsati & Walima of Tashkeen & Anusha, 27 December 2026.
+Assalamu alaikum! RSVP for the Rukhsati of Tashkeen & Anusha, 27 December 2026.
 Invitation: Ahmed Memon        ← only when the link carried ?to=
 Attending: yes
 How many: 3
