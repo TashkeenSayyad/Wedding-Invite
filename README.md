@@ -1,4 +1,4 @@
-# Rukhsati & Walima — Tashkeen & Anusha
+# Rukhsati — Tashkeen & Anusha
 
 A bilingual (English / سنڌي) animated wedding invitation. React + Vite, fully static — built for GitHub Pages.
 

@@ -363,7 +363,7 @@ export default function App() {
             <a className="btn" target="_blank" rel="noopener" href={MAPS_URL}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.map}</span></a>
-            <a className="btn" href="./assets/card-print.png" download="rukhsati-walima-tashkeen-anusha.png" onClick={() => buzz(10)}>
+            <a className="btn" href="./assets/card-print.png" download="rukhsati-tashkeen-anusha.png" onClick={() => buzz(10)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 3v12M8 11l4 4 4-4M4 19h16" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.save}</span></a>
           </div>

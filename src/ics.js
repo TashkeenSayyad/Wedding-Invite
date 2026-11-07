@@ -28,7 +28,7 @@ export const icsText = (v) =>
 export const buildIcs = (t) => [
   "BEGIN:VCALENDAR",
   "VERSION:2.0",
-  "PRODID:-//Tashkeen and Anusha//Rukhsati and Walima//EN",
+  "PRODID:-//Tashkeen and Anusha//Rukhsati//EN",
   "CALSCALE:GREGORIAN",
   "METHOD:PUBLISH",
   "BEGIN:VEVENT",
