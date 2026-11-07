@@ -250,9 +250,23 @@ Arabic of "سنڌي" before our own Naskh face was ever offered it.
 `npm run build` runs `vite build` then `scripts/gen-sw.mjs`, which writes `docs/sw.js` with the
 built file list baked in and a cache name hashed from it (so a new build evicts the old cache).
 Everything is precached except `card-print.png` (2.1 MB) and `og-card.jpg`, which are cached at
-runtime instead. Navigations serve the cached shell first and refresh behind the reader, so a
-`?to=` link opens instantly with no signal. `public/manifest.webmanifest` plus the generated
+runtime instead. Navigations go to the network first and fall back to the cached shell, so a `?to=` link
+still opens with no signal (see the white-screen note below). `public/manifest.webmanifest` plus the generated
 icons make it installable to a home screen.
+
+**The white-screen bug (fixed Nov 2026).** GitHub Pages sends `Cache-Control: max-age=600`, and
+the precache used to be filled with plain `fetch`es — so a new service worker could store the
+*previous* build's `index.html`, served from the browser's ten-minute copy, as its shell. That page
+asks for hashed scripts the server no longer has: on a phone that had seen the old site, the
+redesign rendered a completely white screen. Three things now prevent it, and each was reproduced
+against a local server sending the same header:
+
+- the precache fetches with `cache: "reload"`, and navigations go **network-first** with
+  `cache: "no-cache"`, falling back to the cached shell offline or after 3 seconds
+- the cache name hashes file *contents*, not just names (`index.html` never changes name)
+- an inline script in `index.html` catches a failed load of `./assets/index-*`, unregisters the
+  worker, clears the caches and reloads once (guarded by `sessionStorage`), and an inline style
+  paints the page dark before any stylesheet arrives, so a failure is never a white page
 
 Registration is guarded by `import.meta.env.PROD` — there is no `sw.js` in dev and a stale cache
 there would be a nuisance.

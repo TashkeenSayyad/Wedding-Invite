@@ -8,7 +8,29 @@
        heart on s2 reveals, and WhatsApp was giving it away above the link. The venue stays —
        a guest still needs to know where, and only the date is the surprise. -->
   <meta name="description" content="Tashkeen &amp; Anusha request the honour of your presence — Rukhsati at Nerunkot Hall, Qasimabad, Hyderabad. Scratch the heart to find out the date." />
-  <meta name="theme-color" content="#4d0e1c" />
+  <meta name="theme-color" content="#3d0b1b" />
+  <!-- the ground the page is painted on before any stylesheet arrives, so a slow or failed load
+       is a dark page, never a white one -->
+  <style>html,body{background:#12040b;color:#f7efe1}</style>
+  <!-- Last line of defence. If a script or stylesheet of ours fails to load, the page was handed an
+       index.html from a different build than the files on the server — an offline cache gone
+       stale. Clear it and load once more, fresh. sessionStorage stops this ever looping. -->
+  <script>
+    addEventListener("error", function (e) {
+      var t = e.target, u = t && (t.src || t.href) || "";
+      if (!/\/assets\/index-/.test(u)) return;
+      try { if (sessionStorage.getItem("ta-heal")) return; sessionStorage.setItem("ta-heal", "1"); } catch (_) { return; }
+      var go = function () { location.reload(); };
+      var jobs = [];
+      if (navigator.serviceWorker) jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) {
+        return Promise.all(rs.map(function (r) { return r.unregister(); }));
+      }));
+      if (window.caches) jobs.push(caches.keys().then(function (ks) {
+        return Promise.all(ks.map(function (k) { return caches.delete(k); }));
+      }));
+      Promise.all(jobs).then(go, go);
+    }, true);
+  </script>
   <link rel="canonical" href="https://tashkeensayyad.github.io/Wedding-Invite/" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234d0e1c'/%3E%3Cpath d='M50 79C24 62 21.5 41.5 33 32.5c10.5-8 17 3.5 17 10 0-6.5 6.5-18 17-10C78.5 41.5 76 62 50 79Z' fill='%23e9c87e'/%3E%3C/svg%3E" />
   <meta property="og:type" content="website" />
