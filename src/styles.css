@@ -10,11 +10,13 @@
   --chalk:#f7efe1; --chalk-d:rgba(247,239,225,.92); --chalk-x:rgba(247,239,225,.66);
   --e:cubic-bezier(.22,.68,.24,1);
   --fs:'Cormorant Garamond',serif; --fc:'Cormorant SC',serif; --fi:'Italianno',cursive;
-  --fsd:'Noto Nastaliq Urdu','Noto Naskh Arabic',serif; --fa:'Noto Naskh Arabic',serif;
-  /* 'Nastaliq Core' holds only the flourishes that show while the site is in English, so
-     Sindhi body copy falls back cleanly to Naskh while the full cut loads rather than
-     rendering half in one face and half in another. */
-  --fsd-c:'Nastaliq Core','Noto Naskh Arabic',serif;
+  /* Sindhi is printed in Naskh, not the Nastaliq of Urdu: Lateef (SIL) is a Naskh face made for
+     Sindhi, with the Sindhi forms of its own letters under lang="sd". */
+  --fsd:'Lateef','Noto Naskh Arabic',serif; --fa:'Noto Naskh Arabic',serif;
+  /* 'Lateef Core' holds only the Sindhi that shows while the site is in English, so Sindhi body
+     copy falls back cleanly to Naskh while the full cut loads rather than rendering half in one
+     face and half in another. */
+  --fsd-c:'Lateef Core','Noto Naskh Arabic',serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-snap-type:y proximity}
@@ -23,7 +25,17 @@ body{background:#12040b;color:var(--chalk);font-family:var(--fs);overflow-x:hidd
 body.lock{overflow:hidden;height:100svh}
 ::-webkit-scrollbar{width:0}
 ::selection{background:var(--wine1);color:var(--gold-p)}
-.sd-t{font-family:var(--fsd);letter-spacing:0;text-transform:none;line-height:1.9}
+.sd-t{font-family:var(--fsd);letter-spacing:0;text-transform:none;line-height:1.75;font-language-override:'SND';direction:rtl}
+/* Sindhi reads right to left. Without an RTL base direction, a full stop typed at the end of a
+   sentence was drawn at the start of the line — the wrong end for a Sindhi reader. The framed
+   notes and the schedule were set left-aligned for English; in Sindhi they align to the right. */
+.notice p.sd-t,.gtk p.sd-t,.keep .sd-t,.rsvp-hint.sd-t{text-align:right}
+/* in Sindhi the schedule runs right to left as a whole: lantern, time, then the event */
+.sched.rtl{direction:rtl;text-align:right}
+.sched.rtl::before{left:auto;right:21px}
+.sched.rtl li::before{left:auto;right:-2px}
+.keep:has(.sd-t){direction:rtl}
+.sched b{direction:ltr;unicode-bidi:isolate}
 /* read aloud, never drawn — the section headings a screen reader needs and the design does not */
 .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;border:0;
   clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
@@ -74,10 +86,10 @@ body.lock{overflow:hidden;height:100svh}
 #intro.open .scene{transform:var(--zoom,scale(3))}
 #intro.open .pre-block,#intro.open .tap{opacity:0;transition:opacity .6s var(--e)}
 .greet.sd-t,.sig.sd-t{direction:rtl}
-.greet.sd-t{font-family:var(--fsd);font-size:clamp(18px,5vw,22px);line-height:2.3}
+.greet.sd-t{font-family:var(--fsd);font-size:clamp(22px,6vw,26px);line-height:1.5}
 .greet{font-family:var(--fi);font-size:clamp(24px,6.4vw,30px);color:var(--gold-p);margin-bottom:2px;
   animation:soften 2s var(--e) .1s both}
-.pre-sd{font-family:var(--fsd-c);font-size:clamp(17px,4.6vw,21px);color:var(--gold-p);line-height:2.4;
+.pre-sd{font-family:var(--fsd-c);font-size:clamp(17px,4.6vw,21px);color:var(--gold-p);line-height:1.7;
   animation:soften 2.2s var(--e) both}
 .pre{font-family:var(--fi);font-size:clamp(36px,10vw,50px);color:var(--chalk);margin-top:-6px;line-height:1.1;
   animation:soften 2.2s var(--e) .2s both}
@@ -210,19 +222,22 @@ main{position:relative;z-index:1}
 .kicker{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-l);opacity:.95}
 .kicker.sd-t{font-size:17px;letter-spacing:0}
 .script{font-family:var(--fi);color:var(--gold-p);line-height:1;}
-.script.sd-t{font-family:var(--fsd);line-height:1.9;font-size:.62em}
+.script.sd-t{font-family:var(--fsd);line-height:1.4;font-size:.8em}
+/* .script.sd-t sized the Sindhi schedule heading as a fraction of the *body* size, so it came out
+   smaller than the kicker above it; the heading gets a real display size of its own */
+.h-lg.sd-t{font-size:clamp(30px,8.4vw,40px)}
 .h-lg{font-size:clamp(34px,10vw,48px)}
 .h-caps{font-family:var(--fc);font-size:clamp(23px,6.6vw,31px);letter-spacing:.28em;text-transform:uppercase;
   color:var(--gold-p);font-weight:600;}
 .h-caps.sd-t{font-size:clamp(26px,7.4vw,35px);letter-spacing:0}
-.sdt{font-family:var(--fsd-c);color:var(--gold-p);line-height:2}
+.sdt{font-family:var(--fsd-c);color:var(--gold-p);line-height:1.5;font-language-override:'SND'}
 .body{font-size:19px;color:var(--chalk-d);line-height:1.7;font-weight:400}
-/* Sindhi sizes for the running text. Nastaliq needs about 1.15–1.3× the Latin size to read at
-   all; these rules used to inherit the Latin size and set Sindhi body copy smaller than English. */
+/* Sindhi sizes for the running text. Arabic-script Sindhi needs a little more size than the Latin to read
+   comfortably; these rules used to inherit the Latin size and set Sindhi body copy smaller than English. */
 .body.sd-t{font-size:20px}
 .sched span.sd-t{font-size:20px}
 .notice p.sd-t,.gtk p.sd-t{font-size:17.5px}
-.body.sd-t{line-height:2.1}
+.body.sd-t{line-height:1.85}
 
 .cardwrap{position:relative;--cw:min(80vw,322px);width:var(--cw);aspect-ratio:397/560;margin:0 auto;
   transform-style:preserve-3d;cursor:zoom-in}
@@ -255,10 +270,9 @@ main{position:relative;z-index:1}
   text-transform:uppercase;color:#4c1020;
   font-size:calc(var(--cw,300px)*.0265);letter-spacing:.05em;transform:translateY(6%);
   text-shadow:0 .5px 0 rgba(255,246,224,.4)}
-/* Nastaliq hangs most of its ink above the baseline, so centring the line box leaves the
-   tails over the bottom edge — the nudge centres the ink instead. */
-.dm-t.sd-t{font-family:var(--fsd);font-weight:400;font-size:calc(var(--cw,300px)*.028);letter-spacing:0;
-  transform:translateY(-19%)}
+/* The Sindhi hint in Naskh: a little larger than the Latin, centred on its ink. */
+.dm-t.sd-t{font-family:var(--fsd);font-weight:600;font-size:calc(var(--cw,300px)*.03);letter-spacing:0;
+  transform:translateY(-2%)}
 .rd-card{position:relative;display:inline-block;line-height:0;
   --cw:min(1191px,100vw - 28px,88svh*397/560)}
 
@@ -271,7 +285,7 @@ main{position:relative;z-index:1}
   border:1px solid var(--gold-line);pointer-events:none;white-space:nowrap}
 .zoomhint.sd-t{font-size:15px;letter-spacing:0}
 .names{margin-top:24px}
-.nm-sd{font-family:var(--fsd-c);font-size:clamp(22px,6.4vw,29px);color:var(--gold-p);line-height:2.1;}
+.nm-sd{font-family:var(--fsd-c);font-size:clamp(28px,8vw,36px);color:var(--gold-p);line-height:1.5;font-language-override:'SND'}
 .cue{position:absolute;bottom:calc(15px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
   z-index:6;color:var(--gold-p);opacity:.95;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
   display:grid;justify-items:center;gap:7px;animation:bob 2.4s ease-in-out infinite}
@@ -285,7 +299,7 @@ main{position:relative;z-index:1}
 .translit{font-size:15px;letter-spacing:.04em;color:var(--chalk-x);font-style:italic;margin-top:14px;line-height:1.8}
 
 .big{font-family:var(--fc);font-size:clamp(30px,8.4vw,40px);color:var(--gold-p);letter-spacing:.04em;margin-top:8px;}
-.big.sd-t{font-size:clamp(24px,6.8vw,32px);letter-spacing:0;line-height:1.9}
+.big.sd-t{font-size:clamp(28px,8vw,36px);letter-spacing:0;line-height:1.4}
 .cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:24px}
 .cd div{padding:12px 3px 10px;border:1px solid var(--gold-line);background:rgba(247,227,181,.05);position:relative}
 .cd div::before,.cd div::after{content:'';position:absolute;width:5px;height:5px;border:1px solid var(--gold-p)}
@@ -333,7 +347,7 @@ main{position:relative;z-index:1}
 .sc-hint.sd-t{font-size:17px;letter-spacing:0}
 
 .sig{margin-top:16px;font-family:var(--fi);font-size:clamp(23px,6vw,27px);color:var(--gold-p);opacity:.85}
-.sig.sd-t{font-family:var(--fsd);font-size:clamp(17px,4.6vw,20px);line-height:2.1;opacity:.9}
+.sig.sd-t{font-family:var(--fsd);font-size:clamp(20px,5.4vw,24px);line-height:1.6;opacity:.9}
 
 /* schedule — a lantern for each hour, lit as the reader reaches it */
 .sched{list-style:none;margin:14px auto 0;max-width:340px;text-align:left;position:relative;padding-left:0}
@@ -360,7 +374,7 @@ main{position:relative;z-index:1}
 .sched li.lit b{color:var(--gold-p)}
 .sched span{font-size:19px;color:var(--chalk-x);font-weight:400;transition:color 1s var(--e)}
 .sched li.lit span{color:var(--chalk)}
-.sched span.sd-t{line-height:1.9}
+.sched span.sd-t{line-height:1.5}
 .sched span.fin{font-family:var(--fi);font-size:38px;line-height:1;color:var(--gold-p)}
 .sched li.last{min-height:84px}
 .notice,.gtk{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -372,13 +386,13 @@ main{position:relative;z-index:1}
 .notice::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
 .notice svg{width:18px;height:18px;flex:none;color:var(--gold-p);margin-top:2px}
 .notice p{font-size:16.5px;line-height:1.62;color:var(--chalk-d);font-weight:400}
-.notice p.sd-t{line-height:2}
+.notice p.sd-t{line-height:1.7}
 .notice b{color:var(--gold-p);font-weight:600}
 .gtk{display:flex;gap:10px;align-items:flex-start;text-align:left;margin-top:10px;padding:11px 14px;
   border:1px dashed var(--gold-line);background:rgba(30,8,22,.6)}
 .gtk svg{width:19px;height:19px;flex:none;color:var(--gold-l);opacity:.95}
 .gtk p{font-size:16.5px;line-height:1.6;color:var(--chalk-d);font-weight:400}
-.gtk p.sd-t{line-height:2}
+.gtk p.sd-t{line-height:1.7}
 .gtk b{color:var(--gold-p);font-weight:600}
 
 /* dress */
@@ -438,7 +452,7 @@ main{position:relative;z-index:1}
   overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .rsvp-q{font-family:var(--fc);font-size:clamp(22px,6vw,27px);letter-spacing:.06em;
   color:var(--gold-p);margin-top:8px}
-.rsvp-q.sd-t{font-family:var(--fsd);font-size:clamp(19px,5.2vw,23px);letter-spacing:0;line-height:2}
+.rsvp-q.sd-t{font-family:var(--fsd);font-size:clamp(19px,5.2vw,23px);letter-spacing:0;line-height:1.5}
 .rsvp-sheet .band{margin:14px auto 20px}
 .rsvp-tick{width:46px;height:46px;margin:4px auto 14px;display:grid;place-items:center;
   border:1px solid var(--gold-line);border-radius:50%;color:var(--gold-p)}
@@ -462,7 +476,7 @@ main{position:relative;z-index:1}
 .rsvp-names{width:100%;resize:vertical;padding:11px 13px;border:1px solid var(--gold-line);
   background:rgba(247,227,181,.05);color:var(--chalk);font-family:var(--fs);font-size:17px;
   line-height:1.9;text-align:center}
-.rsvp-names.sd-t{font-family:var(--fsd);direction:rtl;line-height:2.2;font-size:17px}
+.rsvp-names.sd-t{font-family:var(--fsd);direction:rtl;line-height:1.7;font-size:19px}
 .rsvp-names:focus{outline:none;border-color:var(--gold-p)}
 .rsvp-names::placeholder{color:var(--chalk-x);opacity:.75}
 .rsvp-names.sd-t::placeholder{font-family:var(--fsd)}
@@ -470,7 +484,7 @@ main{position:relative;z-index:1}
    without its height or its right-to-left flip */
 .rsvp-one{resize:none;line-height:1.6;-webkit-appearance:none;appearance:none;border-radius:0}
 .rsvp-hint{margin-top:8px;font-size:15px;color:var(--chalk-x);font-weight:400;line-height:1.6}
-.rsvp-hint.sd-t{font-size:17px;line-height:2}
+.rsvp-hint.sd-t{font-size:17px;line-height:1.7}
 .rsvp-acts{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:20px}
 /* The send button holds its place at the bottom of the sheet while the fields scroll under it.
    The fade is there so a field passing behind it reads as going under an edge rather than being
@@ -523,7 +537,7 @@ main{position:relative;z-index:1}
 @media(max-width:600px){.dots a.on::after{display:none}}
 @media(max-height:740px){
   .cardwrap{--cw:min(58vw,228px)}
-  .nm-sd{font-size:clamp(19px,5.6vw,24px);line-height:1.9}
+  .nm-sd{font-size:clamp(24px,7vw,30px);line-height:1.4}
   .cd div{padding:9px 3px 8px}
   .band{margin:12px auto}
 }

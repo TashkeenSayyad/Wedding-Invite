@@ -37,8 +37,8 @@ function useCountdown() {
   };
 }
 
-// The Nastaliq face is 160 KB a weight. Only the handful of Sindhi flourishes that show in
-// English mode ship up front (as 'Nastaliq Core'); the full cut is fetched the moment a
+// Sindhi is set in Lateef, a Naskh face made for Sindhi. Only the handful of Sindhi words that
+// show in English mode ship up front (as 'Lateef Core'); the full cut is fetched the moment a
 // reader actually chooses سنڌي.
 let sindhiFonts;
 const loadSindhiFonts = () => {
@@ -46,12 +46,12 @@ const loadSindhiFonts = () => {
   sindhiFonts = (async () => {
     if (!document.fonts || !window.FontFace) return;
     const files = await Promise.all([
-      import("./assets/fonts/nastaliq-400.woff2?url"),
-      import("./assets/fonts/nastaliq-600.woff2?url"),
+      import("./assets/fonts/lateef-400.woff2?url"),
+      import("./assets/fonts/lateef-600.woff2?url"),
     ]);
     await Promise.all(files.map(async (m, i) => {
-      const face = new FontFace("Noto Nastaliq Urdu", `url(${m.default}) format("woff2")`,
-        { weight: i ? "600" : "400", display: "swap" });
+      const face = new FontFace("Lateef", `url(${m.default}) format("woff2")`,
+        { weight: i ? "600" : "400", display: "swap", sizeAdjust: "135%" /* as LATEEF_SIZE in build-fonts */ });
       document.fonts.add(await face.load());
     }));
   })().catch(() => {});
@@ -351,7 +351,7 @@ export default function App() {
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.schedKicker}</Rv>
           <Rv d={0.05} cls={"script h-lg" + (sd ? " sd-t" : "")}>{sd ? t.schedTitle : "Schedule"}</Rv>
           <Rv d={0.1} cls="band" />
-          <ol className="sched">
+          <ol className={"sched" + (sd ? " rtl" : "")}>
             {t.sched.map(([time, what], i) => (
               <Hour key={i} time={time} what={what} sd={sd} last={i === t.sched.length - 1} />
             ))}

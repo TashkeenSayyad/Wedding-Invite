@@ -45,7 +45,7 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    and don't make it sound like a warning.
 2. **Everything must translate.** Every user-visible string lives in `src/i18n.js` with both
    `en` and `sd` keys. If you add UI text, add both. Sindhi elements need `className="sd-t"`
-   for the Nastaliq font and line-height. The two key sets must stay identical — this has
+   for the Sindhi face (Lateef, Naskh), line-height and right-to-left direction. The two key sets must stay identical — this has
    already drifted twice (a Plum dress-code chip lived on in Sindhi after being dropped from
    English; the nikkah note was cleared in English but kept shipping in Sindhi). Check with:
 
@@ -245,6 +245,31 @@ second time, by a lot. These are the new floors — the older figures above are 
 Re-swept at 360/393/430/820 in both languages: no overflow, no sideways scroll, no console
 errors, the scratch completes, the RSVP send button is on screen at 360×640 in both languages.
 
+## Sindhi is set in Naskh, not Nastaliq (Nov 2026)
+
+**Do not put Nastaliq back.** The user, reading the site, said plainly: "the script is Urdu, not
+Sindhi". Nastaliq is the Urdu convention; Sindhi is printed in Naskh — newspapers, books, signage.
+Everything Sindhi now uses **Lateef** (SIL), a Naskh face made for Sindhi and named after Shah
+Abdul Latif Bhittai. It covers every Sindhi letter (ڄ ڃ ٻ ڀ ٽ ٿ ڌ ڏ ڊ ڍ ڙ ڪ ڳ ڱ ڻ ٺ ڦ ڇ) and
+carries a `SND` language system, picked up from `lang="sd"` on `<html>` (and
+`font-language-override:'SND'` where Sindhi shows on an English page).
+
+- Lateef draws small for its em, so both cuts carry **`size-adjust:135%`** — in the `@font-face`
+  that `npm run fonts` writes and in the `FontFace` call in `App.jsx`. That one figure is why the
+  Sindhi CSS sizes look like the Latin ones; change it in both places or neither.
+- Naskh is far shorter and tighter than Nastaliq: every Sindhi line-height came down (1.9–2.4 →
+  1.4–1.85). The old Nastaliq notes elsewhere in this file about 2.14em ink, the 19% upward
+  nudge on `.dm-t.sd-t`, and descenders touching on `s6` no longer apply.
+- **`.sd-t` is `direction:rtl`.** Before, Sindhi paragraphs had a left-to-right base, so a full
+  stop typed at the end of a sentence was drawn at the start of the line. The framed notes and
+  the reserved-colour lines align right in Sindhi, and the schedule mirrors as a whole
+  (`.sched.rtl`: lantern on the right, then the time, then the event), with `.sched b` isolated
+  LTR so "7:00 PM" never reorders.
+- `.h-lg.sd-t` has a real display size: `.script.sd-t` had been sizing the Sindhi schedule heading
+  as a fraction of the *body* text, so it rendered smaller than the kicker above it.
+- Font weight is lower too: English first paint 208 KB (was ~247), and switching to سنڌي adds
+  27 KB (was ~159).
+
 ## Fonts — self-hosted and split
 
 Nothing is fetched from fonts.googleapis.com any more (two connections before first paint, and
@@ -254,7 +279,7 @@ it made offline impossible). `npm run fonts` builds `src/assets/fonts/` and gene
 - Latin faces are copied out of `@fontsource`, declared with the real `unicode-range` so
   latin-ext is only fetched when a guest's name actually needs it
 - Noto Naskh Arabic is subset to the Qur'anic verse and the bismillah — 51 KB → 13 KB
-- Noto Nastaliq Urdu is split in two. **`Nastaliq Core`** is a ~46 KB cut holding only the
+- Lateef (formerly Noto Nastaliq Urdu — see above) is split in two. **`Lateef Core`** is a ~8 KB cut holding only the
   Sindhi flourishes that appear while the site is in English (bismillah, the couple's names,
   the closing line) and is used by `.pre-sd`, `.nm-sd`, `.sdt` via `--fsd-c`. The full Sindhi
   cut is *not* in the CSS at all — `App.jsx` loads it through the FontFace API the moment a
@@ -528,7 +553,7 @@ different build.
 - no duplicated visible Sindhi strings
 - no console errors
 - the language pill is reachable **on the intro**, before the envelope is opened
-- in English only `Nastaliq Core` loads; picking سنڌي pulls in `Noto Nastaliq Urdu` 400 and 600
+- in English only `Lateef Core` loads; picking سنڌي pulls in `Lateef` 400 and 600
 
 Note that **s4 is legitimately taller than the viewport** at every width — it carries the
 schedule, the timing notice, the parking and travel notes and four buttons. `.sec` grows to fit
