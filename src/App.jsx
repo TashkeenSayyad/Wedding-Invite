@@ -5,6 +5,8 @@ import ScratchHeart from "./components/ScratchHeart.jsx";
 import DateMask from "./components/DateMask.jsx";
 import Rsvp from "./components/Rsvp.jsx";
 import Sheet from "./components/Sheet.jsx";
+import Sky from "./components/Sky.jsx";
+import { Lantern, useLit } from "./components/Lantern.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
 import { buildIcs } from "./ics.js";
 import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
@@ -71,14 +73,24 @@ function Sec({ id, tone, label, corners = [], children, foot, refMap }) {
       {corners.includes("tr") && <i className="corner tr" />}
       {corners.includes("bl") && <i className="corner bl" />}
       {corners.includes("br") && <i className="corner br" />}
-      <i className="ajrak" />
       {/* Every section is built out of ornament, kickers and script faces, none of which is a
           heading. Without this a screen reader is handed six unnamed regions and no way to move
           between them; the label is the same one the dot navigation already uses. */}
       <div className="inner"><h2 className="vh">{label}</h2>{children}</div>
       {foot}
-      <i className="vig" /><i className="grain" />
     </section>
+  );
+}
+
+// one hour of the evening, under its own lantern, which lights when the reader reaches it
+function Hour({ time, what, last, sd }) {
+  const [ref, lit] = useLit(0.72);
+  return (
+    <li ref={ref} className={(lit ? "lit" : "") + (last ? " last" : "")}>
+      <Lantern big={last} />
+      <b>{time}</b>
+      <span className={sd ? "sd-t" : last ? "fin" : ""}>{what}</span>
+    </li>
   );
 }
 
@@ -198,10 +210,12 @@ export default function App() {
       const g = Math.max(-26, Math.min(26, e.gamma || 0));
       el.style.setProperty("--cx", (b * 0.18).toFixed(1) + "deg");
       el.style.setProperty("--cy", (g * 0.28).toFixed(1) + "deg");
+      el.style.setProperty("--gx", (50 + g * 1.9).toFixed(1) + "%");
     };
     const onMove = (e) => {
       el.style.setProperty("--cx", (-(e.clientY / innerHeight - 0.5) * 8).toFixed(1) + "deg");
       el.style.setProperty("--cy", ((e.clientX / innerWidth - 0.5) * 10).toFixed(1) + "deg");
+      el.style.setProperty("--gx", (e.clientX / innerWidth * 100).toFixed(1) + "%");
     };
     if (phone && window.DeviceOrientationEvent) addEventListener("deviceorientation", onOri, { passive: true });
     else addEventListener("pointermove", onMove);
@@ -258,6 +272,8 @@ export default function App() {
         )}
       </div>
 
+      <Sky live={opened} />
+
       <main>
         {/* 1 · card */}
         <Sec id="s1" tone="wine" label={t.dotLabels.s1} refMap={refMap}
@@ -277,6 +293,9 @@ export default function App() {
             }}>
             <div className="card3d" ref={card3dRef}>
               <div className="cardimg" />
+              {/* a glare that slides across the card as the phone tilts — it answers the hand,
+                  it does not sweep on its own */}
+              <i className="sheen" />
               <DateMask t={t} lang={lang} off={scratched} />
             </div>
             <i className="gilt" />
@@ -334,11 +353,7 @@ export default function App() {
           <Rv d={0.1} cls="band" />
           <ol className="sched">
             {t.sched.map(([time, what], i) => (
-              <Rv key={i} d={0.16 + i * 0.06}>
-                <li className={i === t.sched.length - 1 ? "last" : ""}>
-                  <b>{time}</b><span className={sd ? "sd-t" : ""}>{what}</span>
-                </li>
-              </Rv>
+              <Hour key={i} time={time} what={what} sd={sd} last={i === t.sched.length - 1} />
             ))}
           </ol>
           <Rv d={0.48} cls="notice">
@@ -377,17 +392,17 @@ export default function App() {
           <div className="dc">
             <Rv d={0.16}>
               <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.encouraged}</h3>
-              <div className="chips">
+              <div className="swatches">
                 {t.colors.map(([c, n], i) => (
-                  <span key={i} className="chip"><i style={{ background: c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
+                  <span key={i} className="swatch"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
                 ))}
               </div>
             </Rv>
             <Rv d={0.24}>
               <h3 className={sd ? "sd-t" : ""} style={{ fontFamily: "var(--fc)", fontSize: sd ? 15.5 : 13, letterSpacing: sd ? 0 : ".18em", textTransform: "uppercase", color: "var(--gold-p)", fontWeight: 600, marginBottom: 10 }}>{t.reserved}</h3>
-              <div className="chips">
+              <div className="kept">
                 {t.resChips.map(([c, n], i) => (
-                  <span key={i} className="chip no"><i style={{ background: c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
+                  <span key={i} className="keep"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
                 ))}
               </div>
             </Rv>

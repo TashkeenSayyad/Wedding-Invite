@@ -75,6 +75,59 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
    so any edit has to be made to both cuts on their own terms, each measured against its own
    ground. 5e2a7cd is a worked example of all of this.
 
+## The redesign — "one evening over Hyderabad" (prototype, Nov 2026)
+
+The user asked for a full rework that makes people say "wow". The idea is that the whole page is
+one evening, from dusk to the Rukhsati at midnight, rather than six cards stacked up.
+
+- **The sky** (`src/components/Sky.jsx`) is a fixed layer behind everything. One scroll listener
+  writes `--p` (0 → 1, rAF-throttled) on `.sky`, and *everything* in it is a pure function of
+  that: the wine-red dusk gives way to an indigo night (`.sky-night` opacity), stars come out at
+  their own thresholds (`--at`), the moon rises out of the rooftops on the right, and the windows
+  of the city light one by one. **Nothing in the sky moves on its own** — stop scrolling and it
+  is still. The moon is kept low over the skyline, in the clear ground under each section's
+  content (sections carry `padding-bottom:max(58px,18svh)` for this), because a moon that
+  crossed the page passed behind lines of text.
+- **The skyline is Hyderabad's**: flat roofs crowned with *manghs*, the windcatchers the city is
+  known for, all leaning the same way into the sea breeze; a mosque dome and minaret; and one
+  house dressed in strings of wedding lights, which come on at `--at:.1`. It is generated from a
+  fixed seed, so it is identical on every load and the build stays reproducible.
+- **Sections have no background of their own any more** (`.wine`/`.deep` are still on the
+  markup but style nothing; the gold seams between sections are gone). They are panes over the
+  one sky. The per-section `.ajrak`, `.vig` and `.grain` went with them; a single grain sits on
+  the sky. `.notice` and `.gtk` got a dark translucent ground of their own because on `s4` they
+  sit over the lit windows.
+- **The intro is a haveli door, not an envelope** (`Intro.jsx`): carved wine-lacquer leaves with
+  gold inlay, jaali panels, ajrak rosettes, brass studs and ring knockers, in a beaded arch,
+  under a toran of marigold and jasmine. The seal opens the leaves *outward toward the guest*
+  (78°, with `perspective:520px` on `.scene` — at 1400px or at 100°+ they read as squashed or
+  vanish edge-on), the room behind glows, and the scene then zooms through the arch. The zoom is
+  **measured, not guessed**: on tap, `doOpen` reads the card behind the door and the `.cardwrap`
+  on `s1`, and sets `--zoom` so the door's card lands exactly on the s1 card as the intro fades —
+  one card, never two cross-fading. **Do not put a `filter` on `.door`** — it flattens the 3D
+  context and the leaves squash toward their hinges instead of swinging (the drop shadow is a
+  `::before` for this reason). The card inside the door wears `DateMask`, with `--cw` derived
+  from `--dw`, the door width.
+- **The schedule is a string of lanterns** (`Lantern.jsx`). Each hour's fanoos is dark until the
+  reader scrolls to it, then lights and stays lit (`useLit`, an IntersectionObserver). The last,
+  the Rukhsati, is the largest lantern and is set in Italianno. The rows are no longer `.rv` —
+  the lighting is their reveal.
+- **The scratch foil is shisha** — Sindhi mirror-work: round mirrors held to the gold by wine
+  chain-stitch, on a lattice, with a clear stitched band for the hint. Only the *painting*
+  changed; everything is drawn before `foilTotal` is counted, so the progress invariants below
+  still hold (re-measured: the heart still completes in all eight width/language runs).
+- **Dress code colours are cloth swatches** — folded, with a weave and gold stitching — and
+  the two reserved colours are small swatches beside their sentence. The diagonal strike that
+  used to cross them out is gone; the heading "Reserved with love" says it.
+- The card on `s1` has a `.sheen` that follows the phone's tilt (`--gx`). It moves only when the
+  hand does; it is not the looping `.shine` the restraint pass removed.
+
+**How this squares with the restraint pass below.** The user asked for the showy effects to go
+because they read as unprofessional, and that still stands: no bursts, sparks, petals, pings,
+motes, breathing halos or loops were brought back. The new light on the page — lit windows,
+lanterns, the moon — is light *in a scene*, and every bit of it answers either a tap or the
+reader's scroll. If a future change wants something to move by itself, that is the line.
+
 ## Layout / design system
 
 - Palette: madder crimson `--wine1..4`, antique gold `--gold*`, chalk. Set in `src/styles.css`.
