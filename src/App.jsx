@@ -335,7 +335,7 @@ export default function App() {
         </Sec>
 
         {/* 3 · verse */}
-        <Sec id="s3" tone="deep" label={t.dotLabels.s3} corners={["tl","tr","bl","br"]} refMap={refMap}>
+        <Sec id="s3" tone="deep" label={t.dotLabels.s3} corners={["tl","tr"]} refMap={refMap}>
           <Rv cls="star" />
           <Rv d={0.06} cls={"kicker" + (sd ? " sd-t" : "")} style={{ marginTop: 14 }}>{t.verseKicker}</Rv>
           <Rv d={0.14} cls="arab">{ARABIC_VERSE}</Rv>
@@ -347,7 +347,7 @@ export default function App() {
         </Sec>
 
         {/* 4 · schedule */}
-        <Sec id="s4" tone="wine" label={t.dotLabels.s4} corners={["tr","bl"]} refMap={refMap}>
+        <Sec id="s4" tone="wine" label={t.dotLabels.s4} corners={["tr"]} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.schedKicker}</Rv>
           <Rv d={0.05} cls={"script h-lg" + (sd ? " sd-t" : "")}>{sd ? t.schedTitle : "Schedule"}</Rv>
           <Rv d={0.1} cls="band" />
@@ -385,7 +385,7 @@ export default function App() {
         </Sec>
 
         {/* 5 · dress code */}
-        <Sec id="s5" tone="wine" label={t.dotLabels.s5} corners={["tr","bl"]} refMap={refMap}>
+        <Sec id="s5" tone="wine" label={t.dotLabels.s5} corners={["tr"]} refMap={refMap}>
           <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.dressKicker}</Rv>
           <Rv d={0.05} cls={"h-caps" + (sd ? " sd-t" : "")}>{t.dressTitle}</Rv>
           <Rv d={0.1} cls="band" />
@@ -411,7 +411,7 @@ export default function App() {
         </Sec>
 
         {/* 6 · closing */}
-        <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr","bl","br"]} refMap={refMap}>
+        <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr"]} refMap={refMap}>
           <Rv cls="star" />
           {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: 21, marginTop: 14 }}>{t.closeSd}</Rv>}
           <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "clamp(28px,7.6vw,36px)" : "clamp(32px,8.6vw,42px)" }}>{t.closeTitle}</Rv>

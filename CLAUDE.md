@@ -119,6 +119,14 @@ one evening, from dusk to the Rukhsati at midnight, rather than six cards stacke
 - **Dress code colours are cloth swatches** — folded, with a weave and gold stitching — and
   the two reserved colours are small swatches beside their sentence. The diagonal strike that
   used to cross them out is gone; the heading "Reserved with love" says it.
+- **Corners are top-only and fade out.** Over the open sky, the four square-cut corner
+  ornaments read as boxes stuck onto the page, and the bottom pair drew their pattern over the
+  skyline and the moon. Sections now carry only `tl`/`tr`, and `.corner` has a radial mask so
+  the ornament fades toward the middle instead of ending in a hard edge.
+- **On phones the dot labels are hidden** (`max-width:600px`): the section name beside the
+  active dot printed straight over the body text. The dots alone carry the position.
+- The moon rises only to just above the rooftops, and each lantern's light is a small 48px
+  pool — the larger 124px glows ran into one smudge down the schedule.
 - The card on `s1` has a `.sheen` that follows the phone's tilt (`--gx`). It moves only when the
   hand does; it is not the looping `.shine` the restraint pass removed.
 

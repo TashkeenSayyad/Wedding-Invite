@@ -39,7 +39,13 @@ body.lock{overflow:hidden;height:100svh}
   background:url(./assets/orn-corner.webp) no-repeat center/contain;opacity:0;
   filter:blur(6px);transition:opacity 1.3s var(--e) .2s,filter 1.3s var(--e) .2s;
   pointer-events:none;z-index:3}
-.in .corner{opacity:.52;filter:none}
+.in .corner{opacity:.42;filter:none}
+/* Over the open sky a corner cut square at its inner edges read as a box stuck onto the page.
+   It fades out toward the middle instead, so only the corner itself carries the ornament. Only
+   the top corners are used now: the bottom of every section belongs to the skyline, and a corner
+   there drew its pattern over the city and the moon. */
+.corner{-webkit-mask:radial-gradient(circle at 0 0,#000 38%,transparent 72%);
+  mask:radial-gradient(circle at 0 0,#000 38%,transparent 72%)}
 .corner.tl{top:0;left:0}
 .corner.tr{top:0;right:0;transform:scaleX(-1)}
 .corner.bl{bottom:0;left:0;transform:scaleY(-1)}
@@ -144,7 +150,7 @@ body.lock{overflow:hidden;height:100svh}
 /* the moon rises out of the rooftops on the right and stays low over the city, in the clear
    ground below each section's content, so it never passes behind a line of text */
 .sky-moon{position:absolute;right:9%;width:min(13vw,56px);aspect-ratio:1;
-  bottom:calc(clamp(80px,19svh,200px)*.35 - 40px + var(--p)*(clamp(80px,19svh,200px)*.55 + 46px));
+  bottom:calc(clamp(80px,19svh,200px)*.2 - 40px + var(--p)*(clamp(80px,19svh,200px)*.45 + 20px));
   opacity:clamp(0,calc(var(--p)*4 - .3),1)}
 .sky-moon::before{content:'';position:absolute;inset:-120%;border-radius:50%;
   background:radial-gradient(circle,rgba(255,236,190,.18),rgba(255,236,190,.05) 40%,transparent 66%)}
@@ -343,9 +349,9 @@ main{position:relative;z-index:1}
 .ln-glass{fill:#2a0b18;stroke:#a8834a;stroke-width:.6}
 .ln-lit{fill:url(#lanternGlass);opacity:0;transition:opacity 1.4s var(--e)}
 .ln-flame{fill:#fff6dc;opacity:0;transition:opacity 1s var(--e) .25s}
-.sched li::before{content:'';position:absolute;left:-18px;top:50%;width:124px;aspect-ratio:1;border-radius:50%;
+.sched li::before{content:'';position:absolute;left:-2px;top:50%;width:48px;aspect-ratio:1;border-radius:50%;
   transform:translateY(-50%) scale(.7);opacity:0;pointer-events:none;
-  background:radial-gradient(circle,rgba(255,196,110,.38),rgba(255,160,70,.1) 45%,transparent 70%);
+  background:radial-gradient(circle,rgba(255,196,110,.32),rgba(255,160,70,.08) 50%,transparent 70%);
   transition:opacity 1.6s var(--e),transform 1.6s var(--e)}
 .sched li.lit::before{opacity:1;transform:translateY(-50%) scale(1)}
 .sched li.lit .ln-lit,.sched li.lit .ln-flame{opacity:1}
@@ -512,6 +518,9 @@ main{position:relative;z-index:1}
 .bare-t{color:var(--gold-p)}
 
 @media(max-width:430px){.corner{width:min(33vw,116px)}}
+/* On a phone the section name beside the active dot is printed over the text itself, and the
+   dots alone are enough to show where the reader is. */
+@media(max-width:600px){.dots a.on::after{display:none}}
 @media(max-height:740px){
   .cardwrap{--cw:min(58vw,228px)}
   .nm-sd{font-size:clamp(19px,5.6vw,24px);line-height:1.9}
