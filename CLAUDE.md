@@ -44,6 +44,9 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 - The nikkah has **already happened** — do not add nikkah details
 - There is **no mehndi event** on this invitation — it was deliberately removed
 - There is **no printed menu** on this invitation — the menu section was removed; do not re-add it
+- There is **no dress code** on this invitation — the user asked for it to come off because it
+  would not go down well with Pakistani guests. The whole section (`s5`, its strings, the cloth
+  swatches and their CSS) was removed; do not re-add it or hint at attire anywhere
 - There is **no share button** on this invitation — it was removed from both the topbar and the
   closing section; RSVP is now the sole call-to-action button
 
@@ -146,8 +149,10 @@ reader's scroll. If a future change wants something to move by itself, that is t
   so it matches exactly. Corners sit flush at section edges and bloom in on scroll.
 - The ajrak background is a custom SVG *kakar jaal* — eight-petal rosettes on a lattice.
   An earlier generic star-grid version was rejected as inauthentic.
-- 6 sections: `s1` card · `s2` countdown+scratch heart · `s3` verse · `s4` schedule ·
-  `s5` dress code · `s6` closing. (There used to be a `s4` menu section between the countdown
+- 5 sections: `s1` card · `s2` countdown+scratch heart · `s3` verse · `s4` schedule ·
+  `s5` closing. (The dress code was `s5` until it was removed; the closing moved up from `s6`
+  because the ids are positional.) The closing carries an RSVP button of its own — the farewell is
+  the natural moment to answer, and it is the one place a guest who scrolled past `s4` ends up. (There used to be a `s4` menu section between the countdown
   and schedule — it was removed along with the share button; RSVP moved into `s4` schedule's
   `.acts` row as the solid CTA, and `s4` switched from `deep` to `wine` tone to keep the
   wine/deep alternation from running three `deep` sections in a row.)
@@ -269,6 +274,33 @@ the Italianno "Rukhsati" in the schedule is capped at `12vw`.
 Swept at all four steps, at 360×640 and 430×932, in both languages: no overflow, no sideways
 scroll, no console errors, the scratch completes, the envelope and its "Tap the seal" fit on the
 intro, and the RSVP send button stays on screen.
+
+### Design-critique fixes (Nov 2026)
+
+A full critique (design + WCAG audit) was run and its five priority fixes made:
+
+- **Gold over the dusk.** Where the sky turns orange, `--gold-l` small caps measured 2.7–2.9:1.
+  `.sc-hint` and `.cd small` are now `--gold-p` at full opacity (the hint with a dark halo), and the
+  countdown cells have a dark `rgba(22,4,10,.55)` ground: about 6:1 and better.
+- **The notices are short.** The timing notice is two sentences and still firm but warm ("…the
+  evening will move forward on schedule — and we would love you with us for every moment of it");
+  the travel note no longer restates the date. The Sindhi was trimmed from its own existing
+  sentences, not rewritten.
+- **Tap targets.** Each section dot is a 28×28 hit area around the unchanged 8px dot (drawn by
+  `::before`; `::after` is still the label), and the top bar is 44px tall. On phones `.sec` has
+  34px side padding so no line of text runs under the dot column.
+- **Focus stays on the envelope.** `main`, `.dots` and `.thread` are `inert` until it opens — Tab
+  used to walk into the invisible page behind it. The top bar stays live (the language pill must
+  be reachable on the intro).
+- **The card has a text alternative.** `cardText` (both languages, without the date) is the
+  `aria-describedby` of the card on `s1` and the `alt` of the reader's image — the parents' names
+  existed only as pixels before. There is a visually hidden `<h1>` (`calSummary`).
+- **Small type has a real floor.** Every `font-size` of 14.5px or less is
+  `max(<size>,calc(<size>*var(--fz,1)))`, so the default 0.9 step and "small" no longer pull
+  kickers, labels and hints under the large-print floors. Body copy still follows `--fz` freely.
+  New small type must be written the same way.
+- **The Sindhi Rukhsati** is the climax in Sindhi too: `.sched span.fin.sd-t` sets it in Lateef 600
+  at 30px, where before it was the same size as every other row.
 
 ## Sindhi is set in Naskh, not Nastaliq (Nov 2026)
 
@@ -656,13 +688,14 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
    Newer and equally unchecked: `langSwitch`, the RSVP additions (`rsvpNote`, `rsvpNotePh`,
    `rsvpContact`, `rsvpAgain`, `rsvpAgainYes`, `rsvpAgainNo`, `rsvpUpdate`, `rsvpKeep`,
    `rsvpQueued`, `rsvpBy`), the calendar chooser (`calPick`, `calGoogle`, `calIcs`), and the
-   Sindhi WhatsApp invitation in `scripts/guest-links.mjs`.
+   Sindhi WhatsApp invitation in `scripts/guest-links.mjs`. Newest: the shortened `notice` and
+   `travel`, and `cardText` (read by screen readers only).
 4. **"The verse that was recited at our nikkah"** on `s3` — `verseNote` is now empty in *both*
    languages. It had been cleared in English but was still asserting the claim in Sindhi.
    Restore both, or neither.
 5. **What the "rasms" at 10:30 PM are** — the schedule just says "Rasms" / "رسمون" for now;
    ask the user if they want the specific rituals named.
-6. **Cosmetic:** on `s6` the Nastaliq descenders of `دعائن سان` touch the ascenders of
+6. **Cosmetic:** on the closing section (then `s6`) the Nastaliq descenders of `دعائن سان` touch the ascenders of
    "With love and prayers" below it — the two line boxes are exactly adjacent. Pre-existing;
    a small `margin-bottom` on `.sdt` fixes it, but it is the user's typography to change.
 
@@ -672,12 +705,12 @@ The user asked for **"Alfaaz" (the instrumental, no vocals)** to play as backgro
 envelope is opened — **no play button** (they said so explicitly). `src/music.js` (`useMusic`)
 creates the audio on the seal tap and calls `play()` synchronously inside it (Intro's `onTap`),
 because browsers only allow sound from within a gesture and Safari refuses it after a timeout.
-It loops, fades in where the browser allows volume (not iOS), pauses when the page is hidden and
+It loops, fades in to full volume where the browser allows volume (not iOS — so **the loudness lives in the file, not in JS**; turn the file down, never the fade's ceiling, or iPhones end up louder than everyone else), pauses when the page is hidden and
 resumes on return unless the guest turned it off. A small speaker icon (`.pill.mu`) appears in
 the top bar only once sound is actually playing — the mute control, which audio that plays by
 itself needs (WCAG 1.4.2). It is not a play button; do not add one.
 
-The file is `public/assets/music.mp3` (re-encoded to 96k stereo, ~2.2 MB, from the user's upload), set in `MUSIC` in `src/config.js` with the credit read on
+The file is `public/assets/music.mp3` (re-encoded to 96k stereo, ~2.2 MB, from the user's upload, then turned down 11 dB to about -29.5 LUFS when the user found it too loud), set in `MUSIC` in `src/config.js` with the credit read on
 the mute control. **The file is supplied by the family**, who are responsible for having the
 right to publish it — the site and its repo are public, so the whole track can be downloaded by
 anyone. Until it is there the envelope opens in silence and `npm run check` warns. Audio is kept
