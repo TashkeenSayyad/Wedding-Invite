@@ -90,7 +90,7 @@ function Hour({ time, what, last, sd }) {
     <li ref={ref} className={(lit ? "lit" : "") + (last ? " last" : "")}>
       <Lantern big={last} />
       <b>{time}</b>
-      <span className={sd ? "sd-t" : last ? "fin" : ""}>{what}</span>
+      <span className={(sd ? "sd-t" : "") + (last ? " fin" : "")}>{what}</span>
     </li>
   );
 }
@@ -207,7 +207,7 @@ export default function App() {
 
   useEffect(() => {
     if (!opened) return;
-    const ids = ["s1","s2","s3","s4","s5","s6"];
+    const ids = ["s1","s2","s3","s4","s5"];
     const io = new IntersectionObserver(
       (es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)),
       { threshold: 0.55 }
@@ -253,15 +253,15 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  const dotIds = ["s1","s2","s3","s4","s5","s6"];
+  const dotIds = ["s1","s2","s3","s4","s5"];
 
   return (
     <>
       <Intro t={t} lang={lang} guest={guest} onTap={music.start} onOpened={() => { setOpened(true); scrollTo(0, 0); }} />
 
-      <div className="thread"><i style={{ height: prog + "%" }} /></div>
+      <div className="thread" inert={opened ? undefined : ""}><i style={{ height: prog + "%" }} /></div>
 
-      <nav className={"dots" + (opened ? " show" : "")} aria-label="Sections">
+      <nav className={"dots" + (opened ? " show" : "")} aria-label="Sections" inert={opened ? undefined : ""}>
         {dotIds.map((id) => (
           <a key={id} href={"#" + id} data-l={t.dotLabels[id]} className={active === id ? "on" : ""} aria-label={t.dotLabels[id]} />
         ))}
@@ -304,7 +304,7 @@ export default function App() {
         <button ref={readerX} className={"x" + (sd ? " sd-t" : "")} onClick={() => setReader(false)}>{t.tapClose}</button>
         {reader && (
           <div className="rd-card">
-            <img src="./assets/card-print.png" alt={t.calSummary} />
+            <img src="./assets/card-print.png" alt={t.cardText} />
             <DateMask t={t} lang={lang} off={scratched} />
           </div>
         )}
@@ -312,7 +312,8 @@ export default function App() {
 
       <Sky live={opened} />
 
-      <main>
+      <main inert={opened ? undefined : ""}>
+        <h1 className="vh">{t.calSummary}</h1>
         {/* 1 · card */}
         <Sec id="s1" tone="wine" label={t.dotLabels.s1} refMap={refMap}
           foot={<div className={"cue" + (sd ? " sd-t" : "")}>{t.scroll}
@@ -322,7 +323,7 @@ export default function App() {
               preserve-3d context, so a sibling's z-index loses to the tilted .card3d, which
               reaches further toward the viewer than any flat sibling can. That is why "tap to
               read" did nothing in Chromium. */}
-          <div className="rv cardwrap" role="button" tabIndex={0} aria-label={t.tapRead}
+          <div className="rv cardwrap" role="button" tabIndex={0} aria-label={t.tapRead} aria-describedby="card-text"
             onClick={() => { setReader(true); buzz(8); }}
             onKeyDown={(e) => {
               if (e.key !== "Enter" && e.key !== " ") return;
@@ -339,6 +340,8 @@ export default function App() {
             <i className="gilt" />
             <span className={"zoomhint" + (sd ? " sd-t" : "")}>{t.tapRead}</span>
           </div>
+          {/* the card is a picture; this is what is printed on it, for anyone who cannot see it */}
+          <p id="card-text" className="vh">{t.cardText}</p>
           <div className="names">
             <Rv d={0.25} cls="nm-sd">تاشقين ۽ انوشا</Rv>
           </div>
@@ -422,34 +425,8 @@ export default function App() {
           </div>
         </Sec>
 
-        {/* 5 · dress code */}
-        <Sec id="s5" tone="wine" label={t.dotLabels.s5} corners={["tr"]} refMap={refMap}>
-          <Rv cls={"kicker" + (sd ? " sd-t" : "")}>{t.dressKicker}</Rv>
-          <Rv d={0.05} cls={"h-caps" + (sd ? " sd-t" : "")}>{t.dressTitle}</Rv>
-          <Rv d={0.1} cls="band" />
-          <div className="dc">
-            <Rv d={0.16}>
-              <h3 className={sd ? "sd-t" : ""}>{t.encouraged}</h3>
-              <div className="swatches">
-                {t.colors.map(([c, n], i) => (
-                  <span key={i} className="swatch"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
-                ))}
-              </div>
-            </Rv>
-            <Rv d={0.24}>
-              <h3 className={sd ? "sd-t" : ""}>{t.reserved}</h3>
-              <div className="kept">
-                {t.resChips.map(([c, n], i) => (
-                  <span key={i} className="keep"><i style={{ "--c": c }} /><span className={sd ? "sd-t" : ""}>{n}</span></span>
-                ))}
-              </div>
-            </Rv>
-          </div>
-          <Rv d={0.32} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, fontStyle: sd ? "normal" : "italic" }}>{t.dressNote}</Rv>
-        </Sec>
-
-        {/* 6 · closing */}
-        <Sec id="s6" tone="deep" label={t.dotLabels.s6} corners={["tl","tr"]} refMap={refMap}>
+        {/* 5 · closing */}
+        <Sec id="s5" tone="deep" label={t.dotLabels.s5} corners={["tl","tr"]} refMap={refMap}>
           <Rv cls="star" />
           {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: "calc(21px*var(--fz,1))", marginTop: 14 }}>{t.closeSd}</Rv>}
           <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "calc(clamp(28px,7.6vw,36px)*var(--fz,1))" : "calc(clamp(32px,8.6vw,42px)*var(--fz,1))" }}>{t.closeTitle}</Rv>
@@ -457,6 +434,12 @@ export default function App() {
           <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>
           {guest && <Rv d={0.5} cls={"sig" + (sd ? " sd-t" : "")}>{t.closeGuest(guest)}</Rv>}
+          {/* the farewell is the natural moment to answer, so the one call to action is here too */}
+          <Rv d={0.58} cls="acts">
+            <button className="btn solid" onClick={rsvp}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 6 9 17l-5-5" /></svg>
+              <span className={sd ? "sd-t" : ""}>{t.rsvp}</span></button>
+          </Rv>
         </Sec>
       </main>
     </>
