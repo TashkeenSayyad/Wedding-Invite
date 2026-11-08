@@ -78,22 +78,26 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 3. **Sindhi register:** warm and polite, using the **-جو** imperative form (اچجو، رکجو، ڇهجو)
    rather than bare commands. The user rejected an earlier stiff, literal translation.
    **The Sindhi has NOT been checked by a native speaker.** Flag this if asked.
-4. **The card is drawn in code: `scripts/card/card.html`, rendered by `npm run card`.**
-   The user asked for the card to be fully redesigned (Nov 2026) and it was rebuilt as an SVG
-   page — a cusped Mughal arch over a jali of kakar-jaal rosettes, two spandrel roundels, a
-   running band of rosette cells with khatam corners, a lamp hanging from the apex, a lotus at
-   the foot, every line and letter in embossed gold foil (an SVG specular-lighting filter) on a
-   lit wine niche. The text is unchanged except the bismillah, which is now set in Arabic
-   (Noto Naskh Arabic) instead of transliterated. `npm run card` renders it in Chromium at 2×
-   and writes **both** cuts from the same drawing — `public/assets/card-print.png` (1191×1680)
-   and `src/assets/card-web.webp` (900×1270) — so they no longer drift. Change the card by
-   editing that page and re-running the script; never edit the PNGs by hand, never generate the
-   card with AI, and do not touch the Canva file. The build is deterministic (fixed geometry,
-   fixed noise seeds). The old PIL-edited artwork and its scripts (`card-title.py`,
-   `card-baarat.py`) are in git before this change; `orn-*.webp` and `og-card.jpg` were cut
-   from that old artwork and were not redrawn.
-   **The date line is pinned** at 77.25% of the height so `DateMask` still covers it, and
-   `npm run card` fails if the date leaves the band or anything else enters it.
+4. **The card's ornament is from Canva; its type is set in code.** The user asked for the card
+   to be fully redesigned (Nov 2026). A first version drawn entirely in SVG was not wanted — the
+   user asked for Canva instead. The current card:
+   - **Ornament:** the Canva design "Pakistani Sindhi wedding invitation" (`DAHaX0V1Flw`, made
+     for this with Canva's generator) — gilded frame, cusped Mughal arch, floral borders, a lotus
+     at the foot. Its text layers were deleted in Canva (with the user's OK) and it was exported
+     at 1191 wide into `scripts/card/canva-frame-raw.png`. `scripts/card/clean-frame.py` paints
+     out a wisp of flame Canva baked into the niche and stretches it to 1191×1680 →
+     `scripts/card/frame.png`.
+   - **Type:** set over it by `scripts/card/card.html` in the site's own faces (Italianno title,
+     Cormorant SC names, Cormorant italic, a correct Arabic bismillah in Noto Naskh Arabic), in a
+     bronze-gold foil matched to the frame. Canva's own text was not usable: its "Bismillah" was
+     garbled Arabic, and it set the names in a generic serif. Do not take type from Canva.
+   - `npm run card` renders the page at 2× in Chromium and writes **both** cuts —
+     `public/assets/card-print.png` (1191×1680) and `src/assets/card-web.webp` (900×1270).
+     Never edit the PNGs by hand, and do not touch the old Canva card — it is out of date.
+   - **The date line is pinned** at 74.1% of the height, and `.datemask` moved up to
+     `top:71.6%` with it: below about 77% the frame's lower arch closes in under the band's ends.
+     `npm run card` fails if the date leaves the band or other text enters it.
+   - `orn-*.webp` and `og-card.jpg` were cut from the *old* artwork and were not redrawn.
 
 ## The redesign — "one evening over Hyderabad" (prototype, Nov 2026)
 
@@ -642,9 +646,9 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
   the envelope and is perfectly readable while it does — until `scratched` is true, then it fades
   and scales away. (The intro is unmounted long before anyone can scratch, so its mask never
   lifts; that is correct.) Its percentages are of the card itself, so it holds at every width:
-  the date line sits at about 76–79% of the height and 23–77% of the width (pinned in
+  the date line sits at about 73–75.5% of the height and 25–75% of the width (pinned in
   `scripts/card/card.html`, checked by `npm run card`), and the band is set wider and taller than
-  that — 15–85% across, 74.5% down, 4.9% tall — to carry its writing, inside the arch. It is hidden under `@media print` —
+  that — 15–85% across, 71.6% down, 4.9% tall — to carry its writing, inside the arch. It is hidden under `@media print` —
   paper should carry the date. The download button on `s4` still hands over the unveiled PNG,
   which is deliberate: it sits after `s2`, and the file is the real invitation.
 - **The band says why it is there** (`maskHint`, "Scratch the heart to find out the date"),

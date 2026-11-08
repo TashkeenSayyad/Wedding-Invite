@@ -4,9 +4,10 @@
 //   public/assets/card-print.png   1191 × 1680, the print master (and the download on s4)
 //   src/assets/card-web.webp        900 × 1270, the card on s1, the reader and the envelope letter
 //
-// The page is drawn at twice the size and scaled down, which gives the hairlines and the foil
-// cleaner edges than rendering at 1×. Both cuts come from the same drawing, so — unlike the old
-// artwork — they are no longer two renderings to keep in step.
+// The ornament is a Canva design, cleaned into scripts/card/frame.png by clean-frame.py; the type
+// is set over it in card.html. The page is rendered at twice the size and scaled down, which
+// gives the type and its foil cleaner edges. Both cuts come from the same render, so — unlike
+// the old artwork — they are no longer two renderings to keep in step.
 //
 // Needs Playwright with Chromium (preinstalled in the cloud container) and python3 with pillow.
 //   npm run card
