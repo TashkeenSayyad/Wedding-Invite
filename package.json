@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "fonts": "node scripts/build-fonts.mjs",
     "og": "python3 scripts/build-og.py",
+    "card": "node scripts/build-card.mjs",
     "links": "node scripts/guest-links.mjs"
   },
   "dependencies": {

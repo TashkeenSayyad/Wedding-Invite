@@ -1,0 +1,411 @@
+<!doctype html>
+<!--
+  The invitation card, drawn in code. scripts/build-card.mjs renders this page in Chromium and
+  writes both cuts from it (public/assets/card-print.png and src/assets/card-web.webp), so the
+  two cuts are always the same drawing.
+
+  Everything below is geometry computed from fixed numbers — no randomness — so a rebuild is
+  identical. The canvas is the print master's own size, 1191 × 1680.
+
+  THE DATE LINE IS PINNED. DateMask lays a leaf of gold over 15–85% of the width and 74.5–79.4%
+  of the height until the heart on s2 is scratched. The date is set centred on 77.25% of the
+  height and nothing else may be drawn inside that box — see DATE_Y and the checks at the end.
+-->
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Italianno;src:url(../../node_modules/@fontsource/italianno/files/italianno-latin-400-normal.woff2)}
+@font-face{font-family:CSC;font-weight:600;src:url(../../node_modules/@fontsource/cormorant-sc/files/cormorant-sc-latin-600-normal.woff2)}
+@font-face{font-family:CSC;font-weight:700;src:url(../../node_modules/@fontsource/cormorant-sc/files/cormorant-sc-latin-700-normal.woff2)}
+@font-face{font-family:CG;font-style:italic;font-weight:500;src:url(../../node_modules/@fontsource/cormorant-garamond/files/cormorant-garamond-latin-500-italic.woff2)}
+@font-face{font-family:Naskh;font-weight:700;src:url(../../node_modules/@fontsource/noto-naskh-arabic/files/noto-naskh-arabic-arabic-700-normal.woff2)}
+html,body{margin:0;background:#000}
+svg{display:block}
+</style></head>
+<body>
+<svg id="c" xmlns="http://www.w3.org/2000/svg" width="1191" height="1680" viewBox="0 0 1191 1680"></svg>
+<script>
+const W = 1191, H = 1680, CX = W / 2;
+const DATE_Y = H * 0.7725;             // centre of the date line — DateMask's band is built around it
+const MASK = { x0: W * .15, x1: W * .85, y0: H * .745, y1: H * .794 };
+
+// frame insets
+const F_OUT = 30, BAND0 = 42, BAND1 = 100, F_IN = 112;
+// the arch: sides at L/R, springing at S, rising to the apex at A
+const L = F_IN + 58, R = W - F_IN - 58, S = 610, A = 222;
+
+const svg = document.getElementById("c");
+const NS = "http://www.w3.org/2000/svg";
+let out = [];
+const f = (n) => +n.toFixed(2);
+
+// ---------- geometry helpers ----------
+const bez = (p0, p1, p2, p3, t) => {
+  const u = 1 - t;
+  return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0],
+          u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]];
+};
+// the left half of the arch, from the springing up to the apex
+const ARCH = [[L, S], [L, S - 205], [CX - 205, A + 120], [CX, A]];
+function archPts(n) {                    // n points, evenly spaced along the curve
+  const dense = [];
+  for (let i = 0; i <= 2000; i++) dense.push(bez(...ARCH, i / 2000));
+  const len = [0];
+  for (let i = 1; i < dense.length; i++) len.push(len[i-1] + Math.hypot(dense[i][0]-dense[i-1][0], dense[i][1]-dense[i-1][1]));
+  const total = len[len.length - 1], pts = [];
+  let j = 0;
+  for (let k = 0; k < n; k++) {
+    const want = total * k / (n - 1);
+    while (j < len.length - 1 && len[j+1] < want) j++;
+    pts.push(dense[j]);
+  }
+  return pts;
+}
+// a smooth offset of the plain (uncusped) arch, d > 0 pushes it outward
+function archOffset(d, n = 160) {
+  const pts = archPts(n), res = [];
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[Math.max(0, i-1)], b = pts[Math.min(pts.length-1, i+1)];
+    let tx = b[0]-a[0], ty = b[1]-a[1]; const m = Math.hypot(tx, ty); tx/=m; ty/=m;
+    res.push([pts[i][0] + ty*d, pts[i][1] - tx*d]);    // the normal pointing away from the opening
+  }
+  return res;
+}
+const mirror = (p) => [W - p[0], p[1]];
+function smoothArchPath(d, bottom) {      // closed outline of the arch opening grown by d
+  const left = archOffset(d);
+  const right = left.slice().reverse().map(mirror);
+  let s = `M${f(left[0][0])},${f(bottom)} L${f(left[0][0])},${f(left[0][1])}`;
+  for (const p of left.slice(1)) s += ` L${f(p[0])},${f(p[1])}`;
+  for (const p of right.slice(1)) s += ` L${f(p[0])},${f(p[1])}`;
+  s += ` L${f(right[right.length-1][0])},${f(bottom)} Z`;
+  return s;
+}
+// the cusped (multifoil) arch: lobes between evenly spaced points, each bulging outward,
+// meeting in small points that hang into the opening
+const LOBES = 7;
+function cuspedPath(bottom, closed = true) {
+  const pts = archPts(LOBES + 1);
+  const chord = Math.hypot(pts[1][0]-pts[0][0], pts[1][1]-pts[0][1]);
+  const r = chord * 0.56;
+  let s = `M${f(L)},${f(bottom)} L${f(L)},${f(S)}`;
+  for (let i = 1; i < pts.length; i++) s += ` A${f(r)},${f(r)} 0 0 1 ${f(pts[i][0])},${f(pts[i][1])}`;
+  const rp = pts.slice().reverse().map(mirror);
+  for (let i = 1; i < rp.length; i++) s += ` A${f(r)},${f(r)} 0 0 1 ${f(rp[i][0])},${f(rp[i][1])}`;
+  s += ` L${f(R)},${f(bottom)}`;
+  if (closed) s += " Z";
+  return s;
+}
+
+// ---------- ornament vocabulary ----------
+// an almond petal pointing up from the origin
+const petal = (len, w) => `M0,0 C${f(w)},${f(-len*.32)} ${f(w*.7)},${f(-len*.78)} 0,${f(-len)} C${f(-w*.7)},${f(-len*.78)} ${f(-w)},${f(-len*.32)} 0,0 Z`;
+function rosette(x, y, r, n, cls = "g", rot = 0, w = .34) {
+  let s = `<g transform="translate(${f(x)},${f(y)})">`;
+  for (let i = 0; i < n; i++) s += `<path class="${cls}" d="${petal(r, r*w)}" transform="rotate(${f(rot + 360*i/n)})"/>`;
+  return s + `</g>`;
+}
+function star8(x, y, r, cls = "g") {     // the khatam: two squares crossed
+  const sq = (a) => { let p = []; for (let i = 0; i < 4; i++) { const t = (a + 90*i) * Math.PI/180; p.push(`${f(x + r*Math.cos(t))},${f(y + r*Math.sin(t))}`); } return p.join(" "); };
+  return `<polygon class="${cls}" points="${sq(0)}"/><polygon class="${cls}" points="${sq(45)}"/>`;
+}
+const dot = (x, y, r, cls = "g") => `<circle class="${cls}" cx="${f(x)}" cy="${f(y)}" r="${f(r)}"/>`;
+// a hairline that tapers to a point at both ends
+function taper(x0, x1, y, w) {
+  const m = (x0 + x1) / 2;
+  return `<path class="g" d="M${f(x0)},${f(y)} Q${f(m)},${f(y - w)} ${f(x1)},${f(y)} Q${f(m)},${f(y + w)} ${f(x0)},${f(y)} Z"/>`;
+}
+// a small diamond
+const lozenge = (x, y, rx, ry, cls = "g") => `<path class="${cls}" d="M${f(x)},${f(y-ry)} L${f(x+rx)},${f(y)} L${f(x)},${f(y+ry)} L${f(x-rx)},${f(y)} Z"/>`;
+
+// the divider under the title and above the date: rosette, lozenges and two tapering rules
+function divider(y, half = 205) {
+  let s = rosette(CX, y, 13, 8, "g", 22.5, .38) + dot(CX, y, 3.2, "wine");
+  for (const k of [-1, 1]) {
+    s += lozenge(CX + k*30, y, 7, 5);
+    s += taper(CX + k*42, CX + k*half, y, 1.6);
+    s += dot(CX + k*(half + 8), y, 3);
+    s += `<path class="g" d="${petal(14, 5)}" transform="translate(${f(CX + k*(half - 38))},${f(y)}) rotate(${k*-60})"/>`;
+    s += `<path class="g" d="${petal(14, 5)}" transform="translate(${f(CX + k*(half - 38))},${f(y)}) rotate(${k*-120})"/>`;
+  }
+  return s;
+}
+
+// a lotus rising from a shallow cup, with a leaf and a tendril to either side
+function lotus(x, y, s = 1, flip = false) {
+  let g = `<g transform="translate(${f(x)},${f(y)}) scale(${s},${flip ? -s : s})">`;
+  g += `<path class="g" d="${petal(70, 17)}"/>`;
+  for (const k of [-1, 1]) {
+    g += `<path class="g" d="${petal(60, 15)}" transform="rotate(${k*30})"/>`;
+    g += `<path class="g" d="${petal(46, 12)}" transform="rotate(${k*60})"/>`;
+    g += `<path class="g" d="${petal(30, 8)}" transform="rotate(${k*86})"/>`;
+    // a leaf sweeping out along the ground, and a curling tendril
+    g += `<path class="g" d="M${k*14},8 C${k*60},2 ${k*110},22 ${k*150},4 C${k*112},34 ${k*58},28 ${k*14},14 Z"/>`;
+    g += `<path class="gs" d="M${k*150},4 C${k*176},-8 ${k*186},-34 ${k*168},-42 C${k*154},-48 ${k*146},-32 ${k*158},-26"/>`;
+    g += dot(k*104, -14, 3.4);
+    g += dot(k*128, -26, 2.6);
+  }
+  g += `<path class="g" d="M-26,4 Q0,26 26,4 Q0,14 -26,4 Z"/>`;
+  g += dot(0, 26, 4);
+  return g + `</g>`;
+}
+
+// ---------- defs ----------
+out.push(`<defs>
+  <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="190" spreadMethod="reflect">
+    <stop offset="0" stop-color="#8d6224"/><stop offset=".3" stop-color="#c99a45"/>
+    <stop offset=".52" stop-color="#f8e3a3"/><stop offset=".62" stop-color="#fff3cf"/>
+    <stop offset=".76" stop-color="#d9ae5b"/><stop offset="1" stop-color="#9a6e2a"/>
+  </linearGradient>
+  <linearGradient id="goldText" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff2c8"/><stop offset=".38" stop-color="#f3d58e"/>
+    <stop offset=".7" stop-color="#d5a752"/><stop offset="1" stop-color="#a77a32"/>
+  </linearGradient>
+  <linearGradient id="cream" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#f6e8cc"/><stop offset="1" stop-color="#dcc497"/>
+  </linearGradient>
+  <radialGradient id="ground" cx="50%" cy="44%" r="75%">
+    <stop offset="0" stop-color="#4a0b1a"/><stop offset=".6" stop-color="#2c0610"/><stop offset="1" stop-color="#160208"/>
+  </radialGradient>
+  <radialGradient id="niche" gradientUnits="userSpaceOnUse" cx="${CX}" cy="760" r="700" fx="${CX}" fy="560">
+    <stop offset="0" stop-color="#7f1a2e"/><stop offset=".35" stop-color="#651226"/>
+    <stop offset=".75" stop-color="#440a18"/><stop offset="1" stop-color="#2c0611"/>
+  </radialGradient>
+  <radialGradient id="lamp" gradientUnits="userSpaceOnUse" cx="${CX}" cy="330" r="430">
+    <stop offset="0" stop-color="#ffd890" stop-opacity=".2"/><stop offset=".5" stop-color="#ffb070" stop-opacity=".06"/>
+    <stop offset="1" stop-color="#ffb070" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="hush"><stop offset=".55" stop-color="#22040b"/><stop offset="1" stop-color="#22040b" stop-opacity="0"/></radialGradient>
+  <radialGradient id="vig" cx="50%" cy="50%" r="72%">
+    <stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/>
+  </radialGradient>
+
+  <!-- gold foil: the shape's own alpha, blurred, read as a height map and lit from the upper
+       left, so every line and letter carries a bevel and a highlight; then a short shadow
+       pressing it into the card -->
+  <filter id="foil" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="1.1" result="h"/>
+    <feSpecularLighting in="h" surfaceScale="2.6" specularConstant="1.05" specularExponent="18" lighting-color="#fff4d6" result="s">
+      <feDistantLight azimuth="225" elevation="52"/>
+    </feSpecularLighting>
+    <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+    <feComposite in="SourceGraphic" in2="s2" operator="arithmetic" k2="1" k3=".55" result="lit"/>
+    <feDropShadow in="lit" dx="0" dy="1.6" stdDeviation="1.3" flood-color="#0e0105" flood-opacity=".75"/>
+  </filter>
+  <filter id="foilBig" x="-10%" y="-20%" width="120%" height="140%" color-interpolation-filters="sRGB">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="h"/>
+    <feSpecularLighting in="h" surfaceScale="4" specularConstant="1" specularExponent="16" lighting-color="#fff4d6" result="s">
+      <feDistantLight azimuth="225" elevation="50"/>
+    </feSpecularLighting>
+    <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+    <feComposite in="SourceGraphic" in2="s2" operator="arithmetic" k2="1" k3=".5" result="lit"/>
+    <feDropShadow in="lit" dx="0" dy="2.5" stdDeviation="2.5" flood-color="#0e0105" flood-opacity=".8"/>
+  </filter>
+  <filter id="press" x="-5%" y="-20%" width="110%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0e0105" flood-opacity=".8"/>
+  </filter>
+  <filter id="paper" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 .9  0 0 0 0 .8  0 0 0 .09 0"/>
+  </filter>
+  <filter id="silk" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".004 .09" numOctaves="2" seed="3" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 .85  0 0 0 0 .8  0 0 0 .025 0"/>
+  </filter>
+
+  <!-- the jali: a kakar-jaal lattice of eight-petal rosettes, filling everything outside the arch -->
+  <pattern id="jaal" width="56" height="56" patternUnits="userSpaceOnUse" x="${CX - 28}" y="0">
+    <path d="M0,28 L28,0 L56,28 L28,56 Z" fill="none" stroke="url(#gold)" stroke-width="1.1"/>
+    ${rosette(28, 28, 11, 8, "gp", 22.5, .36)}
+    ${[[0,0],[56,0],[0,56],[56,56]].map(([x,y]) => rosette(x, y, 7, 4, "gp", 45, .45)).join("")}
+    ${[[28,0],[0,28],[56,28],[28,56]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="2.3" fill="url(#gold)"/>`).join("")}
+  </pattern>
+
+  <clipPath id="nicheClip"><path d="${cuspedPath(H - F_IN)}"/></clipPath>
+  <clipPath id="jaliClip"><path clip-rule="evenodd" d="M${BAND1+12},${BAND1+12} H${W-BAND1-12} V${H-BAND1-12} H${BAND1+12} Z ${smoothArchPath(52, H - F_IN + 20)}"/></clipPath>
+</defs>
+<style>
+  .g{fill:url(#gold)} .gp{fill:url(#gold)} .gs{fill:none;stroke:url(#gold);stroke-width:2.2;stroke-linecap:round}
+  .wine{fill:#3a0814} .ln{fill:none;stroke:url(#gold)}
+</style>`);
+
+// ---------- ground ----------
+out.push(`<rect width="${W}" height="${H}" fill="url(#ground)"/>`);
+out.push(`<rect width="${W}" height="${H}" filter="url(#silk)"/>`);
+
+// ---------- the jali, outside the arch ----------
+out.push(`<g clip-path="url(#jaliClip)" opacity=".5"><rect x="0" y="0" width="${W}" height="${H}" fill="url(#jaal)"/></g>`);
+
+// the niche: the arch's opening, lit like a room at dusk
+out.push(`<path d="${cuspedPath(H - F_IN)}" fill="url(#niche)"/>`);
+out.push(`<g clip-path="url(#nicheClip)">
+  <rect width="${W}" height="${H}" filter="url(#silk)"/>
+  <rect width="${W}" height="${H}" fill="url(#lamp)"/>
+</g>`);
+
+// ---------- the arch ----------
+// an outer frame that follows the arch smoothly, with a row of pearls between it and the cusps
+const orn = [];
+orn.push(`<path class="ln" stroke-width="2.4" d="${smoothArchPath(40, H - F_IN)}"/>`);
+orn.push(`<path class="ln" stroke-width="1" d="${smoothArchPath(46, H - F_IN)}"/>`);
+{
+  const pts = archOffset(32, 40).slice(1, -1);
+  for (const p of pts) { orn.push(dot(p[0], p[1], 2.6)); orn.push(dot(W - p[0], p[1], 2.6)); }
+  for (let y = S + 26; y < H - F_IN - 10; y += 22) { orn.push(dot(L - 32, y, 2.6)); orn.push(dot(R + 32, y, 2.6)); }
+  orn.push(dot(CX, A - 32, 2.6));
+}
+// the cusped arch itself, inlaid: a broad gold line split by a fine dark one
+orn.push(`<path class="ln" stroke-width="9" stroke-linejoin="round" d="${cuspedPath(H - F_IN, false)}"/>`);
+out.push(`<g filter="url(#foil)">${orn.join("")}</g>`);
+out.push(`<path fill="none" stroke="#2a050e" stroke-width="2.6" stroke-linejoin="round" d="${cuspedPath(H - F_IN, false)}"/>`);
+{
+  // a small trefoil hangs from each cusp into the opening
+  const pts = archPts(LOBES + 1).slice(1, -1);
+  const tre = [];
+  const apexIn = [CX, A];
+  for (const p of pts.concat(pts.map(mirror))) {
+    const dx = CX - p[0], dy = 700 - p[1], m = Math.hypot(dx, dy);
+    const ang = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+    tre.push(`<g transform="translate(${f(p[0] + dx/m*3)},${f(p[1] + dy/m*3)}) rotate(${f(ang + 180)})">
+      <path class="g" d="${petal(17, 5.5)}"/>${dot(0, -21, 2.4)}</g>`);
+  }
+  out.push(`<g filter="url(#foil)">${tre.join("")}</g>`);
+}
+
+// ---------- spandrel roundels ----------
+function roundel(x, y, r) {
+  let s = `<circle cx="${x}" cy="${y}" r="${r}" fill="#24040c"/>`;
+  s += `<g filter="url(#foil)">`;
+  s += `<circle class="ln" stroke-width="3" cx="${x}" cy="${y}" r="${r}"/>`;
+  s += `<circle class="ln" stroke-width="1" cx="${x}" cy="${y}" r="${r - 7}"/>`;
+  for (let i = 0; i < 24; i++) { const t = i * Math.PI / 12; s += dot(x + (r + 9)*Math.cos(t), y + (r + 9)*Math.sin(t), 2.2); }
+  s += rosette(x, y, r - 14, 16, "g", 0, .2);
+  s += `<circle cx="${x}" cy="${y}" r="${r*.36}" fill="#3a0814"/>`;
+  s += star8(x, y, r * .3);
+  s += `<circle cx="${x}" cy="${y}" r="${r*.11}" fill="#3a0814"/>`;
+  s += dot(x, y, r * .06);
+  return s + `</g>`;
+}
+out.push(roundel(250, 262, 62));
+out.push(roundel(W - 250, 262, 62));
+
+// ---------- the finial over the apex ----------
+{
+  const y0 = A - 64;
+  let s = `<g filter="url(#foil)">`;
+  s += `<path class="g" d="M${CX - 34},${y0} Q${CX},${y0 - 18} ${CX + 34},${y0} Q${CX},${y0 - 6} ${CX - 34},${y0} Z"/>`;
+  s += `<g transform="translate(${CX},${y0 - 10})">`;
+  s += `<path class="g" d="${petal(52, 14)}"/>`;
+  for (const k of [-1, 1]) s += `<path class="g" d="${petal(38, 11)}" transform="rotate(${k*34})"/><path class="g" d="${petal(24, 7)}" transform="rotate(${k*68})"/>`;
+  s += `</g>` + dot(CX, y0 - 70, 4) + `</g>`;
+  out.push(`<ellipse cx="${CX}" cy="${y0 - 30}" rx="70" ry="58" fill="url(#hush)"/>`);
+  out.push(s);
+}
+
+// ---------- the frame ----------
+{
+  const fr = [];
+  const rect = (i, w) => `<rect class="ln" stroke-width="${w}" x="${i}" y="${i}" width="${W - 2*i}" height="${H - 2*i}"/>`;
+  // the band's dark ground
+  out.push(`<path fill="#1c0309" fill-rule="evenodd" d="M${BAND0},${BAND0} H${W-BAND0} V${H-BAND0} H${BAND0} Z M${BAND1},${BAND1} H${W-BAND1} V${H-BAND1} H${BAND1} Z"/>`);
+  fr.push(rect(F_OUT, 3), rect(F_OUT + 7, 1), rect(BAND0, 1.4), rect(BAND1, 1.4), rect(F_IN - 5, 1), rect(F_IN, 3));
+
+  // the band: a running chain of ogival cells, each holding a rosette, with a bud at every join
+  const mid = (BAND0 + BAND1) / 2, half = (BAND1 - BAND0) / 2 - 6;
+  const run = (x0, y0, x1, y1) => {
+    const len = Math.hypot(x1 - x0, y1 - y0), n = Math.round(len / 62), step = len / n;
+    const ux = (x1 - x0) / len, uy = (y1 - y0) / len;
+    for (let i = 0; i < n; i++) {
+      const a = [x0 + ux*step*i, y0 + uy*step*i], b = [x0 + ux*step*(i+1), y0 + uy*step*(i+1)];
+      const c = [(a[0]+b[0])/2, (a[1]+b[1])/2], nx = -uy, ny = ux;
+      // the cell: two arcs meeting at the joins
+      fr.push(`<path class="ln" stroke-width="1.6" d="M${f(a[0])},${f(a[1])} Q${f(c[0] + nx*half*1.9)},${f(c[1] + ny*half*1.9)} ${f(b[0])},${f(b[1])} Q${f(c[0] - nx*half*1.9)},${f(c[1] - ny*half*1.9)} ${f(a[0])},${f(a[1])} Z"/>`);
+      fr.push(rosette(c[0], c[1], 11.5, 8, "g", 22.5, .36));
+      fr.push(dot(c[0], c[1], 2.4, "wine"));
+      if (i > 0) fr.push(lozenge(a[0], a[1], uy ? 9 : 4, uy ? 4 : 9));
+      for (const k of [-1, 1]) fr.push(dot(a[0] + ux*step*.5 + nx*k*(half + 1), a[1] + uy*step*.5 + ny*k*(half + 1), 1.8));
+    }
+  };
+  const c0 = BAND1 + 6, c1 = W - BAND1 - 6, r0 = BAND1 + 6, r1 = H - BAND1 - 6;
+  run(c0, mid, c1, mid); run(c0, H - mid, c1, H - mid);
+  run(mid, r0, mid, r1); run(W - mid, r0, W - mid, r1);
+  // the corners: a square block with a khatam
+  for (const [x, y] of [[mid, mid], [W - mid, mid], [mid, H - mid], [W - mid, H - mid]]) {
+    const s = BAND1 - BAND0;
+    out.push(`<rect x="${x - s/2}" y="${y - s/2}" width="${s}" height="${s}" fill="#24040c"/>`);
+    fr.push(`<rect class="ln" stroke-width="1.6" x="${x - s/2 + 4}" y="${y - s/2 + 4}" width="${s - 8}" height="${s - 8}"/>`);
+    fr.push(star8(x, y, 19));
+    fr.push(`<circle cx="${x}" cy="${y}" r="9" fill="#3a0814"/>`);
+    fr.push(rosette(x, y, 8, 8, "g", 22.5, .4));
+  }
+  out.push(`<g filter="url(#foil)">${fr.join("")}</g>`);
+}
+
+// ---------- the inside of the arch ----------
+const ins = [];
+// a lamp hangs from the apex
+ins.push(`<line class="ln" stroke-width="1.6" x1="${CX}" y1="${A + 8}" x2="${CX}" y2="${A + 48}"/>`);
+ins.push(dot(CX, A + 28, 3));
+ins.push(lozenge(CX, A + 50, 6, 6));
+ins.push(star8(CX, A + 86, 26));
+ins.push(`<circle cx="${CX}" cy="${A + 86}" r="12" fill="#5a0f22"/>`);
+ins.push(rosette(CX, A + 86, 11, 8, "g", 22.5, .4));
+ins.push(`<path class="g" d="${petal(22, 6)}" transform="translate(${CX},${A + 112}) rotate(180)"/>`);
+ins.push(dot(CX, A + 140, 2.6));
+
+ins.push(divider(778));
+ins.push(divider(1228, 190));
+// the ampersand between the names is flanked by tendrils
+for (const k of [-1, 1]) {
+  const y = 1000;
+  ins.push(taper(CX + k*62, CX + k*200, y, 1.4));
+  ins.push(`<path class="gs" stroke-width="1.8" d="M${CX + k*200},${y} C${CX + k*222},${y - 2} ${CX + k*232},${y - 20} ${CX + k*220},${y - 28} C${CX + k*210},${y - 34} ${CX + k*200},${y - 22} ${CX + k*210},${y - 16}"/>`);
+  ins.push(`<path class="g" d="${petal(16, 5)}" transform="translate(${CX + k*150},${y}) rotate(${k*55})"/>`);
+  ins.push(`<path class="g" d="${petal(16, 5)}" transform="translate(${CX + k*150},${y}) rotate(${k*125})"/>`);
+  ins.push(dot(CX + k*108, y, 2.6));
+}
+ins.push(lotus(CX, 1478, .95));
+out.push(`<g filter="url(#foil)">${ins.join("")}</g>`);
+
+// ---------- type ----------
+const T = [];
+const text = (y, size, family, opts, str) => {
+  const { weight = 400, style = "normal", ls = 0, fill = "url(#goldText)", filter = "foil", id = "" } = opts;
+  T.push(`<text ${id ? `id="${id}"` : ""} x="${CX}" y="${y}" text-anchor="middle" font-family="${family}" font-size="${size}"
+    font-weight="${weight}" font-style="${style}" letter-spacing="${ls}" fill="${fill}" filter="url(#${filter})">${str}</text>`);
+};
+text(A + 210, 50, "Naskh", { weight: 700, id: "bism" }, "بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ");
+text(512, 24, "CSC", { weight: 600, ls: 7.5, id: "fam" }, "TOGETHER WITH THEIR FAMILIES");
+text(624, 152, "Italianno", { filter: "foilBig", id: "t1" }, "Baarat");
+text(736, 152, "Italianno", { filter: "foilBig", id: "t2" }, "&amp; Rukhsati");
+text(880, 84, "CSC", { weight: 600, ls: 13, fill: "url(#cream)", filter: "press", id: "n1" }, "TASHKEEN");
+text(938, 33, "CG", { weight: 500, style: "italic", id: "p1" }, "son of Jallal Hyder &amp; Rubina");
+text(1034, 118, "Italianno", { filter: "foilBig" }, "&amp;");
+text(1130, 84, "CSC", { weight: 600, ls: 13, fill: "url(#cream)", filter: "press", id: "n2" }, "ANUSHA");
+text(1188, 33, "CG", { weight: 500, style: "italic", id: "p2" }, "daughter of Barkat Ali &amp; Mumtaz");
+text(0, 38, "CSC", { weight: 700, ls: 5.5, id: "date" }, "SUNDAY · 27 DECEMBER 2026");
+text(1384, 35, "CG", { weight: 500, style: "italic", id: "venue" }, "Nerunkot Hall, Qasimabad · Hyderabad");
+out.push(T.join(""));
+
+// the grain over everything, so the gold reads as foil pressed into paper rather than a flat fill
+out.push(`<rect width="${W}" height="${H}" filter="url(#paper)"/>`);
+out.push(`<rect width="${W}" height="${H}" fill="url(#vig)" opacity=".7"/>`);
+
+svg.innerHTML = out.join("\n");
+
+// ---------- pin the date and check the layout ----------
+document.fonts.ready.then(() => {
+  const d = document.getElementById("date");
+  let b = d.getBBox();
+  // getBBox is the line box; set the caps' optical centre on DATE_Y (cap height ≈ .63em)
+  d.setAttribute("y", f(DATE_Y + 38 * .63 / 2));
+  b = d.getBBox();
+  const report = {};
+  for (const id of ["bism", "fam", "t1", "t2", "n1", "p1", "n2", "p2", "date", "venue"]) {
+    const bb = document.getElementById(id).getBBox();
+    report[id] = { x0: f(bb.x), x1: f(bb.x + bb.width), y0: f(bb.y), y1: f(bb.y + bb.height) };
+  }
+  window.__layout = { report, mask: MASK };
+  window.__ready = true;
+});
+</script>
+</body></html>

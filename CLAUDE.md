@@ -11,11 +11,10 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 
 - **Event name (Nov 2026): the Baarat, and the Rukhsati of Anusha.** The evening is the groom's
   side's event, so the user asked for it to be named as the Baarat, with the Rukhsati as Anusha's.
-  The card's title line now reads, in two lines of the same Italianno gold at the same size,
-  **"Baarat" over "& Rukhsati"** ("of Anusha" was on the second line and the user took it off) — set by `scripts/card-baarat.py`, which takes every size and colour off
-  the artwork. It always starts from the original card in git (`e003ce4`), never from its own
-  output — an earlier version re-read the gold from its last result and dulled it every run. The user asked for "& Rukhsati" **not** to be the small line:
-  an italic sub-line in the parents' voice was built first and rejected. Everywhere else the
+  The card's title reads, in two lines of the same Italianno gold at the same size,
+  **"Baarat" over "& Rukhsati"** ("of Anusha" was on the second line and the user took it off;
+  the user also asked for "& Rukhsati" **not** to be a small line — an italic sub-line in the
+  parents' voice was built first and rejected). Everywhere else the
   event is "Baarat & Rukhsati" (title, og:title, calendar, manifest, JSON-LD, the og-card kicker)
   or "the Baarat & Rukhsati of Tashkeen & Anusha" (descriptions, the WhatsApp invite text
   in `guest-links.mjs` and `rsvp-sheet.gs`, the RSVP message header — its four labels unchanged).
@@ -79,15 +78,22 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
 3. **Sindhi register:** warm and polite, using the **-جو** imperative form (اچجو، رکجو، ڇهجو)
    rather than bare commands. The user rejected an earlier stiff, literal translation.
    **The Sindhi has NOT been checked by a native speaker.** Flag this if asked.
-4. **Card artwork is edited with PIL, never regenerated.** `public/assets/card-print.png` is the
-   master; it was hand-typeset with PIL (erased Canva's baked text, re-set with Italianno +
-   Cormorant SC). Do not regenerate it with AI and do not edit the Canva file — that design is
-   out of date. A line of type on it is changed by lifting it off the wine and re-setting it in
-   place — the ground under the text is a smooth vertical gradient, so a column redrawn from the
-   clean rows just outside the erase is invisible. **`src/assets/card-web.webp` is not a resize
-   of the master** — it is a separate, flatter rendering with a brighter wine and a paler cream,
-   so any edit has to be made to both cuts on their own terms, each measured against its own
-   ground. 5e2a7cd is a worked example of all of this.
+4. **The card is drawn in code: `scripts/card/card.html`, rendered by `npm run card`.**
+   The user asked for the card to be fully redesigned (Nov 2026) and it was rebuilt as an SVG
+   page — a cusped Mughal arch over a jali of kakar-jaal rosettes, two spandrel roundels, a
+   running band of rosette cells with khatam corners, a lamp hanging from the apex, a lotus at
+   the foot, every line and letter in embossed gold foil (an SVG specular-lighting filter) on a
+   lit wine niche. The text is unchanged except the bismillah, which is now set in Arabic
+   (Noto Naskh Arabic) instead of transliterated. `npm run card` renders it in Chromium at 2×
+   and writes **both** cuts from the same drawing — `public/assets/card-print.png` (1191×1680)
+   and `src/assets/card-web.webp` (900×1270) — so they no longer drift. Change the card by
+   editing that page and re-running the script; never edit the PNGs by hand, never generate the
+   card with AI, and do not touch the Canva file. The build is deterministic (fixed geometry,
+   fixed noise seeds). The old PIL-edited artwork and its scripts (`card-title.py`,
+   `card-baarat.py`) are in git before this change; `orn-*.webp` and `og-card.jpg` were cut
+   from that old artwork and were not redrawn.
+   **The date line is pinned** at 77.25% of the height so `DateMask` still covers it, and
+   `npm run card` fails if the date leaves the band or anything else enters it.
 
 ## The redesign — "one evening over Hyderabad" (prototype, Nov 2026)
 
@@ -636,11 +642,9 @@ More scratch-heart invariants (added in the scratch-card-improvements pass):
   the envelope and is perfectly readable while it does — until `scratched` is true, then it fades
   and scales away. (The intro is unmounted long before anyone can scratch, so its mask never
   lifts; that is correct.) Its percentages are of the card itself, so it holds at every width:
-  the date line sits at 76.6–77.9% of the height and 26.8–73.1% of the width, identical in
-  `card-web.webp` and `card-print.png`, and the band is set wider and taller than that — 15–85%
-  across, 74.5% down, 4.9% tall — to carry its writing. That fills the clear ground between the
-  divider ornament (ends 73.9%) and the venue line (starts 79.8%) with almost nothing to spare,
-  so re-measure all of it if the artwork is ever re-typeset. It is hidden under `@media print` —
+  the date line sits at about 76–79% of the height and 23–77% of the width (pinned in
+  `scripts/card/card.html`, checked by `npm run card`), and the band is set wider and taller than
+  that — 15–85% across, 74.5% down, 4.9% tall — to carry its writing, inside the arch. It is hidden under `@media print` —
   paper should carry the date. The download button on `s4` still hands over the unveiled PNG,
   which is deliberate: it sits after `s2`, and the file is the real invitation.
 - **The band says why it is there** (`maskHint`, "Scratch the heart to find out the date"),
