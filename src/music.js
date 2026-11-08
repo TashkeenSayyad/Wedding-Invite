@@ -17,13 +17,16 @@ export function useMusic(src) {
   const [on, setOn] = useState(false);
 
   const fadeIn = (a) => {
-    // iOS ignores volume (it is read-only there), so this is a nicety elsewhere and harmless there
+    // iOS ignores volume (it is read-only there), so this is a nicety elsewhere and harmless there.
+    // How loud the music is, is set in the file itself (music.mp3 is mastered quiet, about
+    // -29.5 LUFS), not here — otherwise iPhones, which always play at full volume, would be louder
+    // than everything else. The fade therefore ends at 1.
     a.volume = 0;
     let v = 0;
     const id = setInterval(() => {
-      v = Math.min(0.7, v + 0.05);
+      v = Math.min(1, v + 0.07);
       try { a.volume = v; } catch {}
-      if (v >= 0.7) clearInterval(id);
+      if (v >= 1) clearInterval(id);
     }, 120);
   };
 

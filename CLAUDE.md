@@ -672,12 +672,12 @@ The user asked for **"Alfaaz" (the instrumental, no vocals)** to play as backgro
 envelope is opened — **no play button** (they said so explicitly). `src/music.js` (`useMusic`)
 creates the audio on the seal tap and calls `play()` synchronously inside it (Intro's `onTap`),
 because browsers only allow sound from within a gesture and Safari refuses it after a timeout.
-It loops, fades in where the browser allows volume (not iOS), pauses when the page is hidden and
+It loops, fades in to full volume where the browser allows volume (not iOS — so **the loudness lives in the file, not in JS**; turn the file down, never the fade's ceiling, or iPhones end up louder than everyone else), pauses when the page is hidden and
 resumes on return unless the guest turned it off. A small speaker icon (`.pill.mu`) appears in
 the top bar only once sound is actually playing — the mute control, which audio that plays by
 itself needs (WCAG 1.4.2). It is not a play button; do not add one.
 
-The file is `public/assets/music.mp3` (re-encoded to 96k stereo, ~2.2 MB, from the user's upload), set in `MUSIC` in `src/config.js` with the credit read on
+The file is `public/assets/music.mp3` (re-encoded to 96k stereo, ~2.2 MB, from the user's upload, then turned down 11 dB to about -29.5 LUFS when the user found it too loud), set in `MUSIC` in `src/config.js` with the credit read on
 the mute control. **The file is supplied by the family**, who are responsible for having the
 right to publish it — the site and its repo are public, so the whole track can be downloaded by
 anyone. Until it is there the envelope opens in silence and `npm run check` warns. Audio is kept
