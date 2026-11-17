@@ -717,6 +717,21 @@ anyone. Until it is there the envelope opens in silence and `npm run check` warn
 out of the service worker entirely (no precache, no cache-served range requests — Safari will
 not play a whole-file reply to a range request).
 
+## Video invitation (Nov 2026)
+
+`node scripts/make-video.mjs` → `out/baarat-rukhsati-invite.mp4` (1080×1920, 32s, 30fps, Alfaaz from
+0:30 of the track, levelled to −16 LUFS — a shared video plays at the phone's volume, unlike the
+site's autoplaying copy). The user asked for a Baarat/Rukhsati version of a cream Walima video
+"but better". `scripts/video/scene.html` is the whole scene; `render(t)` is a pure function of time,
+so the script screenshots each frame with Playwright and hands them to ffmpeg (~5 min);
+`--still <t>` renders one frame. Story: dusk over the site's Hyderabad skyline (same seeds), the
+envelope lands, the seal lifts, the card rises out and fills the screen, the gold leaf over the
+date is scratched away (the scratch heart's idea), night falls as the five lanterns of the
+schedule light, then the farewell with date, seating time, venue and the site URL. No petals,
+sparks or loops — the restraint pass applies here too. All Sindhi is taken from `i18n.js`, because
+the Lateef subsets only hold glyphs the site uses. The video shows the date: it is the invitation
+itself, like the printed card.
+
 ## Nice-to-haves discussed but not built
 
 - "Light a diya for us" tap interaction on the closing page

@@ -1,0 +1,469 @@
+<!doctype html>
+<!-- The Baarat & Rukhsati video invitation, as one 1080×1920 stage.
+     Nothing here plays by itself: render(t) sets every element as a pure function of the time t
+     in seconds, and scripts/make-video.mjs steps t frame by frame and screenshots each one. So the
+     video is identical on every run, and a frame can be checked on its own with ?t=12.5. -->
+<html lang="sd">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face{font-family:'Cormorant Garamond';font-weight:400;src:url(../../src/assets/fonts/cormorant-garamond-latin-400-normal.woff2)}
+@font-face{font-family:'Cormorant Garamond';font-weight:400;font-style:italic;src:url(../../src/assets/fonts/cormorant-garamond-latin-400-italic.woff2)}
+@font-face{font-family:'Cormorant Garamond';font-weight:600;src:url(../../src/assets/fonts/cormorant-garamond-latin-600-normal.woff2)}
+@font-face{font-family:'Cormorant SC';font-weight:600;src:url(../../src/assets/fonts/cormorant-sc-latin-600-normal.woff2)}
+@font-face{font-family:'Cormorant SC';font-weight:700;src:url(../../src/assets/fonts/cormorant-sc-latin-700-normal.woff2)}
+@font-face{font-family:'Italianno';src:url(../../src/assets/fonts/italianno-latin-400-normal.woff2)}
+@font-face{font-family:'Noto Naskh Arabic';src:url(../../src/assets/fonts/naskh-arabic-400.woff2)}
+/* the same size-adjust as the site: Lateef draws small for its em */
+@font-face{font-family:'Lateef';font-weight:400;size-adjust:135%;src:url(../../src/assets/fonts/lateef-400.woff2)}
+@font-face{font-family:'Lateef';font-weight:600;size-adjust:135%;src:url(../../src/assets/fonts/lateef-600.woff2)}
+
+:root{
+  --gold:#c9a35e; --gold-l:#f4c05b; --gold-p:#f7e3b5; --gold-d:#a8834a;
+  --gold-line:rgba(201,163,94,.62); --gold-hair:rgba(201,163,94,.26);
+  --chalk:#f7efe1; --chalk-d:rgba(247,239,225,.92);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#12040b}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;color:var(--chalk);
+  font-family:'Cormorant Garamond',serif;-webkit-font-smoothing:antialiased}
+.abs{position:absolute}
+.col{position:absolute;left:0;right:0;text-align:center}
+.gf{background:linear-gradient(180deg,#fff3d4,#f0cd88 40%,#c9a35e 74%,#a8834a);
+  -webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .25em}
+.it{font-family:'Italianno',cursive;line-height:1}
+.sc{font-family:'Cormorant SC',serif;font-weight:600;text-transform:uppercase}
+.sd{font-family:'Lateef','Noto Naskh Arabic',serif;font-language-override:'SND';direction:rtl;unicode-bidi:isolate}
+
+/* ═ sky (the site's Sky.jsx, with --p written per frame instead of per scroll) ═ */
+.sky{position:absolute;inset:0;--p:0}
+.sky > i{position:absolute;inset:0}
+.sky-dusk{background:linear-gradient(180deg,#3d0b1b 0%,#6e1830 34%,#9c2f35 62%,#c9573a 82%,#e8924a 100%)}
+.sky-night{opacity:calc(var(--p)*1.15);
+  background:linear-gradient(180deg,#070a22 0%,#121640 40%,#28204e 70%,#4a2550 88%,#6a2f4a 100%)}
+.sky-stars{position:absolute;left:0;right:0;top:0;height:62%}
+.sky-stars i{position:absolute;border-radius:50%;background:#fff6e0;
+  opacity:clamp(0,calc((var(--p) - var(--at))*7),var(--o))}
+.sky-moon{position:absolute;right:11%;width:92px;height:92px}
+.sky-moon::before{content:'';position:absolute;inset:-130%;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,236,190,.2),rgba(255,236,190,.05) 40%,transparent 66%)}
+.sky-moon i{position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 34% 40%,#fff8e4,#f1dca8 60%,#d9bd7e);
+  -webkit-mask:radial-gradient(circle at 72% 36%,transparent 46%,#000 47.5%)}
+.sky-haze{top:auto!important;height:760px;bottom:0;
+  background:linear-gradient(180deg,transparent,rgba(255,170,90,calc(.28 - var(--p)*.24)) 70%,rgba(255,190,110,calc(.4 - var(--p)*.32)))}
+.sky-city{position:absolute;left:-60px;bottom:0;width:1200px;height:400px}
+.sky-back path{fill:#2a0a1c;opacity:.75}
+.sky-front{fill:#12040b}
+.sky-wins rect{fill:#ffc56a;opacity:clamp(0,calc((var(--p) - var(--at))*14),.92)}
+.sky-wins rect.cool{fill:#ffe6b0}
+.sky-lights circle{fill:#ffd27a;opacity:clamp(0,calc((var(--p) - var(--at))*12),1)}
+.grain{position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.vig{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(125% 85% at 50% 42%,transparent 58%,rgba(18,3,9,.62) 100%)}
+.black{position:absolute;inset:0;background:#0b0206;pointer-events:none}
+
+.ajrak{position:absolute;inset:0;pointer-events:none;background-size:168px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23f7e3b5' stroke-width='.7' opacity='.75'%3E%3Cpath d='M0 0h72M0 72h72M0 0v72M72 0v72'/%3E%3C/g%3E%3Cg fill='none' stroke='%23f7e3b5' stroke-width='.85'%3E%3Ccircle cx='0' cy='0' r='11'/%3E%3Ccircle cx='0' cy='0' r='5.5'/%3E%3Ccircle cx='72' cy='0' r='11'/%3E%3Ccircle cx='72' cy='0' r='5.5'/%3E%3Ccircle cx='0' cy='72' r='11'/%3E%3Ccircle cx='0' cy='72' r='5.5'/%3E%3Ccircle cx='72' cy='72' r='11'/%3E%3Ccircle cx='72' cy='72' r='5.5'/%3E%3Cpath d='M36 24c5 6 5 11 0 17-5-6-5-11 0-17z'/%3E%3Cpath d='M24 36c6-5 11-5 17 0-6 5-11 5-17 0z'/%3E%3Ccircle cx='36' cy='36' r='3.4'/%3E%3C/g%3E%3Cg fill='%23f7e3b5'%3E%3Ccircle cx='0' cy='0' r='1.8'/%3E%3Ccircle cx='72' cy='0' r='1.8'/%3E%3Ccircle cx='0' cy='72' r='1.8'/%3E%3Ccircle cx='72' cy='72' r='1.8'/%3E%3Ccircle cx='36' cy='36' r='1.5'/%3E%3Ccircle cx='36' cy='0' r='1.1'/%3E%3Ccircle cx='0' cy='36' r='1.1'/%3E%3Ccircle cx='72' cy='36' r='1.1'/%3E%3Ccircle cx='36' cy='72' r='1.1'/%3E%3C/g%3E%3C/svg%3E")}
+
+/* ═ the envelope: every part is a stage-level box the size of the envelope, sharing one
+   transform, so the card can slide between the face and the pocket by z-index alone ═ */
+.ep{position:absolute;left:130px;top:907px;width:820px;height:547px;transform-origin:50% 50%}
+.face{border-radius:3px;overflow:hidden;background:linear-gradient(158deg,#2a0710,#120306 82%);
+  border:2px solid var(--gold-line);
+  box-shadow:0 80px 160px rgba(0,0,0,.85),0 20px 50px rgba(0,0,0,.6),inset 0 0 140px rgba(0,0,0,.7)}
+.face .ajrak{opacity:.09}
+.pocket-in{position:absolute;inset:0;border-radius:3px;overflow:hidden;
+  clip-path:polygon(0 0,0 100%,100% 100%,100% 0,50% 60%);
+  background:linear-gradient(158deg,#b32a46,#7d1a30 88%);box-shadow:inset 0 40px 80px rgba(50,8,20,.45)}
+.pocket-in .ajrak{opacity:.1}
+.pocket-in::after{content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to bottom right,transparent calc(50% - 1.4px),rgba(247,227,181,.75) 50%,transparent calc(50% + 1.4px)) left top/50.2% 60% no-repeat,
+    linear-gradient(to bottom left,transparent calc(50% - 1.4px),rgba(247,227,181,.75) 50%,transparent calc(50% + 1.4px)) right top/50.2% 60% no-repeat}
+.rule{position:absolute;inset:16px;border:2px solid rgba(247,227,181,.6)}
+.rule::after{content:'';position:absolute;inset:9px;border:1px solid var(--gold-hair)}
+.flap-in{position:absolute;top:0;left:0;width:100%;height:60%;transform-origin:top center;
+  clip-path:polygon(0 0,100% 0,50% 100%);overflow:hidden;
+  background:linear-gradient(200deg,#9b2340,#661527 90%)}
+.flap-in.back{background:linear-gradient(20deg,#5a1222,#7d1a30 90%)}
+.flap-in .ajrak{opacity:.1}
+.seal{position:absolute;left:50%;top:56%;width:200px;height:200px;margin:-100px 0 0 -100px;
+  filter:drop-shadow(0 14px 28px rgba(20,2,8,.65))}
+.seal svg{width:100%;height:100%;overflow:visible}
+
+/* ═ the card ═ */
+#card{position:absolute;left:110px;width:860px;height:1213px;transform-origin:50% 50%}
+#card .art{position:absolute;inset:0;border-radius:3px;overflow:hidden;
+  background:url(../../src/assets/card-web.webp) no-repeat center/cover;
+  box-shadow:0 50px 110px rgba(12,1,5,.8),0 0 0 2px var(--gold-line)}
+#card .gilt{position:absolute;inset:-22px;border:1.5px solid var(--gold-line);border-radius:6px}
+#card .sheen{position:absolute;inset:0;mix-blend-mode:screen;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,236,190,.0) 42%,rgba(255,236,190,.34) 50%,rgba(255,236,190,0) 58%,transparent 62%);
+  background-size:300% 100%}
+/* the leaf of gold over the date line, as on the site — measured in percent of the card */
+#band{position:absolute;left:15%;top:74.5%;width:70%;height:4.9%}
+
+/* ═ schedule ═ */
+.thread{position:absolute;left:246px;width:3px;
+  background:linear-gradient(180deg,transparent,var(--gold-line) 6%,var(--gold-line) 94%,transparent)}
+.row{position:absolute;left:0;right:0;height:170px}
+.row .tm{position:absolute;right:calc(1080px - 196px);top:46px;white-space:nowrap;
+  font-family:'Cormorant SC',serif;font-weight:700;font-size:42px;letter-spacing:.06em;direction:ltr}
+.row .ln{position:absolute;left:216px;top:10px;width:64px;height:112px}
+.row.big .ln{left:205px;top:0;width:86px;height:150px}
+.row .pool{position:absolute;left:248px;top:66px;width:230px;height:230px;margin:-115px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,196,97,.32),rgba(255,170,80,.08) 45%,transparent 70%)}
+.row .ev{position:absolute;left:320px;right:40px;top:30px}
+.row .en{font-size:48px;font-weight:600;line-height:1.1}
+.row .sdl{font-size:44px;line-height:1.35;color:var(--gold-p);text-align:left}
+.row.big .en{font-family:'Italianno',cursive;font-weight:400;font-size:132px;line-height:.85;margin-left:-.12em}
+.row.big .sdl{font-weight:600;font-size:56px}
+.ln-cap{fill:#c9a35e}.ln-metal{stroke:#c9a35e}
+.ln-rib{fill:none;stroke:#e3c27f;stroke-width:1}
+.ln-glass{fill:#2a0b18;stroke:#a8834a;stroke-width:.6}
+.ln-lit{fill:url(#lanternGlass)}
+.ln-flame{fill:#fff6dc}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="sky" id="sky">
+    <i class="sky-dusk"></i><i class="sky-night"></i>
+    <div class="sky-stars" id="stars"></div>
+    <div class="sky-moon" id="moon"><i></i></div>
+    <i class="sky-haze"></i>
+    <svg class="sky-city" id="city" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <radialGradient id="lanternGlass" cx=".5" cy=".55" r=".6">
+          <stop offset="0" stop-color="#fff4cf"/><stop offset=".45" stop-color="#ffc461"/><stop offset="1" stop-color="#c0601c"/>
+        </radialGradient>
+        <radialGradient id="wax" cx="36%" cy="28%">
+          <stop offset="0%" stop-color="#f9ecc9"/><stop offset="42%" stop-color="#c9a35e"/><stop offset="100%" stop-color="#77571f"/>
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- ── opening: the names over the envelope ── -->
+  <div id="titles" style="position:relative;z-index:3">
+    <div class="col" id="tBis" style="top:196px;font-family:'Noto Naskh Arabic',serif;font-size:50px;color:var(--gold-p);direction:rtl">بسم الله الرحمٰن الرحيم</div>
+    <div class="col sc" id="tKick" style="top:322px;font-size:34px;letter-spacing:.32em;color:var(--gold-l);padding-left:.32em">Baarat &amp; Rukhsati</div>
+    <div class="col it" id="tNames" style="top:368px;font-size:168px"><span class="gf">Tashkeen &amp; Anusha</span></div>
+    <div class="col sd" id="tSd" style="top:548px;font-size:64px;color:var(--gold-p)">تاشقين ۽ انوشا</div>
+    <div class="col" id="tInv" style="top:672px;font-size:36px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-p);opacity:.8;padding-left:.2em">Request the honour of your presence</div>
+  </div>
+
+  <div class="ep face" id="eFace"><i class="ajrak"></i></div>
+  <div class="ep" id="eFlapBack"><div class="flap-in back"><i class="ajrak"></i></div></div>
+  <div id="card">
+    <i class="gilt"></i>
+    <div class="art"><canvas id="band"></canvas><i class="sheen"></i></div>
+  </div>
+  <div class="ep" id="ePocket"><div class="pocket-in"><i class="ajrak"></i></div><div class="rule"></div></div>
+  <div class="ep" id="eFlap"><div class="flap-in"><i class="ajrak"></i></div></div>
+  <div class="ep" id="eSeal" style="pointer-events:none">
+    <div class="seal" id="seal">
+      <svg viewBox="0 0 100 100">
+        <path fill="url(#wax)" d="M50 11c9-3 15 5 21 7s14-1 17 7-3 14-2 21 8 13 3 20-13 5-19 11-6 13-15 15-12-7-20-8-14 3-19-4 0-13-2-21-8-13-5-20 12-8 17-13 6-14 15-15 6 1 9 0Z"/>
+        <path d="M50 21a29 29 0 1 0 .1 0Z" fill="none" stroke="#5a3f16" stroke-width=".7" opacity=".5"/>
+        <path d="M50 24l2.6 6.1L59 32.6l-6.4 2.5L50 41l-2.6-5.9L41 32.6l6.4-2.5z" fill="#4a3411" opacity=".42"/>
+        <text x="50" y="62" text-anchor="middle" font-family="Cormorant SC,serif" font-size="21" font-weight="700" letter-spacing="1.5" fill="#46300f" opacity=".9">T&amp;A</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── the card's caption ── -->
+  <div id="save">
+    <div class="col sc" style="top:150px;font-size:38px;letter-spacing:.34em;color:var(--gold-l);padding-left:.34em">Save the date</div>
+  </div>
+
+  <!-- ── the evening, hour by hour ── -->
+  <div id="sched">
+    <div class="col sc" id="sKick" style="top:150px;font-size:34px;letter-spacing:.24em;color:var(--gold-l);padding-left:.24em">Sunday, 27 December 2026</div>
+    <div class="col it" id="sTitle" style="top:196px;font-size:170px"><span class="gf">The Evening</span></div>
+    <div class="col sd" id="sSd" style="top:380px;font-size:56px;color:var(--gold-p)">ڏينهن جي ترتيب</div>
+    <div class="thread" id="thread" style="top:560px;height:860px"></div>
+    <div id="rows"></div>
+  </div>
+
+  <!-- ── farewell ── -->
+  <div id="close">
+    <div class="col" id="c0" style="top:320px"><img src="../../src/assets/orn-star.webp" style="width:84px"></div>
+    <div class="col it" id="c1" style="top:410px;font-size:150px"><span class="gf">With love and prayers</span></div>
+    <div class="col sd" id="c2" style="top:568px;font-size:72px;color:var(--gold-p)">دعائن سان</div>
+    <div class="col" id="c3" style="top:710px"><img src="../../src/assets/orn-band.webp" style="width:640px;opacity:.95"></div>
+    <div class="col sc" id="c4" style="top:810px;font-size:44px;letter-spacing:.14em;color:var(--gold-p);font-weight:700">Sunday · 27 December 2026</div>
+    <div class="col" id="c5" style="top:880px;font-size:40px;font-style:italic;color:var(--chalk-d)">Kindly be seated by 7:00 PM.</div>
+    <div class="col sc" id="c6" style="top:990px;font-size:58px;letter-spacing:.16em;color:var(--chalk);font-weight:700">Nerunkot Hall</div>
+    <div class="col" id="c7" style="top:1066px;font-size:42px;font-style:italic;color:var(--gold-p)">Qasimabad · Hyderabad</div>
+    <div class="col sd" id="c8" style="top:1128px;font-size:46px;color:var(--gold-p);opacity:.9">نيرون ڪوٽ هال، قاسم آباد، حيدرآباد</div>
+    <div class="col" id="c9" style="top:1300px">
+      <div class="sc" style="font-size:30px;letter-spacing:.3em;color:var(--gold-l);padding-left:.3em">RSVP</div>
+      <div style="margin-top:118px;font-size:38px;color:var(--gold-p);letter-spacing:.02em">tashkeensayyad.github.io/Wedding-Invite</div>
+    </div>
+  </div>
+
+  <i class="grain"></i>
+  <i class="vig"></i>
+  <i class="black" id="black"></i>
+</div>
+
+<script>
+// ── the skyline and stars: a straight port of src/components/Sky.jsx, same seeds ──
+const rng = (seed) => () => {
+  seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const W = 1200, H = 240;
+function buildCity(seed, { minH, maxH, mangh, windows, gap }) {
+  const r = rng(seed); const roofs = [], manghs = [], wins = []; let x = -20;
+  while (x < W + 20) {
+    const w = 46 + r() * 80, h = minH + r() * (maxH - minH), top = H - h;
+    roofs.push(`M${x.toFixed(1)} ${H}V${top.toFixed(1)}h${(w * .08).toFixed(1)}v-4h${(w * .84).toFixed(1)}v4h${(w * .08).toFixed(1)}V${H}Z`);
+    if (r() < mangh) {
+      const n = r() < .35 ? 2 : 1;
+      for (let i = 0; i < n; i++) {
+        const mw = 10 + r() * 7, mh = 14 + r() * 16, mx = x + 8 + r() * (w - mw - 16), base = top - 4;
+        manghs.push(`M${mx.toFixed(1)} ${base}V${(base - mh).toFixed(1)}L${(mx + mw).toFixed(1)} ${(base - mh - mw * .75).toFixed(1)}V${base}Z`);
+      }
+    }
+    if (windows) for (let wy = top + 14; wy < H - 14; wy += 20) for (let wx = x + 9; wx < x + w - 12; wx += 15)
+      if (r() < windows) wins.push({ x: wx, y: wy, at: .04 + r() * .9, warm: r() < .7 });
+    x += w + gap * r();
+  }
+  return { roofs: roofs.join(""), manghs: manghs.join(""), wins };
+}
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+(function city() {
+  const svg = document.getElementById("city");
+  const back = buildCity(7, { minH: 70, maxH: 150, mangh: .55, windows: 0, gap: 4 });
+  const front = buildCity(27122026, { minH: 38, maxH: 104, mangh: .7, windows: .34, gap: 10 });
+  el("path", { d: back.roofs + back.manghs }, el("g", { class: "sky-back" }, svg));
+  el("path", { class: "sky-front", d: front.roofs + front.manghs }, svg);
+  const mx = 810;
+  el("path", { class: "sky-front", d:
+    `M${mx} ${H}V${H - 70}h90V${H}Z M${mx + 10} ${H - 70}a35 34 0 0 1 70 0Z M${mx + 44} ${H - 104}h2v-12h-2Z` +
+    `M${mx + 100} ${H}V${H - 150}h10V${H}Z M${mx + 96} ${H - 130}h18v4h-18Z M${mx + 98} ${H - 150}a7 9 0 0 1 14 0Z M${mx + 104.2} ${H - 159}h1.6v-7h-1.6Z` }, svg);
+  // the house dressed for the wedding
+  const x = 262, w = 150, top = H - 128;
+  el("path", { class: "sky-front", d: `M${x} ${H}V${top}h${w}V${H}Z` }, svg);
+  el("path", { class: "sky-front", d: `M${x + w / 2 - 16} ${top}v-10h32v10Z M${x + w / 2 - 18} ${top - 10}a18 16 0 0 1 36 0Z M${x + w / 2 - 1} ${top - 26}h2v-8h-2Z` }, svg);
+  const lights = el("g", { class: "sky-lights", style: "--at:.1" }, svg);
+  for (let sx = x + 6; sx <= x + w - 6; sx += 9) { const len = 40 + ((sx * 7) % 50); for (let y = top + 6; y < top + len; y += 6) el("circle", { cx: sx, cy: y, r: 1.25 }, lights); }
+  for (let i = 0; i < 5; i++) { const x0 = x + (w / 5) * i, x1 = x0 + w / 5; for (let t = .08; t < 1; t += .12) el("circle", { cx: x0 + (x1 - x0) * t, cy: top + 4 + Math.sin(Math.PI * t) * 12, r: 1.4 }, lights); }
+  const wg = el("g", { class: "sky-wins" }, svg);
+  front.wins.filter((w) => !(w.x > 256 && w.x < 416) && !(w.x > 804 && w.x < 916)).forEach((w) =>
+    el("rect", { x: w.x, y: w.y, width: 5, height: 8, rx: 2.5, ry: 2.5, class: w.warm ? "" : "cool", style: `--at:${w.at}` }, wg));
+  const sr = rng(1226), stars = document.getElementById("stars");
+  for (let i = 0; i < 140; i++) {
+    const s = document.createElement("i"), size = sr() < .12 ? 4.4 : 2 + sr() * 1.6;
+    s.style.cssText = `left:${sr() * 100}%;top:${sr() * 100}%;width:${size}px;height:${size}px;--at:${.18 + sr() * .62};--o:${.45 + sr() * .55}`;
+    stars.appendChild(s);
+  }
+})();
+
+// ── the lanterns ──
+const LANTERN = `<svg viewBox="0 0 40 70"><circle cx="20" cy="4" r="3" class="ln-metal" fill="none" stroke-width="1.4"/>
+<path d="M12 16c0-6 4-9 8-9s8 3 8 9Z" class="ln-cap"/><path d="M9 16h22l-2 3H11Z" class="ln-cap"/>
+<path d="M11 19h18l4 15-4 15H11l-4-15Z" class="ln-glass"/><path d="M11 19h18l4 15-4 15H11l-4-15Z" class="ln-lit"/>
+<path d="M20 26c3 4 3 8 0 11-3-3-3-7 0-11Z" class="ln-flame"/>
+<path d="M11 19l-4 15 4 15M29 19l4 15-4 15M15 19v30M25 19v30M7 34h26" class="ln-rib"/>
+<path d="M11 49h18l-3 4H14Z" class="ln-cap"/><path d="M17 53h6l-3 7Z M20 60v6" class="ln-cap"/><circle cx="20" cy="67" r="1.6" class="ln-cap"/></svg>`;
+// the schedule, word for word from src/i18n.js (en and sd)
+const SCHED = [
+  ["7:00 PM", "Guests arrive", "مهمان تشريف آڻين"],
+  ["8:00 PM", "Entrance of the bride & groom", "گهوٽ ۽ ڪنوار جي اچڻ"],
+  ["9:00 PM", "Dinner is served", "ماني"],
+  ["10:30 PM", "Rasms", "رسمون"],
+  ["12:00 AM", "Rukhsati", "رخصتي"],
+];
+const ROW_Y = [566, 738, 910, 1082, 1250];
+const rowsEl = document.getElementById("rows");
+const rows = SCHED.map(([tm, en, sd], i) => {
+  const big = i === SCHED.length - 1;
+  const r = document.createElement("div");
+  r.className = "row" + (big ? " big" : "");
+  r.style.top = ROW_Y[i] + "px";
+  r.innerHTML = `<i class="pool"></i><div class="tm">${tm}</div><div class="ln">${LANTERN}</div>
+    <div class="ev"><div class="en">${big ? `<span class="gf">${en}</span>` : en.replace("&", "&amp;")}</div><div class="sdl sd">${sd}</div></div>`;
+  rowsEl.appendChild(r);
+  return { r, pool: r.querySelector(".pool"), tm: r.querySelector(".tm"), lit: r.querySelector(".ln-lit"),
+    flame: r.querySelector(".ln-flame"), ev: r.querySelector(".ev") };
+});
+
+// ── the gold leaf over the date, and the scratch that lifts it ──
+const band = document.getElementById("band");
+const BW = 602 * 2, BH = 59 * 2;
+band.width = BW; band.height = BH;
+const bctx = band.getContext("2d");
+// a hand's zigzag across the leaf: down-strokes leaning right, as a thumbnail scratches
+const STROKE = (() => {
+  const pts = []; let x = -30, down = true;
+  while (x < BW + 60) { pts.push([x, down ? 10 : BH - 10]); x += 44; down = !down; }
+  const segs = []; let total = 0;
+  for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(l); total += l; }
+  return { pts, segs, total };
+})();
+function drawBand(s) {
+  bctx.globalCompositeOperation = "source-over";
+  bctx.clearRect(0, 0, BW, BH);
+  const g = bctx.createLinearGradient(0, 0, 0, BH);
+  g.addColorStop(0, "#f8e6b8"); g.addColorStop(.42, "#e6c47e"); g.addColorStop(.72, "#c9a35e"); g.addColorStop(1, "#a8834a");
+  bctx.fillStyle = g; bctx.fillRect(0, 0, BW, BH);
+  // the leaf's own fine texture: a soft diagonal shimmer and hairlines in from each edge
+  const sh = bctx.createLinearGradient(0, 0, BW, BH);
+  sh.addColorStop(0, "rgba(255,255,255,0)"); sh.addColorStop(.48, "rgba(255,248,220,.35)"); sh.addColorStop(.56, "rgba(255,255,255,0)");
+  bctx.fillStyle = sh; bctx.fillRect(0, 0, BW, BH);
+  bctx.strokeStyle = "rgba(110,70,20,.45)"; bctx.lineWidth = 2;
+  bctx.strokeRect(10, 10, BW - 20, BH - 20);
+  if (s <= 0) return;
+  bctx.globalCompositeOperation = "destination-out";
+  bctx.lineCap = "round"; bctx.lineJoin = "round"; bctx.lineWidth = 64;
+  bctx.beginPath();
+  const { pts, segs, total } = STROKE;
+  let left = s * total;
+  bctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length && left > 0; i++) {
+    const u = Math.min(1, left / segs[i - 1]);
+    bctx.lineTo(pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * u, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * u);
+    left -= segs[i - 1];
+  }
+  bctx.stroke();
+}
+
+// ── time ──
+const C = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => C((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const ei = (x) => x * x * x;
+const eio = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const lerp = (a, b, u) => a + (b - a) * u;
+const $ = (id) => document.getElementById(id);
+const fadeUp = (node, t, at, dur = 1.1, dist = 28) => {
+  const u = eo(seg(t, at, at + dur));
+  node.style.opacity = u; node.style.transform = `translateY(${(1 - u) * dist}px)`;
+  node.style.filter = u < 1 ? `blur(${(1 - u) * 6}px)` : "none";
+};
+const LIGHT = [16.2, 17.5, 18.8, 20.1, 21.5];
+const DURATION = 32;
+
+window.DURATION = DURATION;
+window.render = function (t) {
+  // the sky: dusk while the envelope opens, night falling as the schedule lights, midnight at the farewell
+  const p = lerp(0, .06, seg(t, 0, 8)) + .74 * eio(seg(t, 13.6, 22)) + .2 * eio(seg(t, 22, 26.5));
+  $("sky").style.setProperty("--p", p.toFixed(4));
+  const moon = $("moon");
+  moon.style.opacity = C(p * 4 - .3);
+  moon.style.bottom = lerp(150, 470, eo(C(p))) + "px";
+  $("city").style.transform = `translateX(${lerp(0, 50, t / DURATION)}px)`;
+
+  // opening titles
+  fadeUp($("tBis"), t, .5, 1.6);
+  fadeUp($("tKick"), t, .9, 1.6);
+  fadeUp($("tNames"), t, 1.2, 1.8, 36);
+  fadeUp($("tSd"), t, 1.7, 1.6);
+  fadeUp($("tInv"), t, 2.1, 1.6);
+  const tOut = eio(seg(t, 4.9, 6.0));
+  $("titles").style.opacity = 1 - tOut;
+  $("titles").style.transform = `translateY(${-60 * tOut}px)`;
+
+  // the envelope lands, the seal is pressed and lifts, the flap opens, then it sinks away
+  const land = eo(seg(t, .3, 2.3));
+  const sink = ei(seg(t, 6.4, 7.9));
+  const envT = `translateY(${(1 - land) * 140 + sink * 760}px) scale(${lerp(.86, 1, land)})`;
+  const envO = land * (1 - sink);
+  for (const id of ["eFace", "eFlapBack", "ePocket", "eFlap", "eSeal"]) {
+    $(id).style.transform = envT; $(id).style.opacity = envO;
+  }
+  const press = seg(t, 3.0, 3.25), lift = eo(seg(t, 3.3, 4.0));
+  const seal = $("seal");
+  seal.style.transform = `translateY(${-40 * lift}px) scale(${1 - .07 * press * (1 - lift) + .14 * lift})`;
+  seal.style.opacity = 1 - lift;
+  const a = 177 * eio(seg(t, 3.8, 5.2));
+  const front = a < 90;
+  $("eFlap").style.visibility = front ? "visible" : "hidden";
+  $("eFlapBack").style.visibility = front ? "hidden" : "visible";
+  const flapT = `perspective(1800px) rotateX(${-a}deg)`;
+  $("eFlap").firstElementChild.style.transform = flapT;
+  $("eFlapBack").firstElementChild.style.transform = flapT;
+
+  // the card: out of the pocket, then up to full size over the city
+  const rise = eio(seg(t, 4.9, 6.5)), grow = eio(seg(t, 6.35, 8.4));
+  const k0 = 326 / 860, smallCY = 1191, outCY = smallCY - 535, heroCY = 930;
+  const push = lerp(1, 1.035, seg(t, 8.4, 13.8));
+  let k = lerp(k0, 1, grow) * push;
+  let cy = lerp(smallCY - 535 * rise, heroCY, grow);
+  const exit = eio(seg(t, 13.6, 15.0));
+  cy -= 220 * exit; k *= 1 - .06 * exit;
+  const card = $("card");
+  card.style.top = (cy - 606.5) + "px";
+  card.style.transform = `scale(${k})`;
+  // hidden until the envelope has landed: through a half-faded envelope it would show
+  card.style.opacity = (t < 2.3 ? 0 : 1) * (1 - exit);
+  card.style.zIndex = t < 6.45 ? "" : 5;
+  card.style.visibility = exit >= 1 ? "hidden" : "visible";
+  card.querySelector(".gilt").style.opacity = grow;
+  const sh = seg(t, 8.5, 10.2);
+  const sheen = card.querySelector(".sheen");
+  sheen.style.backgroundPosition = `${lerp(100, -10, eio(sh))}% 0`;
+  sheen.style.opacity = sh > 0 && sh < 1 ? 1 : 0;
+  // the date: under gold until it is scratched free
+  fadeUp($("save"), t, 9.2, 1.2, 18);
+  $("save").style.opacity *= 1 - exit;
+  drawBand(eio(seg(t, 10.6, 12.1)));
+  band.style.opacity = 1 - seg(t, 12.0, 12.5);
+
+  // the evening, hour by hour
+  const sIn = (at, d) => fadeUp(d, t, at, 1.2);
+  const sOut = eio(seg(t, 23.1, 24.0));
+  $("sched").style.opacity = 1 - sOut;
+  $("sched").style.transform = `translateY(${-50 * sOut}px)`;
+  $("sched").style.visibility = t < 14 || sOut >= 1 ? "hidden" : "visible";
+  sIn(14.4, $("sKick")); sIn(14.7, $("sTitle")); sIn(15.0, $("sSd"));
+  const th = eo(seg(t, 15.0, 16.4));
+  $("thread").style.clipPath = `inset(0 0 ${100 - th * 100}% 0)`;
+  rows.forEach((row, i) => {
+    const appear = eo(seg(t, 15.2 + i * .14, 16.2 + i * .14));
+    const lit = eo(seg(t, LIGHT[i], LIGHT[i] + .9));
+    row.r.style.opacity = appear;
+    row.r.style.transform = `translateY(${(1 - appear) * 22}px)`;
+    row.lit.style.opacity = lit;
+    row.flame.style.opacity = eo(seg(t, LIGHT[i] + .25, LIGHT[i] + 1.1));
+    row.pool.style.opacity = lit;
+    row.tm.style.color = `rgba(247,227,181,${lerp(.4, 1, lit)})`;
+    row.ev.style.opacity = lerp(.42, 1, lit);
+  });
+
+  // farewell
+  const cOn = t > 23.6;
+  $("close").style.visibility = cOn ? "visible" : "hidden";
+  [24.0, 24.3, 24.75, 25.2, 25.6, 25.95, 26.4, 26.7, 27.0, 27.6].forEach((at, i) => fadeUp($("c" + i), t, at, 1.3));
+
+  $("black").style.opacity = 1 - eo(seg(t, 0, .8)) + ei(seg(t, DURATION - 1.2, DURATION));
+};
+
+window.ready = (async () => {
+  await Promise.all([...document.images].map((im) => im.decode().catch(() => {})));
+  const art = new Image(); art.src = "../../src/assets/card-web.webp"; await art.decode();
+  await document.fonts.load("50px 'Noto Naskh Arabic'", "بسم");
+  await document.fonts.load("64px Lateef", "تاشقين");
+  await document.fonts.load("600 56px Lateef", "رخصتي");
+  await document.fonts.load("168px Italianno", "T");
+  await document.fonts.load("600 34px 'Cormorant SC'", "B");
+  await document.fonts.load("700 34px 'Cormorant SC'", "B");
+  await document.fonts.load("italic 40px 'Cormorant Garamond'", "K");
+  await document.fonts.load("600 48px 'Cormorant Garamond'", "G");
+  await document.fonts.load("400 48px 'Cormorant Garamond'", "G");
+  await document.fonts.ready;
+  return true;
+})();
+const q = new URLSearchParams(location.search).get("t");
+render(q ? +q : 0);
+</script>
+</body>
+</html>
