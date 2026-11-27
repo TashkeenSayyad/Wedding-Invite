@@ -4,17 +4,17 @@
 There are two invitations now, one from each family:
 
   * the groom's side (the standard site, and card-print.png / card-web.webp):
-        JALLAL HYDER & RUBINA / INVITE YOU TO THE / Baarat & Rukhsati /
-        TASHKEEN / their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz
+        JALLAL HYDER SHAH BUKHARI & RUBINA SYED / INVITE YOU TO THE / Baarat & Rukhsati /
+        TASHKEEN / their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz Nizamani
   * the bride's side (the /bridal/ site, and card-print-bridal.png / card-web-bridal.webp):
-        BARKAT ALI & MUMTAZ / INVITE YOU TO THE / Baarat & Rukhsati /
-        ANUSHA / their daughter / & / TASHKEEN / son of Jallal Hyder & Rubina
+        BARKAT ALI & MUMTAZ NIZAMANI / INVITE YOU TO THE / Baarat & Rukhsati /
+        ANUSHA / their daughter / & / TASHKEEN / son of Jallal Hyder Shah Bukhari & Rubina Syed
 
 "TOGETHER WITH THEIR FAMILIES" is lifted and the hosts set in its place, on two lines of the same
 small caps at the same size, tracking and gold, in the clear ground between the bismillah and the
 title, the second a step smaller. "their son" / "their daughter" are set in the italic of the line they replace.
 
-The two names and "son of Jallal Hyder & Rubina" are not re-typeset at all on the bride's card:
+The two names are not re-typeset at all on the bride's card:
 each is lifted off its own ground as ink (the line minus the gradient under it) and laid onto
 the ground of the place it moves to. The ground is a smooth vertical gradient (see CLAUDE.md), so
 the type moves and the wine under it stays where it was. Nothing below the second subtitle moves,
@@ -42,9 +42,14 @@ ORIGINAL = "89d2b1b"   # "Baarat" over "& Rukhsati", "TOGETHER WITH THEIR FAMILI
 
 OLD_KICKER = "TOGETHER WITH THEIR FAMILIES"
 OLD_SUB = "son of Jallal Hyder & Rubina"
+OLD_SUB2 = "daughter of Barkat Ali & Mumtaz"
+# The parents' full names, as the user gave them: the host line names the inviting parents in
+# full, and the line under the other child names that child's parents in full.
 SIDES = {
-    "groom": dict(hosts="JALLAL HYDER & RUBINA", sub="their son", swap=False, suffix=""),
-    "bride": dict(hosts="BARKAT ALI & MUMTAZ", sub="their daughter", swap=True, suffix="-bridal"),
+    "groom": dict(hosts="JALLAL HYDER SHAH BUKHARI & RUBINA SYED", sub="their son",
+                  other="daughter of Barkat Ali & Mumtaz Nizamani", swap=False, suffix=""),
+    "bride": dict(hosts="BARKAT ALI & MUMTAZ NIZAMANI", sub="their daughter",
+                  other="son of Jallal Hyder Shah Bukhari & Rubina Syed", swap=True, suffix="-bridal"),
 }
 SECOND = "INVITE YOU TO THE"
 
@@ -53,10 +58,12 @@ SECOND = "INVITE YOU TO THE"
 CUTS = [
     dict(path="public/assets/card-print.png", fmt="png", centre=596, cols=(296, 896),
          bis=(505, 528), bis_up=5, title_top=613, kicker=(578, 594), kicker_cols=(336, 855),
-         name1=(860, 904), sub1=(940, 969), sub1_cols=(432, 757), name2=(1070, 1114), sub2=(1150, 1179)),
+         name1=(860, 904), sub1=(940, 969), sub1_cols=(432, 757), name2=(1070, 1114), sub2=(1150, 1179),
+         sub2_cols=(406, 785), host_max=660),
     dict(path="src/assets/card-web.webp", fmt="webp", centre=450, cols=(225, 675),
          bis=(382, 399), bis_up=4, title_top=464, kicker=(437, 449), kicker_cols=(247, 653),
-         name1=(650, 683), sub1=(710, 732), sub1_cols=(327, 571), name2=(809, 842), sub2=(869, 891)),
+         name1=(650, 683), sub1=(710, 732), sub1_cols=(327, 571), name2=(809, 842), sub2=(869, 891),
+         sub2_cols=(307, 593), host_max=499),
 ]
 PAD = 5
 
@@ -148,6 +155,9 @@ def build(cut, side):
     bis_end = b1 - cut["bis_up"]
     # the hosts at the kicker's own size; "invite you to the" a step smaller under them
     small = face(CAPS, round(size * 0.82))
+    # the kicker's own tracking, eased only as far as a longer line needs to stay clear of the arch
+    _, hb = render(side["hosts"], font)
+    track = min(track, (cut["host_max"] - (hb[2] - hb[0])) / (len(side["hosts"]) - 1))
     lines = [render(side["hosts"], font, track), render(SECOND, small, track * 0.82)]
     gap = round(cap * 0.6)
     hs = [l[1][3] - l[1][1] for l in lines]
@@ -161,23 +171,28 @@ def build(cut, side):
 
     # ── the names, and the line under the host's child ──
     sramp = ink_ramp(a, cut["sub1"], cut["sub1_cols"])
+    sramp2 = ink_ramp(a, cut["sub2"], cut["sub2_cols"])
     want = cut["sub1_cols"][1] - cut["sub1_cols"][0] + 1
     isize = min(range(8, 90), key=lambda s: abs((lambda bb: bb[2] - bb[0])(render(OLD_SUB, face(ITALIC, s))[1]) - want))
     ifont = face(ITALIC, isize)
     _, ref = render(OLD_SUB, ifont)
     m, nb = render(side["sub"], ifont)
     sub_top = cut["sub1"][0] + (nb[1] - ref[1])          # same baseline as the line it replaces
+    _, ref2 = render(OLD_SUB2, ifont)
+    m2, nb2 = render(side["other"], ifont)
+    sub2_top = cut["sub2"][0] + (nb2[1] - ref2[1])
 
     if side["swap"]:
         n1, s1 = lift(a, cut["name1"], cols), lift(a, cut["sub1"], cols)
         n2 = lift(a, cut["name2"], cols)
-        lift(a, cut["sub2"], cols)
         lay(a, n2, cut["name1"][0], cols)                   # ANUSHA first
         lay(a, n1, cut["name2"][0], cols)                   # then TASHKEEN
-        lay(a, s1, cut["sub2"][0], cols)                    # with "son of Jallal Hyder & Rubina"
     else:
         lift(a, cut["sub1"], cols)
+    lift(a, cut["sub2"], cols)
     place(a, m, nb, sramp, sub_top, c)
+    l, r = place(a, m2, nb2, sramp2, sub2_top, c)           # the other child's parents, in full
+    assert cols[0] < l and r < cols[1], f"{cut['path']}: '{side['other']}' outruns the card"
 
     out = os.path.join(ROOT, cut["path"].replace(".", side["suffix"] + ".", 1) if side["suffix"] else cut["path"])
     im = Image.fromarray(np.clip(a, 0, 255).round().astype(np.uint8))
@@ -185,7 +200,7 @@ def build(cut, side):
         im.save(out, format="PNG", optimize=True)
     else:
         im.save(out, format="WEBP", quality=90, method=6)
-    print(f"{os.path.relpath(out, ROOT)}: hosts {size}px +{track:.1f}px tracking, '{side['sub']}' {isize}px italic")
+    print(f"{os.path.relpath(out, ROOT)}: hosts {size}px +{track:.1f}px tracking, italic {isize}px")
 
 
 for name, side in SIDES.items():
