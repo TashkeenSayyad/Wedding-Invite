@@ -43,9 +43,9 @@ ORIGINAL = "89d2b1b"   # "Baarat" over "& Rukhsati", "TOGETHER WITH THEIR FAMILI
 OLD_KICKER = "TOGETHER WITH THEIR FAMILIES"
 OLD_SUB = "son of Jallal Hyder & Rubina"
 OLD_SUB2 = "daughter of Barkat Ali & Mumtaz"
-# The parents' names as the user gave them. Syed and Nizamani are the families' names, not part
-# of either parent's own name, so they stand on a line of their own under the hosts — and are not
-# attached to the parents in the "son of / daughter of" line.
+# The parents' names as the user gave them. Syed and Nizamani are the families' last names, and
+# the user asked for them on a line of their own under the hosts rather than run on after a
+# parent's name — so the "son of / daughter of" lines carry the parents' names without them.
 SIDES = {
     "groom": dict(hosts="JALLAL HYDER SHAH BUKHARI & RUBINA", family="SYED", sub="their son",
                   other=OLD_SUB2, swap=False, suffix=""),

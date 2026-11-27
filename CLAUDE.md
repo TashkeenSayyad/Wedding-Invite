@@ -35,10 +35,10 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   link preview and the manifest. See *Two invitations* below for how it is built.
 - **Groom:** Tashkeen Syed, son of **Jallal Hyder Shah Bukhari & Rubina** — the **Syed** family
 - **Bride:** Anusha Nizamani, daughter of **Barkat Ali & Mumtaz** — the **Nizamani** family
-- **Syed and Nizamani are the families' names, set on a line of their own under the hosts**
-  (the user: "Syed and Nizamani below as they are nicknames"). They are never attached to a
-  parent ("Rubina Syed", "Mumtaz Nizamani" was built and corrected), and the "son of / daughter
-  of" lines carry the parents' names without them. `cardText` says "The Syed family, Jallal Hyder
+- **Syed and Nizamani are the families' last names, set on a line of their own under the
+  hosts** (the user: "Syed and Nizamani below", "last names i meant"). They are not run on after
+  a parent's name ("Rubina Syed", "Mumtaz Nizamani" was built and corrected), and the "son of /
+  daughter of" lines carry the parents' names without them. `cardText` says "The Syed family, Jallal Hyder
   Shah Bukhari & Rubina, invite you…" / "The Nizamani family, Barkat Ali & Mumtaz, …".
 - The surnames belong to one person each — Syed is Tashkeen's, Nizamani is Anusha's. They are
   never set as a pair ("Syed and Nizamani" under both names was wrong and was corrected).
