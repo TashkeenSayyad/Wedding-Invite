@@ -27,17 +27,19 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   `.ics` UID still says `rukhsati-walima` on purpose — changing it would make a guest's calendar
   treat the evening as a second event.
 - **Two invitations, one from each family (Nov 2026).** The site itself is the groom's family's:
-  the card reads **JALLAL HYDER SHAH BUKHARI & RUBINA SYED / INVITE YOU TO THE / Baarat & Rukhsati /
-  TASHKEEN / their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz Nizamani** ("TOGETHER WITH THEIR FAMILIES" is
-  gone). **`/bridal/`** is the bride's family's: **BARKAT ALI & MUMTAZ NIZAMANI** invite, and Anusha is named
+  the card reads **JALLAL HYDER SHAH BUKHARI & RUBINA / SYED / INVITE YOU TO THE / Baarat &
+  Rukhsati / TASHKEEN / their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz** ("TOGETHER WITH THEIR FAMILIES" is
+  gone). **`/bridal/`** is the bride's family's: **BARKAT ALI & MUMTAZ / NIZAMANI** invite, and Anusha is named
   first everywhere — on the card (ANUSHA / their daughter / & / TASHKEEN / son of Jallal Hyder
-  Shah Bukhari & Rubina Syed), the intro, the Sindhi names, the farewell, the h1, the calendar, the RSVP header, the
+  Shah Bukhari & Rubina), the intro, the Sindhi names, the farewell, the h1, the calendar, the RSVP header, the
   link preview and the manifest. See *Two invitations* below for how it is built.
-- **Groom:** Tashkeen Syed, son of **Jallal Hyder Shah Bukhari & Rubina Syed**
-- **Bride:** Anusha Nizamani, daughter of **Barkat Ali & Mumtaz Nizamani**
-- The parents' full names (given by the user, Nov 2026) are on both cards — in the host line and
-  in the "son of / daughter of" line — and in `cardText`. The host line keeps the kicker's size
-  and eases its tracking only as far as the longer groom's line needs to clear the arch.
+- **Groom:** Tashkeen Syed, son of **Jallal Hyder Shah Bukhari & Rubina** — the **Syed** family
+- **Bride:** Anusha Nizamani, daughter of **Barkat Ali & Mumtaz** — the **Nizamani** family
+- **Syed and Nizamani are the families' names, set on a line of their own under the hosts**
+  (the user: "Syed and Nizamani below as they are nicknames"). They are never attached to a
+  parent ("Rubina Syed", "Mumtaz Nizamani" was built and corrected), and the "son of / daughter
+  of" lines carry the parents' names without them. `cardText` says "The Syed family, Jallal Hyder
+  Shah Bukhari & Rubina, invite you…" / "The Nizamani family, Barkat Ali & Mumtaz, …".
 - The surnames belong to one person each — Syed is Tashkeen's, Nizamani is Anusha's. They are
   never set as a pair ("Syed and Nizamani" under both names was wrong and was corrected).
 - **The card artwork carries first names only.** Setting the names on it as TASHKEEN SYED and
@@ -760,11 +762,13 @@ inviting, and for the standard version to have the groom's side inviting. One ap
 - **Cards:** `npm run card` (`scripts/card-hosts.py`) writes all four files from the artwork at
   `89d2b1b`, never from its own output: `card-print.png` / `card-web.webp` (groom's) and
   `card-print-bridal.png` / `card-web-bridal.webp` (bride's). The hosts are set in the kicker's own
-  Cormorant SC, size, tracking and gold, with "invite you to the" a step smaller, in the ground
-  between the bismillah (moved up 5px / 4px toward the star for room) and the title. On the bride's
+  Cormorant SC, size, tracking and gold, with "invite you to the" a step smaller, on three lines (names,
+  family name, "invite you to the") in the ground between the bismillah and the title; the star and
+  bismillah were moved up together (28px print / 21px web) into the open arch to make the room. On the bride's
   card the two names are **moved, not re-typeset**: each is lifted
-  as ink off its own ground and laid onto the ground where it goes; both "son of / daughter of" lines are set in the italic of
-  the line they replace, at its size, baseline and gold. Nothing at or below the date
+  as ink off its own ground and laid onto the ground where it goes; "their son / their daughter" and the bride's card's "son of
+  Jallal Hyder Shah Bukhari & Rubina" are set in the italic of the line they replace, at its size,
+  baseline and gold. The groom's card keeps its original "daughter of Barkat Ali & Mumtaz". Nothing at or below the date
   line moves, so DateMask still holds. `html[data-side=bridal] .cardimg,.letter` swaps the web cut.
 - **Preview:** `npm run og` writes `og-card.jpg` and `og-card-bridal.jpg` (Anusha Nizamani first).
   The bridal page's `og:image` is `og-card-bridal.jpg?v=1`.

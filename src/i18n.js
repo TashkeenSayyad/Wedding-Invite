@@ -12,8 +12,8 @@ export const T = {
     scroll: "Scroll",
     tapRead: "Tap to read",
     cardText: BRIDAL
-      ? "In the name of God, the Most Gracious, the Most Merciful. Barkat Ali & Mumtaz Nizamani invite you to the Baarat & Rukhsati of their daughter Anusha and Tashkeen, son of Jallal Hyder Shah Bukhari & Rubina Syed. Nerunkot Hall, Qasimabad, Hyderabad."
-      : "In the name of God, the Most Gracious, the Most Merciful. Jallal Hyder Shah Bukhari & Rubina Syed invite you to the Baarat & Rukhsati of their son Tashkeen and Anusha, daughter of Barkat Ali & Mumtaz Nizamani. Nerunkot Hall, Qasimabad, Hyderabad.",
+      ? "In the name of God, the Most Gracious, the Most Merciful. The Nizamani family, Barkat Ali & Mumtaz, invite you to the Baarat & Rukhsati of their daughter Anusha and Tashkeen, son of Jallal Hyder Shah Bukhari & Rubina. Nerunkot Hall, Qasimabad, Hyderabad."
+      : "In the name of God, the Most Gracious, the Most Merciful. The Syed family, Jallal Hyder Shah Bukhari & Rubina, invite you to the Baarat & Rukhsati of their son Tashkeen and Anusha, daughter of Barkat Ali & Mumtaz. Nerunkot Hall, Qasimabad, Hyderabad.",
     tapClose: "Tap to close",
     langSwitch: "Read in Sindhi",
     textSize: "Text size",
@@ -114,8 +114,8 @@ export const T = {
     scroll: "هيٺ ڏسجو",
     tapRead: "پڙهڻ لاءِ ڇهجو",
     cardText: BRIDAL
-      ? "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. برڪت علي ۽ ممتاز نظاماڻي اوهان کي پنهنجي ڌيءَ انوشا ۽ تاشقين (جلال حيدر شاهه بخاري ۽ روبينه سيد جو پٽ) جي بارات ۽ رخصتيءَ ۾ دعوت ڏين ٿا. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد."
-      : "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. جلال حيدر شاهه بخاري ۽ روبينه سيد اوهان کي پنهنجي پٽ تاشقين ۽ انوشا (برڪت علي ۽ ممتاز نظاماڻي جي ڌيءَ) جي بارات ۽ رخصتيءَ ۾ دعوت ڏين ٿا. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد.",
+      ? "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. نظاماڻي خاندان، برڪت علي ۽ ممتاز، اوهان کي پنهنجي ڌيءَ انوشا ۽ تاشقين (جلال حيدر شاهه بخاري ۽ روبينه جو پٽ) جي بارات ۽ رخصتيءَ ۾ دعوت ڏين ٿا. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد."
+      : "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. سيد خاندان، جلال حيدر شاهه بخاري ۽ روبينه، اوهان کي پنهنجي پٽ تاشقين ۽ انوشا (برڪت علي ۽ ممتاز جي ڌيءَ) جي بارات ۽ رخصتيءَ ۾ دعوت ڏين ٿا. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد.",
     tapClose: "بند ڪرڻ لاءِ ڇهجو",
     langSwitch: "انگريزيءَ ۾ پڙهجو",
     textSize: "اکرن جي ماپ",

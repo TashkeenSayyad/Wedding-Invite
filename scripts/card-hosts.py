@@ -4,11 +4,11 @@
 There are two invitations now, one from each family:
 
   * the groom's side (the standard site, and card-print.png / card-web.webp):
-        JALLAL HYDER SHAH BUKHARI & RUBINA SYED / INVITE YOU TO THE / Baarat & Rukhsati /
-        TASHKEEN / their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz Nizamani
+        JALLAL HYDER SHAH BUKHARI & RUBINA / SYED / INVITE YOU TO THE / Baarat & Rukhsati /
+        TASHKEEN / their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz
   * the bride's side (the /bridal/ site, and card-print-bridal.png / card-web-bridal.webp):
-        BARKAT ALI & MUMTAZ NIZAMANI / INVITE YOU TO THE / Baarat & Rukhsati /
-        ANUSHA / their daughter / & / TASHKEEN / son of Jallal Hyder Shah Bukhari & Rubina Syed
+        BARKAT ALI & MUMTAZ / NIZAMANI / INVITE YOU TO THE / Baarat & Rukhsati /
+        ANUSHA / their daughter / & / TASHKEEN / son of Jallal Hyder Shah Bukhari & Rubina
 
 "TOGETHER WITH THEIR FAMILIES" is lifted and the hosts set in its place, on two lines of the same
 small caps at the same size, tracking and gold, in the clear ground between the bismillah and the
@@ -43,13 +43,14 @@ ORIGINAL = "89d2b1b"   # "Baarat" over "& Rukhsati", "TOGETHER WITH THEIR FAMILI
 OLD_KICKER = "TOGETHER WITH THEIR FAMILIES"
 OLD_SUB = "son of Jallal Hyder & Rubina"
 OLD_SUB2 = "daughter of Barkat Ali & Mumtaz"
-# The parents' full names, as the user gave them: the host line names the inviting parents in
-# full, and the line under the other child names that child's parents in full.
+# The parents' names as the user gave them. Syed and Nizamani are the families' names, not part
+# of either parent's own name, so they stand on a line of their own under the hosts — and are not
+# attached to the parents in the "son of / daughter of" line.
 SIDES = {
-    "groom": dict(hosts="JALLAL HYDER SHAH BUKHARI & RUBINA SYED", sub="their son",
-                  other="daughter of Barkat Ali & Mumtaz Nizamani", swap=False, suffix=""),
-    "bride": dict(hosts="BARKAT ALI & MUMTAZ NIZAMANI", sub="their daughter",
-                  other="son of Jallal Hyder Shah Bukhari & Rubina Syed", swap=True, suffix="-bridal"),
+    "groom": dict(hosts="JALLAL HYDER SHAH BUKHARI & RUBINA", family="SYED", sub="their son",
+                  other=OLD_SUB2, swap=False, suffix=""),
+    "bride": dict(hosts="BARKAT ALI & MUMTAZ", family="NIZAMANI", sub="their daughter",
+                  other="son of Jallal Hyder Shah Bukhari & Rubina", swap=True, suffix="-bridal"),
 }
 SECOND = "INVITE YOU TO THE"
 
@@ -57,11 +58,11 @@ SECOND = "INVITE YOU TO THE"
 # inside (clear of the arch, and of the faint gold hairline at x=912 / 689 beside the first name).
 CUTS = [
     dict(path="public/assets/card-print.png", fmt="png", centre=596, cols=(296, 896),
-         bis=(505, 528), bis_up=5, title_top=613, kicker=(578, 594), kicker_cols=(336, 855),
+         star=(405, 483), bis=(505, 528), crown_up=28, title_top=613, kicker=(578, 594), kicker_cols=(336, 855),
          name1=(860, 904), sub1=(940, 969), sub1_cols=(432, 757), name2=(1070, 1114), sub2=(1150, 1179),
          sub2_cols=(406, 785), host_max=660),
     dict(path="src/assets/card-web.webp", fmt="webp", centre=450, cols=(225, 675),
-         bis=(382, 399), bis_up=4, title_top=464, kicker=(437, 449), kicker_cols=(247, 653),
+         star=(308, 363), bis=(382, 399), crown_up=21, title_top=464, kicker=(437, 449), kicker_cols=(247, 653),
          name1=(650, 683), sub1=(710, 732), sub1_cols=(327, 571), name2=(809, 842), sub2=(869, 891),
          sub2_cols=(307, 593), host_max=499),
 ]
@@ -148,20 +149,22 @@ def build(cut, side):
     _, bb = render(OLD_KICKER, font)
     track = ((cut["kicker_cols"][1] - cut["kicker_cols"][0] + 1) - (bb[2] - bb[0])) / (len(OLD_KICKER) - 1)
     lift(a, cut["kicker"], (cut["kicker_cols"][0] - 12, cut["kicker_cols"][1] + 12))
-    # the bismillah steps up a few pixels toward the star, which has room to spare, to give the
-    # two host lines the ground between it and the title
-    b0, b1 = cut["bis"]
-    lay(a, lift(a, cut["bis"], cols), b0 - cut["bis_up"], cols)
-    bis_end = b1 - cut["bis_up"]
+    # the star and the bismillah step up together into the open arch above them (its apex ends
+    # far higher), to give the three host lines the ground between the bismillah and the title
+    up = cut["crown_up"]
+    for band in ("star", "bis"):
+        lay(a, lift(a, cut[band], cols), cut[band][0] - up, cols)
+    bis_end = cut["bis"][1] - up
     # the hosts at the kicker's own size; "invite you to the" a step smaller under them
     small = face(CAPS, round(size * 0.82))
     # the kicker's own tracking, eased only as far as a longer line needs to stay clear of the arch
     _, hb = render(side["hosts"], font)
     track = min(track, (cut["host_max"] - (hb[2] - hb[0])) / (len(side["hosts"]) - 1))
-    lines = [render(side["hosts"], font, track), render(SECOND, small, track * 0.82)]
+    lines = [render(side["hosts"], font, track), render(side["family"], font, track),
+             render(SECOND, small, track * 0.82)]
     gap = round(cap * 0.6)
     hs = [l[1][3] - l[1][1] for l in lines]
-    free = (cut["title_top"] - bis_end - 1) - sum(hs) - gap
+    free = (cut["title_top"] - bis_end - 1) - sum(hs) - gap * (len(lines) - 1)
     top = bis_end + 1 + round(free / 2)
     assert free / 2 > cap * 0.7, f"{cut['path']}: the hosts do not fit above the title"
     for (m, b), h in zip(lines, hs):
@@ -189,10 +192,11 @@ def build(cut, side):
         lay(a, n1, cut["name2"][0], cols)                   # then TASHKEEN
     else:
         lift(a, cut["sub1"], cols)
-    lift(a, cut["sub2"], cols)
     place(a, m, nb, sramp, sub_top, c)
-    l, r = place(a, m2, nb2, sramp2, sub2_top, c)           # the other child's parents, in full
-    assert cols[0] < l and r < cols[1], f"{cut['path']}: '{side['other']}' outruns the card"
+    if side["other"] != OLD_SUB2:                            # the groom's card keeps its own line
+        lift(a, cut["sub2"], cols)
+        l, r = place(a, m2, nb2, sramp2, sub2_top, c)       # the other child's parents
+        assert cols[0] < l and r < cols[1], f"{cut['path']}: '{side['other']}' outruns the card"
 
     out = os.path.join(ROOT, cut["path"].replace(".", side["suffix"] + ".", 1) if side["suffix"] else cut["path"])
     im = Image.fromarray(np.clip(a, 0, 255).round().astype(np.uint8))
