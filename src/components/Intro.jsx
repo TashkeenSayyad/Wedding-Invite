@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import DateMask from "./DateMask.jsx";
+import { COUPLE } from "../config.js";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
 
@@ -48,7 +49,7 @@ export default function Intro({ t, lang, guest, onOpened, onTap }) {
       <div className="scene">
         {guest && <div className={"greet" + (lang === "sd" ? " sd-t" : "")}>{t.greet(guest)}</div>}
         <div className="pre-sd">{t.bismillah}</div>
-        <div className="pre">Tashkeen &amp; Anusha</div>
+        <div className="pre">{COUPLE.en}</div>
         <div className={"pre-sub" + (lang === "sd" ? " sd-t" : "")}>{t.invite}</div>
         <div ref={envRef} className={"env" + (open ? " open" : "")} onClick={doOpen}>
           <div className="face"><i className="ajrak" /></div>

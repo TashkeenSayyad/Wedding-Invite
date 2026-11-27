@@ -13,17 +13,44 @@
 const env = (typeof import.meta !== "undefined" && import.meta.env) || {};
 const pick = (v, fallback) => (typeof v === "string" && v.trim() ? v.trim() : fallback);
 
+// ── Which family is inviting ─────────────────────────────────────────────────────────────────
+// The same invitation is published twice. The site itself is the groom's family's — Jallal Hyder
+// & Rubina invite you, and Tashkeen is named first. /bridal/ is the bride's family's — Barkat Ali
+// & Mumtaz invite you, and Anusha is named first, on the card and everywhere the couple is named.
+// bridal/index.html marks itself with data-side="bridal" (it is generated from index.html by
+// scripts/bridal-html.mjs); in Node, where there is no page, this is always the groom's side.
+export const SIDE =
+  typeof document !== "undefined" && document.documentElement.dataset.side === "bridal" ? "bridal" : "groom";
+export const BRIDAL = SIDE === "bridal";
+/** The site's root, relative to the page: public files (the print card, the song, sw.js) live
+ *  there for both sides, and the bridal page is one folder down. */
+export const ROOT_PATH = BRIDAL ? "../" : "./";
+/** The couple, in the order this side names them. */
+export const COUPLE = BRIDAL
+  ? { en: "Anusha & Tashkeen", sd: "انوشا ۽ تاشقين" }
+  : { en: "Tashkeen & Anusha", sd: "تاشقين ۽ انوشا" };
+
 /** Family WhatsApp number, digits only, with country code and no +, e.g. "923001234567".
  *  Left empty, the RSVP still composes its message but WhatsApp asks the guest to pick a
  *  contact — so replies arrive addressed to nobody. */
-export const RSVP_PHONE = pick(env.VITE_RSVP_PHONE, "").replace(/[^0-9]/g, "");
+export const RSVP_PHONE_GROOM = pick(env.VITE_RSVP_PHONE, "").replace(/[^0-9]/g, "");
+/** The bride's family's number, for replies to the /bridal/ invitation. Left empty, those replies
+ *  go to RSVP_PHONE_GROOM instead. */
+export const RSVP_PHONE_BRIDAL = pick(env.VITE_RSVP_PHONE_BRIDAL, "").replace(/[^0-9]/g, "");
+export const RSVP_PHONE = (BRIDAL && RSVP_PHONE_BRIDAL) || RSVP_PHONE_GROOM;
 
 /** Google Apps Script web app URL, ending in /exec. See scripts/rsvp-sheet.gs for the setup.
  *  Left empty, replies queue on each guest's phone and only WhatsApp carries them. */
-export const RSVP_ENDPOINT = pick(env.VITE_RSVP_ENDPOINT, "");
+export const RSVP_ENDPOINT_GROOM = pick(env.VITE_RSVP_ENDPOINT, "");
+/** The bride's family's Sheet, if they keep their own. Left empty, /bridal/ replies go to the same
+ *  Sheet as the groom's side. */
+export const RSVP_ENDPOINT_BRIDAL = pick(env.VITE_RSVP_ENDPOINT_BRIDAL, "");
+export const RSVP_ENDPOINT = (BRIDAL && RSVP_ENDPOINT_BRIDAL) || RSVP_ENDPOINT_GROOM;
 
 /** Where the invitation lives. Used by the guest-link generator, the QR code and the .ics. */
 export const SITE = pick(env.VITE_SITE, "https://tashkeensayyad.github.io/Wedding-Invite/");
+/** This side's own page: the site for the groom's family, SITE + "bridal/" for the bride's. */
+export const PAGE_URL = SITE + (BRIDAL ? "bridal/" : "");
 
 /** Optional. A date by which the family would like to hear back, as a plain string in each
  *  language — the line only appears once both are filled in, so an unset deadline shows nothing
@@ -58,7 +85,7 @@ export const GCAL_URL = (summary, details) =>
   "https://calendar.google.com/calendar/render?action=TEMPLATE" +
   "&dates=" + ICS_START + "/" + ICS_END +
   "&text=" + encodeURIComponent(summary) +
-  "&details=" + encodeURIComponent(details + "\n\n" + SITE) +
+  "&details=" + encodeURIComponent(details + "\n\n" + PAGE_URL) +
   "&location=" + encodeURIComponent(VENUE) +
   "&ctz=Asia/Karachi";
 
@@ -69,6 +96,6 @@ export const GCAL_URL = (summary, details) =>
  *  ffmpeg -i song.mp3 -ac 2 -b:a 96k -map_metadata -1 public/assets/music.mp3
  *  (about 0.7 MB a minute). The credit is read aloud on the mute control. */
 export const MUSIC = {
-  src: "./assets/music.mp3",
+  src: ROOT_PATH + "assets/music.mp3",
   credit: "Alfaaz · instrumental",
 };

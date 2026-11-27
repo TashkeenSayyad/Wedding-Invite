@@ -12,7 +12,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { T } from "../src/i18n.js";
 import { buildIcs } from "../src/ics.js";
-import { MUSIC, RSVP_ENDPOINT, RSVP_PHONE, SITE } from "../src/config.js";
+import { MUSIC, RSVP_ENDPOINT, RSVP_ENDPOINT_BRIDAL, RSVP_PHONE, RSVP_PHONE_BRIDAL, SITE } from "../src/config.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fails = [];
@@ -129,6 +129,14 @@ if (!RSVP_ENDPOINT) {
   warn("config: RSVP_ENDPOINT is empty — replies queue on each guest's phone; only WhatsApp carries them");
 } else if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(RSVP_ENDPOINT)) {
   fail(`config: RSVP_ENDPOINT should be a Google Apps Script /exec URL, got "${RSVP_ENDPOINT}"`);
+}
+
+// the bride's family's own number and Sheet, for /bridal/; empty, they fall back to the ones above
+if (RSVP_PHONE_BRIDAL && !/^[1-9][0-9]{7,14}$/.test(RSVP_PHONE_BRIDAL)) {
+  fail(`config: RSVP_PHONE_BRIDAL "${RSVP_PHONE_BRIDAL}" is not a country code plus number, digits only`);
+}
+if (RSVP_ENDPOINT_BRIDAL && !/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(RSVP_ENDPOINT_BRIDAL)) {
+  fail(`config: RSVP_ENDPOINT_BRIDAL should be a Google Apps Script /exec URL, got "${RSVP_ENDPOINT_BRIDAL}"`);
 }
 
 if (MUSIC.src) {

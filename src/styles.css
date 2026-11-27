@@ -249,6 +249,8 @@ main{position:relative;z-index:1}
   transition:transform .5s ease-out}
 .cardimg{position:absolute;inset:0;background:url(./assets/card-web.webp) no-repeat center/cover;border-radius:3px;
   box-shadow:0 30px 70px rgba(20,2,8,.7),0 0 0 1px var(--gold-line)}
+/* the bride's family's invitation (/bridal/) carries its own card, Anusha named first */
+html[data-side=bridal] .cardimg,html[data-side=bridal] .letter{background-image:url(./assets/card-web-bridal.webp)}
 .sheen{position:absolute;inset:0;border-radius:3px;pointer-events:none;z-index:4;mix-blend-mode:soft-light;
   background:linear-gradient(105deg,transparent 35%,rgba(255,244,214,.55) 48%,rgba(255,244,214,.15) 54%,transparent 64%)
     no-repeat;background-size:260% 100%;background-position:var(--gx,50%) 0;transition:background-position .5s ease-out}
