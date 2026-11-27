@@ -1,3 +1,8 @@
+import { BRIDAL, COUPLE } from "./config.js";
+
+// Two strings name the hosts, and differ by side: the groom's family invites on the site itself,
+// the bride's family on /bridal/ (see SIDE in config.js). Everywhere else the couple is COUPLE,
+// in the order that side names them.
 export const T = {
   en: {
     bismillah: "بسم الله الرحمٰن الرحيم",
@@ -6,7 +11,9 @@ export const T = {
     tapSeal: "Tap the seal",
     scroll: "Scroll",
     tapRead: "Tap to read",
-    cardText: "In the name of God, the Most Gracious, the Most Merciful. Together with their families — the Baarat & Rukhsati of Tashkeen, son of Jallal Hyder & Rubina, and Anusha, daughter of Barkat Ali & Mumtaz. Nerunkot Hall, Qasimabad, Hyderabad.",
+    cardText: BRIDAL
+      ? "In the name of God, the Most Gracious, the Most Merciful. Barkat Ali & Mumtaz invite you to the Baarat & Rukhsati of their daughter Anusha and Tashkeen, son of Jallal Hyder & Rubina. Nerunkot Hall, Qasimabad, Hyderabad."
+      : "In the name of God, the Most Gracious, the Most Merciful. Jallal Hyder & Rubina invite you to the Baarat & Rukhsati of their son Tashkeen and Anusha, daughter of Barkat Ali & Mumtaz. Nerunkot Hall, Qasimabad, Hyderabad.",
     tapClose: "Tap to close",
     langSwitch: "Read in Sindhi",
     textSize: "Text size",
@@ -74,7 +81,7 @@ export const T = {
     calPick: "Add to your calendar",
     calGoogle: "Google Calendar",
     calIcs: "Apple, Outlook & others",
-    calSummary: "Baarat & Rukhsati — Tashkeen & Anusha",
+    calSummary: `Baarat & Rukhsati — ${COUPLE.en}`,
     calDesc: "Kindly be seated by 7:00 PM. The programme begins promptly and follows the schedule exactly, and the evening concludes at 12:00 AM.",
     closeSd: "دعائن سان",
     closeTitle: "With love and prayers",
@@ -87,14 +94,14 @@ export const T = {
     // a guest wrote one, so the shape a counter reads never changes.
     rsvpMsgYes: (g, count, names, note, update) =>
       `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Baarat & Rukhsati ` +
-      `of Tashkeen & Anusha, 27 December 2026.\n` +
+      `of ${COUPLE.en}, 27 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: yes\nHow many: ${count}\n` +
       `${names.length ? "Names: " + names.join(", ") : "Names: not given"}` +
       `${note ? "\nNote: " + note : ""}`,
     rsvpMsgNo: (g, note, update) =>
       `Assalamu alaikum! ${update ? "Updated RSVP" : "RSVP"} for the Baarat & Rukhsati ` +
-      `of Tashkeen & Anusha, 27 December 2026.\n` +
+      `of ${COUPLE.en}, 27 December 2026.\n` +
       `${g ? "Invitation: " + g + "\n" : ""}` +
       `Attending: no\nOur prayers and love are with you both.` +
       `${note ? "\nNote: " + note : ""}`,
@@ -106,7 +113,9 @@ export const T = {
     tapSeal: "مهر کولجو",
     scroll: "هيٺ ڏسجو",
     tapRead: "پڙهڻ لاءِ ڇهجو",
-    cardText: "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. پنهنجن خاندانن سان گڏ — تاشقين (جلال حيدر ۽ روبينه جو پٽ) ۽ انوشا (برڪت علي ۽ ممتاز جي ڌيءَ) جي بارات ۽ رخصتي. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد.",
+    cardText: BRIDAL
+      ? "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. برڪت علي ۽ ممتاز اوهان کي پنهنجي ڌيءَ انوشا ۽ تاشقين (جلال حيدر ۽ روبينه جو پٽ) جي بارات ۽ رخصتيءَ ۾ دعوت ڏين ٿا. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد."
+      : "الله جي نالي سان جيڪو وڏو مهربان، نهايت رحم وارو آهي. جلال حيدر ۽ روبينه اوهان کي پنهنجي پٽ تاشقين ۽ انوشا (برڪت علي ۽ ممتاز جي ڌيءَ) جي بارات ۽ رخصتيءَ ۾ دعوت ڏين ٿا. نيرون ڪوٽ هال، قاسم آباد، حيدرآباد.",
     tapClose: "بند ڪرڻ لاءِ ڇهجو",
     langSwitch: "انگريزيءَ ۾ پڙهجو",
     textSize: "اکرن جي ماپ",
@@ -174,7 +183,7 @@ export const T = {
     calPick: "ڪئلينڊر ۾ رکجو",
     calGoogle: "گوگل ڪئلينڊر",
     calIcs: "ايپل، آئوٽلُڪ ۽ ٻيا",
-    calSummary: "بارات ۽ رخصتي — تاشقين ۽ انوشا",
+    calSummary: `بارات ۽ رخصتي — ${COUPLE.sd}`,
     calDesc: "شام 7:00 وڳي تائين ضرور تشريف آڻجو. پروگرام ٺيڪ وقت تي شروع ٿيندو ۽ ڏنل ترتيب مطابق هلندو، ۽ شام 12:00 وڳي پڄاڻي ٿيندي.",
     closeSd: "",
     closeTitle: "دعائن سان",
@@ -182,13 +191,13 @@ export const T = {
     closeGuest: n => `خاص اوهان لاءِ، ${n}.`,
     dotLabels: { s1:"دعوت", s2:"ڳڻپ", s3:"آيت", s4:"ترتيب", s5:"پڄاڻي" },
     rsvpMsgYes: (g, count, names, note, update) =>
-      `السلام عليڪم! تاشقين ۽ انوشا جي بارات ۽ رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
+      `السلام عليڪم! ${COUPLE.sd} جي بارات ۽ رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: ها\nڪيترا ڄڻا: ${count}\n` +
       `${names.length ? "نالا: " + names.join("، ") : "نالا: نه ڏنا ويا"}` +
       `${note ? "\nپيغام: " + note : ""}`,
     rsvpMsgNo: (g, note, update) =>
-      `السلام عليڪم! تاشقين ۽ انوشا جي بارات ۽ رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
+      `السلام عليڪم! ${COUPLE.sd} جي بارات ۽ رخصتيءَ لاءِ ${update ? "نئون جواب" : "جواب"}، 27 ڊسمبر 2026.\n` +
       `${g ? "دعوت: " + g + "\n" : ""}` +
       `اچڻ: هن ڀيري نه\nاسان جون دعائون اوهان ٻنهي سان گڏ آهن.` +
       `${note ? "\nپيغام: " + note : ""}`,

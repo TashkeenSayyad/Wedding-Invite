@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite",
     "check": "node scripts/check.mjs",
-    "prebuild": "node scripts/check.mjs",
+    "prebuild": "node scripts/bridal-html.mjs && node scripts/check.mjs",
     "build": "vite build && node scripts/gen-sw.mjs",
     "preview": "vite preview",
     "fonts": "node scripts/build-fonts.mjs",
     "og": "python3 scripts/build-og.py",
-    "links": "node scripts/guest-links.mjs"
+    "links": "node scripts/guest-links.mjs",
+    "card": "python3 scripts/card-hosts.py",
+    "video": "node scripts/make-video.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

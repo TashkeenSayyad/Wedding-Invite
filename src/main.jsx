@@ -2,6 +2,7 @@ import React from "react"
 import { createRoot } from "react-dom/client"
 import App from "./App.jsx"
 import "./styles.css"
+import { COUPLE, ROOT_PATH } from "./config.js"
 
 // An invitation that renders a blank screen is worse than a plain one. If anything in the app
 // throws — a browser without a Canvas 2D context, a font API that behaves oddly, a bug we did not
@@ -16,7 +17,7 @@ class Fallback extends React.Component {
     return (
       <div className="bare">
         <p className="bare-k">Request the honour of your presence</p>
-        <h1>Tashkeen &amp; Anusha</h1>
+        <h1>{COUPLE.en}</h1>
         <hr />
         <p className="bare-t">Baarat &amp; Rukhsati</p>
         <p>Sunday, 27 December 2026<br />Nerunkot Hall, Qasimabad, Hyderabad, Sindh</p>
@@ -26,7 +27,7 @@ class Fallback extends React.Component {
           above exactly.</p>
         <p><a href="https://www.google.com/maps/search/?api=1&query=Nerunkot%20Hall%20Qasimabad%20Hyderabad">
           Directions to Nerunkot Hall</a></p>
-        <p className="bare-t">With love and prayers,<br />Tashkeen &amp; Anusha</p>
+        <p className="bare-t">With love and prayers,<br />{COUPLE.en}</p>
       </div>
     )
   }
@@ -39,5 +40,5 @@ createRoot(document.getElementById("root")).render(
 // Offline support, so the invitation still opens at the hall and on the road. Registered only in
 // the built site — in dev there is no sw.js and a stale cache would be a nuisance.
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}))
+  addEventListener("load", () => navigator.serviceWorker.register(ROOT_PATH + "sw.js").catch(() => {}))
 }

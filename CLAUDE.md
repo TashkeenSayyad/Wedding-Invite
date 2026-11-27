@@ -26,6 +26,13 @@ React 18 + Vite, no router, no backend. Fully static, built into `docs/` for Git
   cuts and moved the existing Italianno "Rukhsati" to the centre axis (no re-typesetting). The
   `.ics` UID still says `rukhsati-walima` on purpose — changing it would make a guest's calendar
   treat the evening as a second event.
+- **Two invitations, one from each family (Nov 2026).** The site itself is the groom's family's:
+  the card reads **JALLAL HYDER & RUBINA / INVITE YOU TO THE / Baarat & Rukhsati / TASHKEEN /
+  their son / & / ANUSHA / daughter of Barkat Ali & Mumtaz** ("TOGETHER WITH THEIR FAMILIES" is
+  gone). **`/bridal/`** is the bride's family's: **BARKAT ALI & MUMTAZ** invite, and Anusha is named
+  first everywhere — on the card (ANUSHA / their daughter / & / TASHKEEN / son of Jallal Hyder &
+  Rubina), the intro, the Sindhi names, the farewell, the h1, the calendar, the RSVP header, the
+  link preview and the manifest. See *Two invitations* below for how it is built.
 - **Groom:** Tashkeen Syed, son of Jallal Hyder & Rubina
 - **Bride:** Anusha Nizamani, daughter of Barkat Ali & Mumtaz
 - The surnames belong to one person each — Syed is Tashkeen's, Nizamani is Anusha's. They are
@@ -378,7 +385,7 @@ against a local server sending the same header:
 - the precache fetches with `cache: "reload"`, and navigations go **network-first** with
   `cache: "no-cache"`, falling back to the cached shell offline or after 3 seconds
 - the cache name hashes file *contents*, not just names (`index.html` never changes name)
-- an inline script in `index.html` catches a failed load of `./assets/index-*`, unregisters the
+- an inline script in `index.html` catches a failed load of `./assets/main-*` (or the older `index-*`), unregisters the
   worker, clears the caches and reloads once (guarded by `sessionStorage`), and an inline style
   paints the page dark before any stylesheet arrives, so a failure is never a white page
 
@@ -731,6 +738,40 @@ schedule light, then the farewell with date, seating time, venue and the site UR
 sparks or loops — the restraint pass applies here too. All Sindhi is taken from `i18n.js`, because
 the Lateef subsets only hold glyphs the site uses. The video shows the date: it is the invitation
 itself, like the printed card.
+
+## Two invitations: the groom's side and `/bridal/` (Nov 2026)
+
+The user asked for a version at `/bridal` that says "Anusha & Tashkeen" with the bride's parents
+inviting, and for the standard version to have the groom's side inviting. One app, two pages:
+
+- **`bridal/index.html` is generated** from `index.html` by `scripts/bridal-html.mjs` (run in
+  `prebuild`, and committed so `npm run dev` serves it). It swaps the couple's order, the URLs,
+  the preview card and the manifest, and adds `data-side="bridal"` to `<html>`. Edit `index.html`,
+  never the copy; the script stops if any substitution no longer lands.
+- **`SIDE` / `BRIDAL` / `COUPLE` / `ROOT_PATH`** in `src/config.js` read that attribute. Every place
+  the couple is named uses `COUPLE` (`.en` / `.sd`), never a literal. Public files (print card,
+  song, `sw.js`) are reached through `ROOT_PATH` because the bridal page is one folder down — a
+  bare `./assets/...` from `/bridal/` is a 404.
+- **Strings that name the hosts** — `cardText`, and through `COUPLE` `calSummary` and the RSVP
+  headers — follow the side inside `i18n.js`. The four RSVP labels are unchanged.
+- **Cards:** `npm run card` (`scripts/card-hosts.py`) writes all four files from the artwork at
+  `89d2b1b`, never from its own output: `card-print.png` / `card-web.webp` (groom's) and
+  `card-print-bridal.png` / `card-web-bridal.webp` (bride's). The hosts are set in the kicker's own
+  Cormorant SC, size, tracking and gold, with "invite you to the" a step smaller, in the ground
+  between the bismillah (moved up 5px / 4px toward the star for room) and the title. On the bride's
+  card the names and "son of Jallal Hyder & Rubina" are **moved, not re-typeset**: each is lifted
+  as ink off its own ground and laid onto the ground where it goes. Nothing at or below the date
+  line moves, so DateMask still holds. `html[data-side=bridal] .cardimg,.letter` swaps the web cut.
+- **Preview:** `npm run og` writes `og-card.jpg` and `og-card-bridal.jpg` (Anusha Nizamani first).
+  The bridal page's `og:image` is `og-card-bridal.jpg?v=1`.
+- **Offline:** `sw.js` precaches both shells, `./` and `./bridal/`, and a navigation falls back to
+  the shell of its own side — the bride's page must never open as the groom's with no signal.
+- **RSVP:** `RSVP_PHONE_BRIDAL` / `RSVP_ENDPOINT_BRIDAL` (`VITE_…_BRIDAL` in `.env`) send `/bridal/`
+  replies to the bride's family. Empty, they fall back to the groom's side's number and Sheet.
+- **Guest links:** `npm run links -- --bridal` reads `guests-bridal.txt` and writes
+  `/bridal/?to=` links, messages and the QR into `out/bridal/`.
+- The app bundle is `main-*.js` now (two entries share it), so the self-heal script in `index.html`
+  matches `(index|main)-`.
 
 ## Nice-to-haves discussed but not built
 

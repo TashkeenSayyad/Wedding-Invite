@@ -69,77 +69,84 @@ def centred(d, y, text, font, fill, tracking=0):
     d.text((W / 2, y), text, font=font, fill=fill, anchor="ma")
 
 
-img = backdrop()
-draw = ImageDraw.Draw(img)
+# One card per side: the groom's family's invitation (the standard site) names Tashkeen first,
+# the bride's family's (the /bridal/ site) names Anusha first. Everything else is the same.
+VARIANTS = [
+    (OUT, ("Tashkeen", "Anusha"), ("Syed", "Nizamani")),
+    (OUT.replace("og-card.jpg", "og-card-bridal.jpg"), ("Anusha", "Tashkeen"), ("Nizamani", "Syed")),
+]
+for OUT, NAMES, SURNAMES in VARIANTS:
+    img = backdrop()
+    draw = ImageDraw.Draw(img)
 
-# the ornament cut from the card artwork, so the preview and the site share an edge
-orn = Image.open(os.path.join(ROOT, "src/assets/orn-corner.webp")).convert("RGBA")
-orn = orn.resize((232, 232), Image.LANCZOS)
-# feather the inner edges so the ornament dissolves into the wash instead of ending on a seam
-alpha = orn.getchannel("A").point(lambda a: int(a * 0.5))
-fade = Image.new("L", alpha.size, 255)
-fd = fade.load()
-FEATHER = 96
-for y in range(alpha.size[1]):
-    fy = min(1.0, (alpha.size[1] - y) / FEATHER)
-    for x in range(alpha.size[0]):
-        fx = min(1.0, (alpha.size[0] - x) / FEATHER)
-        fd[x, y] = int(255 * min(fx, fy))
-alpha = Image.frombytes("L", alpha.size, bytes(
-    (a * f) // 255 for a, f in zip(alpha.tobytes(), fade.tobytes())))
-faded = orn.copy()
-faded.putalpha(alpha)
-img.paste(faded, (0, 0), faded)
-tr = faded.transpose(Image.FLIP_LEFT_RIGHT)
-img.paste(tr, (W - 232, 0), tr)
-bl = faded.transpose(Image.FLIP_TOP_BOTTOM)
-img.paste(bl, (0, H - 232), bl)
-br = faded.transpose(Image.ROTATE_180)
-img.paste(br, (W - 232, H - 232), br)
+    # the ornament cut from the card artwork, so the preview and the site share an edge
+    orn = Image.open(os.path.join(ROOT, "src/assets/orn-corner.webp")).convert("RGBA")
+    orn = orn.resize((232, 232), Image.LANCZOS)
+    # feather the inner edges so the ornament dissolves into the wash instead of ending on a seam
+    alpha = orn.getchannel("A").point(lambda a: int(a * 0.5))
+    fade = Image.new("L", alpha.size, 255)
+    fd = fade.load()
+    FEATHER = 96
+    for y in range(alpha.size[1]):
+        fy = min(1.0, (alpha.size[1] - y) / FEATHER)
+        for x in range(alpha.size[0]):
+            fx = min(1.0, (alpha.size[0] - x) / FEATHER)
+            fd[x, y] = int(255 * min(fx, fy))
+    alpha = Image.frombytes("L", alpha.size, bytes(
+        (a * f) // 255 for a, f in zip(alpha.tobytes(), fade.tobytes())))
+    faded = orn.copy()
+    faded.putalpha(alpha)
+    img.paste(faded, (0, 0), faded)
+    tr = faded.transpose(Image.FLIP_LEFT_RIGHT)
+    img.paste(tr, (W - 232, 0), tr)
+    bl = faded.transpose(Image.FLIP_TOP_BOTTOM)
+    img.paste(bl, (0, H - 232), bl)
+    br = faded.transpose(Image.ROTATE_180)
+    img.paste(br, (W - 232, H - 232), br)
 
-# the gilt double rule
-draw.rectangle([34, 34, W - 35, H - 35], outline=GOLD, width=2)
-draw.rectangle([44, 44, W - 45, H - 45], outline=(150, 120, 70), width=1)
+    # the gilt double rule
+    draw.rectangle([34, 34, W - 35, H - 35], outline=GOLD, width=2)
+    draw.rectangle([44, 44, W - 45, H - 45], outline=(150, 120, 70), width=1)
 
-sc = lambda s: face("cormorant-sc", "cormorant-sc-latin-600-normal.woff2", s)
-it = lambda s: face("italianno", "italianno-latin-400-normal.woff2", s)
-cg = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-normal.woff2", s)
-cgi = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-italic.woff2", s)
+    sc = lambda s: face("cormorant-sc", "cormorant-sc-latin-600-normal.woff2", s)
+    it = lambda s: face("italianno", "italianno-latin-400-normal.woff2", s)
+    cg = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-normal.woff2", s)
+    cgi = lambda s: face("cormorant-garamond", "cormorant-garamond-latin-400-italic.woff2", s)
 
-centred(draw, 118, "BAARAT & RUKHSATI", sc(30), GOLD, tracking=7)
+    centred(draw, 118, "BAARAT & RUKHSATI", sc(30), GOLD, tracking=7)
 
-# The couple, and a surname under each — Syed under Tashkeen, Nizamani under Anusha. Each one is
-# centred on the name it belongs to rather than on the card, so they are read as two full names
-# and not as one line of their own. Italic rather than a third rank of tracked small caps: the
-# kicker above and the hint below are both caps already, and a third would flatten the card.
-NAMES, JOIN = ("Tashkeen", "Anusha"), " & "
-name_f, sur_f = it(150), cgi(32)
-run = NAMES[0] + JOIN + NAMES[1]
-left = (W - draw.textlength(run, font=name_f)) / 2
-centred(draw, 168, run, name_f, GOLD_PALE)
-for word, surname in zip(NAMES, ("Syed", "Nizamani")):
-    at = left + draw.textlength(run[:run.index(word)], font=name_f)
-    mid = at + draw.textlength(word, font=name_f) / 2
-    tracked(draw, mid - tracked_width(draw, surname, sur_f, 2) / 2, 326, surname, sur_f, GOLD_L, 2)
+    # The couple, and a surname under each — Syed under Tashkeen, Nizamani under Anusha. Each one is
+    # centred on the name it belongs to rather than on the card, so they are read as two full names
+    # and not as one line of their own. Italic rather than a third rank of tracked small caps: the
+    # kicker above and the hint below are both caps already, and a third would flatten the card.
+    JOIN = " & "
+    name_f, sur_f = it(150), cgi(32)
+    run = NAMES[0] + JOIN + NAMES[1]
+    left = (W - draw.textlength(run, font=name_f)) / 2
+    centred(draw, 168, run, name_f, GOLD_PALE)
+    for word, surname in zip(NAMES, SURNAMES):
+        at = left + draw.textlength(run[:run.index(word)], font=name_f)
+        mid = at + draw.textlength(word, font=name_f) / 2
+        tracked(draw, mid - tracked_width(draw, surname, sur_f, 2) / 2, 326, surname, sur_f, GOLD_L, 2)
 
-draw.line([(W / 2 - 190, 392), (W / 2 + 190, 392)], fill=(150, 120, 70), width=1)
-for cxx in (W / 2 - 205, W / 2 + 205):
-    draw.ellipse([cxx - 3, 389, cxx + 3, 395], fill=GOLD)
+    draw.line([(W / 2 - 190, 392), (W / 2 + 190, 392)], fill=(150, 120, 70), width=1)
+    for cxx in (W / 2 - 205, W / 2 + 205):
+        draw.ellipse([cxx - 3, 389, cxx + 3, 395], fill=GOLD)
 
-# "SUNDAY · 27 DECEMBER 2026" used to be the line under the rule. WhatsApp is how this invitation
-# travels, so the preview was handing every guest the date before they had opened anything, and the
-# scratch heart on s2 was revealing something they already knew. The venue takes that place — it is
-# the fact a guest needs — and the hint sits below it as a quiet kicker, in --gold-l small caps,
-# where it explains the absence without becoming the loudest thing on the card. The one rule above
-# is enough ornament for this half; a second pair of hairlines around the hint only crowded it.
-centred(draw, 428, "NERUNKOT HALL · QASIMABAD · HYDERABAD", cg(32), (222, 199, 180), tracking=3)
-centred(draw, 502, MASK_HINT, sc(21), GOLD_L, tracking=5)
+    # "SUNDAY · 27 DECEMBER 2026" used to be the line under the rule. WhatsApp is how this invitation
+    # travels, so the preview was handing every guest the date before they had opened anything, and the
+    # scratch heart on s2 was revealing something they already knew. The venue takes that place — it is
+    # the fact a guest needs — and the hint sits below it as a quiet kicker, in --gold-l small caps,
+    # where it explains the absence without becoming the loudest thing on the card. The one rule above
+    # is enough ornament for this half; a second pair of hairlines around the hint only crowded it.
+    centred(draw, 428, "NERUNKOT HALL · QASIMABAD · HYDERABAD", cg(32), (222, 199, 180), tracking=3)
+    centred(draw, 502, MASK_HINT, sc(21), GOLD_L, tracking=5)
 
-img.save(OUT, "JPEG", quality=86, optimize=True, progressive=True)
-size = os.path.getsize(OUT)
-print(f"{OUT.replace(ROOT + '/', '')}  {W}x{H}  {size / 1024:.1f} KB")
-if size > 200 * 1024:
-    raise SystemExit("over the 200 KB budget WhatsApp previews want")
+    img.save(OUT, "JPEG", quality=86, optimize=True, progressive=True)
+    size = os.path.getsize(OUT)
+    print(f"{OUT.replace(ROOT + '/', '')}  {W}x{H}  {size / 1024:.1f} KB")
+    if size > 200 * 1024:
+        raise SystemExit("over the 200 KB budget WhatsApp previews want")
 
 # ── home-screen icons ──────────────────────────────────────────────────────────
 # The invitation is installable, so it needs a real icon rather than the inline SVG favicon.

@@ -9,7 +9,10 @@ import Sky from "./components/Sky.jsx";
 import { Lantern, useLit } from "./components/Lantern.jsx";
 import { watchRsvpQueue } from "./rsvp-store.js";
 import { buildIcs } from "./ics.js";
-import { AFTER, ARRIVE, DAY, GCAL_URL, MAPS_URL, MUSIC, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
+import { AFTER, ARRIVE, BRIDAL, COUPLE, DAY, GCAL_URL, MAPS_URL, MUSIC, ROOT_PATH, RSVP_ENDPOINT, RSVP_PHONE } from "./config.js";
+
+// The print card for this side: the bride's family's names Anusha first (see SIDE in config.js).
+const PRINT_CARD = ROOT_PATH + (BRIDAL ? "assets/card-print-bridal.png" : "assets/card-print.png");
 import { useMusic } from "./music.js";
 
 const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
@@ -248,7 +251,7 @@ export default function App() {
   const ics = () => {
     buzz(10);
     const url = URL.createObjectURL(new Blob([buildIcs(t)], { type: "text/calendar;charset=utf-8" }));
-    const a = document.createElement("a"); a.href = url; a.download = "tashkeen-anusha.ics";
+    const a = document.createElement("a"); a.href = url; a.download = BRIDAL ? "anusha-tashkeen.ics" : "tashkeen-anusha.ics";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
@@ -304,7 +307,7 @@ export default function App() {
         <button ref={readerX} className={"x" + (sd ? " sd-t" : "")} onClick={() => setReader(false)}>{t.tapClose}</button>
         {reader && (
           <div className="rd-card">
-            <img src="./assets/card-print.png" alt={t.cardText} />
+            <img src={PRINT_CARD} alt={t.cardText} />
             <DateMask t={t} lang={lang} off={scratched} />
           </div>
         )}
@@ -343,7 +346,7 @@ export default function App() {
           {/* the card is a picture; this is what is printed on it, for anyone who cannot see it */}
           <p id="card-text" className="vh">{t.cardText}</p>
           <div className="names">
-            <Rv d={0.25} cls="nm-sd">تاشقين ۽ انوشا</Rv>
+            <Rv d={0.25} cls="nm-sd">{COUPLE.sd}</Rv>
           </div>
         </Sec>
 
@@ -419,7 +422,7 @@ export default function App() {
             <a className="btn" target="_blank" rel="noopener" href={MAPS_URL}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.map}</span></a>
-            <a className="btn" href="./assets/card-print.png" download="rukhsati-tashkeen-anusha.png" onClick={() => buzz(10)}>
+            <a className="btn" href={PRINT_CARD} download={BRIDAL ? "baarat-rukhsati-anusha-tashkeen.png" : "baarat-rukhsati-tashkeen-anusha.png"} onClick={() => buzz(10)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M12 3v12M8 11l4 4 4-4M4 19h16" /></svg>
               <span className={sd ? "sd-t" : ""}>{t.save}</span></a>
           </div>
@@ -431,7 +434,7 @@ export default function App() {
           {!sd && <Rv d={0.12} cls="sdt" style={{ fontSize: "calc(21px*var(--fz,1))", marginTop: 14 }}>{t.closeSd}</Rv>}
           <Rv d={0.2} cls={"script" + (sd ? " sd-t" : "")} style={{ fontSize: sd ? "calc(clamp(28px,7.6vw,36px)*var(--fz,1))" : "calc(clamp(32px,8.6vw,42px)*var(--fz,1))" }}>{t.closeTitle}</Rv>
           <Rv d={0.26} cls="band" />
-          <Rv d={0.32} cls="kicker">Tashkeen &amp; Anusha</Rv>
+          <Rv d={0.32} cls="kicker">{COUPLE.en}</Rv>
           <Rv d={0.4} cls={"body" + (sd ? " sd-t" : "")} style={{ marginTop: 20, maxWidth: 300, marginInline: "auto" }}>{t.closeNote}</Rv>
           {guest && <Rv d={0.5} cls={"sig" + (sd ? " sd-t" : "")}>{t.closeGuest(guest)}</Rv>}
           {/* the farewell is the natural moment to answer, so the one call to action is here too */}

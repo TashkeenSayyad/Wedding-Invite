@@ -23,7 +23,7 @@ import QRCode from "qrcode";
 import { SITE } from "../src/config.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const out = resolve(root, "out");
+const out = resolve(root, "out", process.argv.includes("--bridal") ? "bridal" : "");
 
 // Wine modules on a pale gold ground. Gold-on-wine looks better but inverts the polarity every
 // QR scanner expects, and a printed card gets read by whatever camera app a guest happens to have.
@@ -39,7 +39,12 @@ const value = (name) => {
 
 const TAKES_VALUE = new Set(["--list", "--lang"]);
 const named = argv.filter((a, i) => !a.startsWith("--") && !TAKES_VALUE.has(argv[i - 1]));
-const listFile = value("--list") || "guests.txt";
+// --bridal writes the bride's family's links: /bridal/, Anusha named first, into out/bridal/
+const BRIDAL = flag("--bridal");
+const PAGE = SITE + (BRIDAL ? "bridal/" : "");
+const OUT = BRIDAL ? "out/bridal/" : "out/";
+const COUPLE = BRIDAL ? ["Anusha & Tashkeen", "انوشا ۽ تاشقين"] : ["Tashkeen & Anusha", "تاشقين ۽ انوشا"];
+const listFile = value("--list") || (BRIDAL ? "guests-bridal.txt" : "guests.txt");
 const allLang = value("--lang") || "";
 if (allLang && allLang !== "en" && allLang !== "sd") {
   console.error(`--lang takes "en" or "sd", not "${allLang}".`);
@@ -83,19 +88,19 @@ mkdirSync(out, { recursive: true });
 // `?to=` is read straight into the greeting, and App.jsx caps it at 40 characters
 const linkFor = ({ name, lang }) => {
   const l = lang || allLang;
-  return SITE + "?to=" + encodeURIComponent(name.slice(0, 40)) + (l ? "&lang=" + l : "");
+  return PAGE + "?to=" + encodeURIComponent(name.slice(0, 40)) + (l ? "&lang=" + l : "");
 };
 const csvCell = (v) => (/[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v);
 // The date is left out on purpose: this message sits directly above the link preview in the
 // thread, and the preview no longer carries it either — the scratch heart is what tells a guest
 // the date. The venue stays; only the date is the surprise.
 const message = (name, url) =>
-  `Assalamu alaikum ${name}! You are warmly invited to the Baarat & Rukhsati of Tashkeen & Anusha ` +
+  `Assalamu alaikum ${name}! You are warmly invited to the Baarat & Rukhsati of ${COUPLE[0]} ` +
   `at Nerunkot Hall, Qasimabad, Hyderabad. ` +
   `Your invitation is here — scratch the heart to find out the date: ${url}`;
 // Kept in the same shape as the English so the family can scan either list the same way.
 const messageSd = (name, url) =>
-  `السلام عليڪم ${name}! تاشقين ۽ انوشا جي بارات ۽ رخصتيءَ ۾ اوهان کي محبت سان دعوت آهي — ` +
+  `السلام عليڪم ${name}! ${COUPLE[1]} جي بارات ۽ رخصتيءَ ۾ اوهان کي محبت سان دعوت آهي — ` +
   `نيرون ڪوٽ هال، قاسم آباد، حيدرآباد. ` +
   `اوهان جي دعوت هتي آهي، تاريخ ڄاڻڻ لاءِ دل کي کرچجو: ${url}`;
 
@@ -113,8 +118,8 @@ writeFileSync(resolve(out, "guest-links.txt"),
   list.map((r) => `${r.name}\n${r.url}\n\n${r.text}\n${"─".repeat(72)}`).join("\n") + "\n");
 
 const qrOpts = { errorCorrectionLevel: "M", margin: 2, color: { dark: WINE, light: GOLD } };
-await QRCode.toFile(resolve(out, "qr-invitation.png"), SITE, { ...qrOpts, type: "png", width: 1200 });
-writeFileSync(resolve(out, "qr-invitation.svg"), await QRCode.toString(SITE, { ...qrOpts, type: "svg" }));
+await QRCode.toFile(resolve(out, "qr-invitation.png"), PAGE, { ...qrOpts, type: "png", width: 1200 });
+writeFileSync(resolve(out, "qr-invitation.svg"), await QRCode.toString(PAGE, { ...qrOpts, type: "svg" }));
 
 if (flag("--qr-each")) {
   mkdirSync(resolve(out, "qr"), { recursive: true });
@@ -132,8 +137,8 @@ if (flag("--qr-each")) {
 
 const sindhi = list.filter((r) => r.lang === "sd").length;
 console.log(`${list.length} guest${list.length === 1 ? "" : "s"}` +
-  (sindhi ? ` (${sindhi} in Sindhi)` : "") + ` → out/guest-links.csv, out/guest-links.txt`);
+  (sindhi ? ` (${sindhi} in Sindhi)` : "") + ` → ${OUT}guest-links.csv, ${OUT}guest-links.txt`);
 if (dupes.length) console.log(`skipped ${dupes.length} repeated name${dupes.length === 1 ? "" : "s"}: ${dupes.join(", ")}`);
-console.log(`gold QR of ${SITE} → out/qr-invitation.svg, out/qr-invitation.png`);
-if (flag("--qr-each")) console.log(`per-guest QR codes → out/qr/`);
+console.log(`gold QR of ${PAGE} → ${OUT}qr-invitation.svg, ${OUT}qr-invitation.png`);
+if (flag("--qr-each")) console.log(`per-guest QR codes → ${OUT}qr/`);
 console.log(`\nfirst link: ${list[0].url}`);

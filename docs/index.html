@@ -18,7 +18,7 @@
   <script>
     addEventListener("error", function (e) {
       var t = e.target, u = t && (t.src || t.href) || "";
-      if (!/\/assets\/index-/.test(u)) return;
+      if (!/\/assets\/(index|main)-/.test(u)) return;  // the app bundle is main-* since /bridal/
       try { if (sessionStorage.getItem("ta-heal")) return; sessionStorage.setItem("ta-heal", "1"); } catch (_) { return; }
       var go = function () { location.reload(); };
       var jobs = [];
@@ -85,8 +85,8 @@
     }
   }
   </script>
-  <script type="module" crossorigin src="./assets/index-Bt_RZVwm.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CNupeHPd.css">
+  <script type="module" crossorigin src="./assets/main-CIYeZ8cb.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-DnYdU2py.css">
 </head>
 <body>
   <div id="root"></div>

@@ -3,7 +3,7 @@
 // It lives in its own file so `npm run check` can build one and read it back — folding, escaping
 // and CRLF endings are exactly the sort of thing that is invisible until a guest's phone quietly
 // refuses the file, and by then the invitation has already gone out.
-import { ICS_END, ICS_START, ICS_UID, SITE, VENUE } from "./config.js";
+import { ICS_END, ICS_START, ICS_UID, PAGE_URL, VENUE } from "./config.js";
 
 // RFC 5545 wants CRLF, escaped text and lines folded at 75 octets.
 export const icsLine = (line) => {
@@ -41,7 +41,7 @@ export const buildIcs = (t) => [
   "SUMMARY:" + icsText(t.calSummary),
   "LOCATION:" + icsText(VENUE),
   "DESCRIPTION:" + icsText(t.calDesc),
-  "URL:" + SITE,
+  "URL:" + PAGE_URL,
   "BEGIN:VALARM",                               // the day before, given the road on the 27th
   "TRIGGER:-P1D",
   "ACTION:DISPLAY",
